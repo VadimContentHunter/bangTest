@@ -6,17 +6,19 @@ const app = express();
 const port = 8080;
 const pathClient = path.join(__dirname, "client");
 const pathClientHtml = path.join(pathClient, "html");
-// const pathServer = path.join(__dirname, "server");
+const pathClientCss = path.join(pathClient, "css");
+const pathClientJs = path.join(pathClient, "js");
+const pathClientResources = path.join(pathClient, "resources");
 
-// console.log(pathApp);
-// console.log(pathClient);
-
-// Обслуживаем статический файл (главная страница)
-app.use(express.static(pathClientHtml));
+// Обслуживаем статические файлы из соответствующих папок
+app.use("/html", express.static(pathClientHtml));             // Статические файлы из /html
+app.use("/css", express.static(pathClientCss));               // Статические файлы из /css
+app.use("/js", express.static(pathClientJs));                 // Статические файлы из /js
+app.use("/resources", express.static(pathClientResources));   // Статические файлы из /resources
 
 // Обрабатываем запрос на корень ("/")
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "index.html"));
+  res.sendFile(path.join(pathClientHtml, "index.html"));
 });
 
 // Обработка ошибок 404
