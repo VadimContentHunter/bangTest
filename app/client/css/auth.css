@@ -1,0 +1,17 @@
+
+main {
+    display: flex;
+    /* Используем flexbox для управления размещением */
+    flex-direction: column;
+    /* Располагаем элементы в колонку */
+    justify-content: center;
+    /* Центрируем содержимое по вертикали */
+    align-items: center;
+    /* Центрируем содержимое по горизонтали */
+}
+
+.user-info {}
+
+.login-system {}
+
+.developer-info {}

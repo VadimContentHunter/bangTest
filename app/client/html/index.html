@@ -1,41 +1,156 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Client</title>
-</head>
-<body>
-    <h1>WebSocket Client</h1>
-    <input type="text" id="messageInput" placeholder="Введите сообщение">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bang!-Test</title>
+
+    <link rel="stylesheet" href="/css/vars.css" />
+    <link rel="stylesheet" href="/css/reset.css" />
+    <link rel="stylesheet" href="/css/icons.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="stylesheet" href="/css/notification.css" />
+  </head>
+  <body>
+    <div class="container-main">
+      <header>
+        <div class="container-inner">
+          <h1>Bang!-Test</h1>
+
+          <section class="menu-line-mini">
+            <article class="notifications">
+              <div class="base-icon-medium">
+                <i class="icon-notification-fill"></i>
+              </div>
+              <ul>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат</span
+                  >
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок
+                    'Иван' зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
+                    зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок 'Иван' зашел
+                    в чат 1 Игрок 'Иван' зашел в чат 1
+                  </span>
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван'</span
+                  >
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 3</span
+                  >
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок
+                    'Иван' зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
+                    зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок 'Иван' зашел
+                    в чат 1 Игрок 'Иван' зашел в чат 1
+                  </span>
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 5</span
+                  >
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 6</span
+                  >
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок
+                    'Иван' зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
+                    зашел в чат 1 Игрок 'Иван' зашел в чат 1 Игрок 'Иван' зашел
+                    в чат 1 Игрок 'Иван' зашел в чат 1
+                  </span>
+                </li>
+                <li>
+                  <span class="notification-text"
+                    >Игрок 'Иван' зашел в чат 8</span
+                  >
+                </li>
+              </ul>
+            </article>
+          </section>
+        </div>
+      </header>
+
+      <main>
+        <section class="user-info">
+          <p>Количество игроков зашло: <span id="user-count">0</span></p>
+        </section>
+
+        <section class="login-system">
+          <form action="" method="post">
+            <input
+              type="text"
+              name="user_name"
+              placeholder="Введите ваше имя"
+              required
+            />
+            <input
+              type="text"
+              name="admin_code"
+              placeholder="Введите код админа"
+            />
+            <button>Войти</button>
+          </form>
+        </section>
+      </main>
+
+      <footer>
+        <section class="developer-info">
+          <h2>Информация о разработчике</h2>
+          <p><strong>Имя:</strong> Иван Иванов</p>
+          <p><strong>Email:</strong> ivan.ivanov@example.com</p>
+          <p>
+            <strong>Описание:</strong> Разработчик веб-приложений с опытом
+            работы более 5 лет. Увлекается JavaScript и современными
+            фреймворками.
+          </p>
+        </section>
+      </footer>
+    </div>
+
+    <!-- <h1>WebSocket Client</h1>
+    <input type="text" id="messageInput" placeholder="Введите сообщение" />
     <button id="sendBtn">Отправить</button>
 
-    <div id="messages"></div>
+    <div id="messages"></div> -->
 
     <script>
-        const ws = new WebSocket('ws://95.109.169.148:8080');
+      // const ws = new WebSocket('ws://95.109.169.148:8080');
 
-        ws.onopen = () => {
-            console.log('Соединение установлено с сервером');
-        };
+      // ws.onopen = () => {
+      //     console.log('Соединение установлено с сервером');
+      // };
 
-        ws.onmessage = (event) => {
-            const messagesDiv = document.getElementById('messages');
-            const messageElement = document.createElement('p');
-            messageElement.textContent = event.data;
-            messagesDiv.appendChild(messageElement);
-        };
+      // ws.onmessage = (event) => {
+      //     const messagesDiv = document.getElementById('messages');
+      //     const messageElement = document.createElement('p');
+      //     messageElement.textContent = event.data;
+      //     messagesDiv.appendChild(messageElement);
+      // };
 
-        ws.onclose = () => {
-            console.log('Соединение закрыто');
-        };
+      // ws.onclose = () => {
+      //     console.log('Соединение закрыто');
+      // };
 
-        const sendBtn = document.getElementById('sendBtn');
-        sendBtn.onclick = () => {
-            const messageInput = document.getElementById('messageInput');
-            ws.send(messageInput.value);
-            messageInput.value = '';
-        };
+      // const sendBtn = document.getElementById('sendBtn');
+      // sendBtn.onclick = () => {
+      //     const messageInput = document.getElementById('messageInput');
+      //     ws.send(messageInput.value);
+      //     messageInput.value = '';
+      // };
     </script>
-</body>
+  </body>
 </html>
