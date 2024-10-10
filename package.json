@@ -7,7 +7,10 @@
     "start": "node app/server.js"
   },
   "keywords": [],
-  "author": "Vadim Volkovskiy",
+  "author": {
+    "name": "Vadim Volkovskyi",
+    "email": "project.k.vadim@gmail.com"
+  },
   "license": "ISC",
   "description": "",
   "dependencies": {

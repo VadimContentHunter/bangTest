@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const setupWebSocketServer = require("./server/websocketServer");
+const setupWebSocketServer = require("./server/services/websocketServer");
 
 const app = express();
 const port = 8080;
@@ -43,4 +43,4 @@ const server = app.listen(port, () => {
   console.log(`HTTP сервер запущен на http://localhost:${port}`);
 });
 
-// setupWebSocketServer(server);
+setupWebSocketServer(server);
