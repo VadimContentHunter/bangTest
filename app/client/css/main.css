@@ -24,7 +24,7 @@ body {
 *       header
 **********************************/
 header {
-    background-color: #4CAF50;
+    background-color: var(--main-color);
     color: white;
     padding: 20px;
 
