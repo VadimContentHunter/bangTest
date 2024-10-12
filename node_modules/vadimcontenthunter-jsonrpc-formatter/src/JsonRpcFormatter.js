@@ -30,9 +30,7 @@ class JsonRpcFormatter {
             !(typeof params === "object" && params !== null) &&
             !Array.isArray(params)
         ) {
-            throw new JsonRpcFormatterError(
-                "Params must be an object or array if provided"
-            );
+            throw new JsonRpcFormatterError("Params must be an object or array if provided");
         }
 
         return JSON.stringify({
@@ -71,9 +69,7 @@ class JsonRpcFormatter {
 
             // Check if the JSON-RPC version is valid
             if (!parsedResponse.jsonrpc || parsedResponse.jsonrpc !== "2.0") {
-                throw new JsonRpcFormatterError(
-                    "Invalid or missing JSON-RPC version"
-                );
+                throw new JsonRpcFormatterError("Invalid or missing JSON-RPC version");
             }
 
             // Check if the id is valid (if it exists)
@@ -83,9 +79,7 @@ class JsonRpcFormatter {
 
             // Ensure that either result or error is present
             if (!parsedResponse.result && !parsedResponse.error) {
-                throw new JsonRpcFormatterError(
-                    "Missing property result or error"
-                );
+                throw new JsonRpcFormatterError("Missing property result or error");
             }
 
             // If result exists, ensure it's not undefined (and handle error validation if error exists)
@@ -93,9 +87,7 @@ class JsonRpcFormatter {
                 parsedResponse.hasOwnProperty("result") &&
                 typeof parsedResponse.result !== "undefined"
             ) {
-                throw new JsonRpcFormatterError(
-                    "Invalid or missing property result"
-                );
+                throw new JsonRpcFormatterError("Invalid or missing property result");
             }
 
             // Check for errors in the response (if error property exists)
@@ -134,10 +126,7 @@ class JsonRpcFormatter {
             throw new JsonRpcFormatterError("Invalid error.code");
         }
 
-        if (
-            !error.hasOwnProperty("message") ||
-            typeof error?.message !== "string"
-        ) {
+        if (!error.hasOwnProperty("message") || typeof error?.message !== "string") {
             throw new JsonRpcFormatterError("Invalid error.message");
         }
 
@@ -174,16 +163,15 @@ class JsonRpcFormatter {
     }
 }
 
-// Экспортируем класс для CommonJS и модулей ES
+// Exporting the classes for CommonJS and ES modules
 if (typeof module !== "undefined" && module.exports) {
-    // Node.js или CommonJS
-    module.exports = JsonRpcFormatter;
+    // Node.js or CommonJS
+    module.exports = { JsonRpcFormatter, JsonRpcFormatterError };
 } else if (typeof define === "function" && define.amd) {
-    // RequireJS (для браузера)
-    define(function () {
-        return JsonRpcFormatter;
-    });
+    // RequireJS (for browser)
+    define(() => ({ JsonRpcFormatter, JsonRpcFormatterError }));
 } else {
-    // Глобальная переменная для браузера (UMD)
+    // Global variable for browser (UMD)
     window.JsonRpcFormatter = JsonRpcFormatter;
+    window.JsonRpcFormatterError = JsonRpcFormatterError; // Export the error class too
 }
