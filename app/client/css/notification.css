@@ -38,7 +38,10 @@
 }
 
 .notifications ul li.fade-out {
-    animation: fadeOut 4s forwards;
+    animation: fadeOut 2s forwards;
+
+    /* Задержка начала анимации на 3 секунды */
+    animation-delay: 3s;
 }
 
 @keyframes fadeOut {

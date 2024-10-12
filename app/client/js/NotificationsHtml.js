@@ -74,7 +74,7 @@ class NotificationsHtml {
             if (!animationPlayed) {
                 const nextElement = element.nextElementSibling;
 
-                // console.log("Анимации не было, удаляем элемент через таймаут");
+                console.log("Анимации не было, удаляем элемент через таймаут");
                 element.remove();
 
                 if (nextElement) this.removeNextNotification(nextElement);
