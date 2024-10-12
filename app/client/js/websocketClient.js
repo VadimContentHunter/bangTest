@@ -64,5 +64,5 @@ function websocketClient(ip, callbackHandlerResponse, callbackHandlerRequest) {
         console.log("Соединение закрыто");
     };
 
-    callbackHandlerRequest(wp);
+    callbackHandlerRequest(ws);
 }
