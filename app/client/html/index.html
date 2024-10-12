@@ -3,88 +3,23 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Bang!-Test</title>
+        <title>{{pageTitle}}</title>
 
-        <link rel="stylesheet" href="/css/vars.css" />
-        <link rel="stylesheet" href="/css/reset.css" />
-        <link rel="stylesheet" href="/css/icons.css" />
-        <link rel="stylesheet" href="/css/main.css" />
-        <link rel="stylesheet" href="/css/auth.css" />
-        <link rel="stylesheet" href="/css/notification.css" />
+        {{cssLinks}}
+        {{scriptHeadLinks}}
     </head>
     <body>
         <div class="container-main">
             <header>
                 <div class="container-inner">
-                    <h1>Bang!-Test</h1>
+                    <h1>{{pageTitle}}</h1>
 
                     <section class="menu-line-mini">
                         <article class="notifications">
                             <div class="base-icon-medium">
                                 <i class="icon-notification-fill"></i>
                             </div>
-                            <ul>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат</span
-                                    >
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1 Игрок 'Иван' зашел в чат 1
-                                        Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1 Игрок 'Иван' зашел в чат 1
-                                        Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1
-                                    </span>
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван'</span
-                                    >
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 3</span
-                                    >
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1 Игрок 'Иван' зашел в чат 1
-                                        Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1 Игрок 'Иван' зашел в чат 1
-                                        Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1
-                                    </span>
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 5</span
-                                    >
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 6</span
-                                    >
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1 Игрок 'Иван' зашел в чат 1
-                                        Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1 Игрок 'Иван' зашел в чат 1
-                                        Игрок 'Иван' зашел в чат 1 Игрок 'Иван'
-                                        зашел в чат 1
-                                    </span>
-                                </li>
-                                <li>
-                                    <span class="notification-text"
-                                        >Игрок 'Иван' зашел в чат 8</span
-                                    >
-                                </li>
-                            </ul>
+                            <ul></ul>
                         </article>
                     </section>
                 </div>
@@ -149,12 +84,6 @@
             </footer>
         </div>
 
-        <!-- <h1>WebSocket Client</h1>
-    <input type="text" id="messageInput" placeholder="Введите сообщение" />
-    <button id="sendBtn">Отправить</button>
-
-    <div id="messages"></div> -->
-
         <script>
             // const ws = new WebSocket('ws://95.109.169.148:8080');
 
@@ -181,4 +110,5 @@
             // };
         </script>
     </body>
+    {{scriptEndLinks}}
 </html>

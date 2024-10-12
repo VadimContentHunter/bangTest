@@ -13,27 +13,42 @@
 
 .notifications ul {
     position: absolute;
-    margin-top: 44px;
-    /* width: 300px; */
+    margin-top: 72px;
     color: #333;
 
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    align-items: flex-end;
+    gap: 12px;
 }
 
 .notifications ul li {
-    /* display: none; */
     max-width: 300px;
     padding: var(--padding-element);
-    /* margin: 4px 0px; */
-    background-color: #ffffff;
     border-radius: var(--border-radius-element);
     box-shadow: var(--box-shadow-element);
+
+    color: #ffffff;
+    background-color: #173d65;
+
     display: none;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+}
+
+.notifications ul li.fade-out {
+    animation: fadeOut 4s forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 .notifications .base-icon-min {
