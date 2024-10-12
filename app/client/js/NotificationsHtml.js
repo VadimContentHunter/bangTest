@@ -7,6 +7,32 @@ class NotificationsHtmlError extends Error {
     }
 }
 
+class NotificationUtils {
+    static applyFadeOut(element) {
+        if (!element.classList.contains("fade-out")) {
+            element.classList.add("fade-out");
+        }
+    }
+
+    static onMouseEnter(element, setHovered) {
+        setHovered();
+        element.classList.remove("fade-out");
+    }
+
+    static onMouseLeave(element, setHovered) {
+        setHovered();
+        NotificationUtils.applyFadeOut(element);
+    }
+
+    static removeElement(element, removeNextNotification) {
+        const nextElement = element.nextElementSibling;
+        element.remove();
+        if (nextElement) {
+            removeNextNotification(nextElement);
+        }
+    }
+}
+
 class NotificationsHtml {
     constructor(selectorElement) {
         this.notificationsElement = document.querySelector(selectorElement);
@@ -29,71 +55,43 @@ class NotificationsHtml {
         this.removeAllNotificationsSequentially();
     }
 
-    // Метод для последовательного удаления всех элементов
     removeAllNotificationsSequentially() {
-        const notifications = Array.from(this.notificationQueueElement.children); // Получаем все элементы <li>
+        const notifications = Array.from(this.notificationQueueElement.children);
 
-        // Если есть элементы, начинаем удаление с первого
         if (notifications.length > 0) {
             this.removeNextNotification(notifications[0]);
         }
     }
 
-    // Метод для удаления элемента и запуска анимации
     removeNextNotification(element) {
-        const animationDuration = 5000; // Длительность анимации в миллисекундах
+        const animationDuration = 5000;
         let animationPlayed = false;
         let isHovered = false;
 
-        if (element.style.display !== "flex") {
-            element.style.display = "flex";
-        }
+        NotificationUtils.applyFadeOut(element);
 
-        if (!element.classList.contains("fade-out")) {
-            element.classList.add("fade-out");
-        }
+        element.addEventListener("mouseenter", () =>
+            NotificationUtils.onMouseEnter(element, () => (isHovered = true))
+        );
+        element.addEventListener("mouseleave", () =>
+            NotificationUtils.onMouseLeave(element, () => (isHovered = false))
+        );
 
-        // Добавляем обработчики событий для наведения мыши
-        element.addEventListener("mouseenter", () => {
-            isHovered = true; // Устанавливаем флаг при наведении
-            if (element.classList.contains("fade-out")) {
-                element.classList.remove("fade-out");
-            }
-        });
-
-        element.addEventListener("mouseleave", () => {
-            isHovered = false; // Сбрасываем флаг при уходе курсора
-            if (!element.classList.contains("fade-out")) {
-                element.classList.add("fade-out");
-            }
-        });
-
-        // Устанавливаем таймер на случай, если анимации нет
         const fallbackTimeout = setTimeout(() => {
             if (isHovered) return;
             if (!animationPlayed) {
-                const nextElement = element.nextElementSibling;
-
-                console.log("Анимации не было, удаляем элемент через таймаут");
-                element.remove();
-
-                if (nextElement) this.removeNextNotification(nextElement);
+                NotificationUtils.removeElement(element, this.removeNextNotification.bind(this));
             }
         }, animationDuration);
 
-        // Запускаем анимацию и удаляем элемент после её завершения
         element.addEventListener(
             "animationend",
             () => {
                 if (isHovered) return;
 
                 animationPlayed = true;
-                clearTimeout(fallbackTimeout); // Очищаем таймер
-                const nextElement = element.nextElementSibling;
-
-                element.remove();
-                // console.log("Элемент удалён по завершению анимации");
-                if (nextElement) this.removeNextNotification(nextElement); // Удаляем следующий элемент
+                clearTimeout(fallbackTimeout);
+                NotificationUtils.removeElement(element, this.removeNextNotification.bind(this));
             },
             { once: true }
         );
