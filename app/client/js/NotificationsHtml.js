@@ -8,20 +8,38 @@ class NotificationsHtmlError extends Error {
 }
 
 class NotificationUtils {
-    static applyFadeOut(element) {
-        if (!element.classList.contains("fade-out")) {
-            element.classList.add("fade-out");
-        }
+    static isHovered = false;
+    static animationDuration = 5000;
+    static animationPlayed = false;
+
+    static onMouseEnter(element, fallbackTimeout) {
+        element.addEventListener("mouseenter", () => {
+            NotificationUtils.isHovered = true;
+            if (element.classList.contains("fade-out")) {
+                element.classList.remove("fade-out");
+            }
+
+            clearTimeout(fallbackTimeout.value);
+        });
     }
 
-    static onMouseEnter(element, setHovered) {
-        setHovered();
-        element.classList.remove("fade-out");
-    }
+    static onMouseLeave(element, fallbackTimeout) {
+        element.addEventListener("mouseleave", () => {
+            NotificationUtils.isHovered = false;
+            if (!element.classList.contains("fade-out")) {
+                element.classList.add("fade-out");
+            }
 
-    static onMouseLeave(element, setHovered) {
-        setHovered();
-        NotificationUtils.applyFadeOut(element);
+            fallbackTimeout.value = setTimeout(() => {
+                if (NotificationUtils.isHovered) return;
+                if (!NotificationUtils.animationPlayed) {
+                    NotificationUtils.removeElement(
+                        element,
+                        this.removeNextNotification.bind(this)
+                    );
+                }
+            }, NotificationUtils.animationDuration);
+        });
     }
 
     static removeElement(element, removeNextNotification) {
@@ -64,33 +82,32 @@ class NotificationsHtml {
     }
 
     removeNextNotification(element) {
-        const animationDuration = 5000;
-        let animationPlayed = false;
-        let isHovered = false;
+        if (!element.classList.contains("fade-out")) {
+            element.classList.add("fade-out");
+        }
 
-        NotificationUtils.applyFadeOut(element);
+        const fallbackTimeout = {
+            value: setTimeout(() => {
+                if (NotificationUtils.isHovered) return;
+                if (!NotificationUtils.animationPlayed) {
+                    NotificationUtils.removeElement(
+                        element,
+                        this.removeNextNotification.bind(this)
+                    );
+                }
+            }, NotificationUtils.animationDuration),
+        };
 
-        element.addEventListener("mouseenter", () =>
-            NotificationUtils.onMouseEnter(element, () => (isHovered = true))
-        );
-        element.addEventListener("mouseleave", () =>
-            NotificationUtils.onMouseLeave(element, () => (isHovered = false))
-        );
-
-        const fallbackTimeout = setTimeout(() => {
-            if (isHovered) return;
-            if (!animationPlayed) {
-                NotificationUtils.removeElement(element, this.removeNextNotification.bind(this));
-            }
-        }, animationDuration);
+        NotificationUtils.onMouseEnter(element, fallbackTimeout);
+        NotificationUtils.onMouseLeave(element, fallbackTimeout);
 
         element.addEventListener(
             "animationend",
             () => {
-                if (isHovered) return;
+                if (NotificationUtils.isHovered) return;
 
-                animationPlayed = true;
-                clearTimeout(fallbackTimeout);
+                NotificationUtils.animationPlayed = true;
+                clearTimeout(fallbackTimeout.value);
                 NotificationUtils.removeElement(element, this.removeNextNotification.bind(this));
             },
             { once: true }
