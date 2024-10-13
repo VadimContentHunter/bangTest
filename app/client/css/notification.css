@@ -29,7 +29,7 @@
     box-shadow: var(--box-shadow-element);
 
     color: #ffffff;
-    background-color: #173d65;
+    background-color: var(--alt-color);
 
     display: none;
     flex-direction: row;

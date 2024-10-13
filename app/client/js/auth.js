@@ -1,3 +1,11 @@
+const selectorStaticNotification = "main .static-notifications ul";
+const StaticNotificationStatusClasses = {
+    SUCCESS: "success-notification",
+    WARNING: "warning-notification",
+    ERROR: "error-notification",
+};
+let idRequest = 0;
+
 // Функция проверки существования класса и его методов (включая статические)
 function checkClassAndMethods(className, requiredMethods = [], staticMethods = []) {
     if (typeof className === "undefined") {
@@ -77,12 +85,42 @@ function clearStaticNotifications(selector) {
     }
 }
 
-const selectorStaticNotification = "main .static-notifications ul";
-const StaticNotificationStatusClasses = {
-    SUCCESS: "success-notification",
-    WARNING: "warning-notification",
-    ERROR: "error-notification",
-};
+function sendForm(ws, selectorForm, selectorButtonSend) {
+    const form = document.querySelector(selectorForm);
+    if (!(form instanceof HTMLFormElement)) {
+        console.error("Form not found");
+        return; // Выходим из функции, если элемент не найден
+    }
+
+    const buttonSend = document.querySelector(selectorButtonSend);
+    if (!(buttonSend instanceof HTMLButtonElement)) {
+        console.error("Button send not found");
+        return; // Выходим из функции, если элемент не найден
+    }
+
+    const inputs = form.querySelectorAll("input");
+    if (!(inputs instanceof NodeList)) {
+        console.error("Inputs not found");
+        return; // Выходим из функции, если элементы не найдены
+    }
+
+    buttonSend.addEventListener("click", (e) => {
+        e.preventDefault(); // Отменяем стандартное поведение формы
+
+        let data = {};
+        inputs.forEach((input) => {
+            if (input.value && input.name) {
+                data[input.name] = input.value;
+            }
+        });
+
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JsonRpcFormatter.serializeRequest("authorization", data, ++idRequest));
+        } else {
+            console.error("WebSocket соединение не установлено.");
+        }
+    });
+}
 
 // Основная логика
 function main() {
@@ -146,7 +184,7 @@ function main() {
                 addStaticNotification(
                     selectorStaticNotification,
                     "Имя должно содержать только латинские буквы (A-Za-z).",
-                    StaticNotificationStatusClasses.WARNING,
+                    StaticNotificationStatusClasses.WARNING
                 );
                 const response = JsonRpcFormatter.deserializeResponse(data);
                 if (response.result) {
@@ -176,9 +214,13 @@ function main() {
                 }
             }
         },
-        (ws) => {}
+        (ws) => {
+            sendForm(ws, "main form.form-login-system", "main form.form-login-system button");
+        }
     );
 }
 
 // Запуск основной логики
-main();
+document.addEventListener("DOMContentLoaded", () => {
+    main();
+});

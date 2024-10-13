@@ -89,4 +89,6 @@ main {
     color: white;
 }
 
-.developer-info {}
+.form-login-system button:hover {
+    background-color: var(--alt-color);
+}

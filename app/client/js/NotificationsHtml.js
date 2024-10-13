@@ -33,10 +33,10 @@ class NotificationUtils {
             fallbackTimeout.value = setTimeout(() => {
                 if (NotificationUtils.isHovered) return;
                 if (!NotificationUtils.animationPlayed) {
-                    NotificationUtils.removeElement(
-                        element,
-                        this.removeNextNotification.bind(this)
-                    );
+                    NotificationUtils.removeElement(element, (nextElement) => {
+                        // Используем стрелочную функцию, чтобы сохранить контекст
+                        this.removeNextNotification(nextElement);
+                    });
                 }
             }, NotificationUtils.animationDuration);
         });
