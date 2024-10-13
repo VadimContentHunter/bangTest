@@ -1,7 +1,8 @@
 class JsonRpcFormatterError extends Error {
-    constructor(message) {
+    constructor(message, code = -32000) {
         super(message);
         this.name = "JsonRpcFormatterError";
+        this.code = code;
     }
 }
 
@@ -38,6 +39,59 @@ class JsonRpcFormatter {
             method,
             params, // If params is undefined, it will be omitted in the JSON string
             id,
+        });
+    }
+
+    /**
+     * Десериализует JSON-RPC запрос из строки.
+     *
+     * @param {string} request - JSON строка запроса.
+     * @returns {Object} Десериализованный объект запроса.
+     * @throws {JsonRpcFormatterError} Если формат запроса некорректен или JSON-RPC версия неверна.
+     */
+    static deserializeRequest(request) {
+        try {
+            const parsedRequest = JSON.parse(request);
+
+            if (typeof parsedRequest !== "object" || parsedRequest === null) {
+                throw new JsonRpcFormatterError("parsed request is not object");
+            }
+
+            if (!parsedRequest.jsonrpc || parsedRequest.jsonrpc !== "2.0") {
+                throw new JsonRpcFormatterError("Invalid or missing JSON-RPC version");
+            }
+
+            if (parsedRequest.id !== null && isNaN(parsedRequest.id)) {
+                throw new JsonRpcFormatterError("Invalid id");
+            }
+
+            if (typeof parsedRequest.method !== "string") {
+                throw new JsonRpcFormatterError("Invalid method");
+            }
+
+            return parsedRequest;
+        } catch (error) {
+            throw new JsonRpcFormatterError("Invalid JSON-RPC response format");
+        }
+    }
+
+    /**
+     * Сериализует ответ JSON-RPC.
+     *
+     * @param {*} value - Значение, которое будет отправлено в качестве результата.
+     * @param {number} id - Идентификатор запроса, на который формируется ответ.
+     * @returns {string} Сериализованный JSON-строка ответа.
+     * @throws {JsonRpcFormatterError} Если `id` не является числом.
+     */
+    static serializeResponse(value, id) {
+        if (typeof id !== "number") {
+            throw new JsonRpcFormatterError("Ошибка анализа", -32700);
+        }
+
+        return JSON.stringify({
+            jsonrpc: "2.0",
+            result: value,
+            id: id,
         });
     }
 

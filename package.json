@@ -15,7 +15,7 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.0",
-    "vadimcontenthunter-jsonrpc-formatter": "^1.0.2",
+    "vadimcontenthunter-jsonrpc-formatter": "^1.1.0",
     "ws": "^8.18.0"
   }
 }
