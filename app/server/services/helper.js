@@ -1,26 +1,20 @@
 const ServerError = require("../Errors/ServerError");
 const fs = require("fs");
 
+// Функция для парсинга JSON
 function parseJson(input) {
     let json;
 
-    // Проверяем, является ли входное значение строкой
     if (typeof input === "string") {
         try {
-            json = JSON.parse(input); // Пробуем распарсить строку в объект
+            json = JSON.parse(input);
         } catch (error) {
-            throw new ServerError(
-                "Неправильный формат данных. Ожидается объект JSON.",
-                400
-            );
+            throw new ServerError("Неправильный формат данных. Ожидается объект JSON.", 400);
         }
     } else if (typeof input === "object" && input !== null) {
-        json = input; // Если это уже объект, просто присваиваем его
+        json = input;
     } else {
-        throw new ServerError(
-            "Неправильный формат данных. Ожидается объект JSON.",
-            400
-        );
+        throw new ServerError("Неправильный формат данных. Ожидается объект JSON.", 400);
     }
 
     return json;
@@ -39,20 +33,45 @@ function parseCookies(cookieHeader) {
     return cookies;
 }
 
+// Функция для создания куки
+function createCookie(name, value, options = {}) {
+    // Создаем объект для хранения куков
+    const cookies = {};
+
+    // Добавляем или обновляем новую куку
+    cookies[name] = value;
+
+    // Генерируем новую строку куки
+    let cookieString = "";
+    for (const [key, val] of Object.entries(cookies)) {
+        cookieString += `${key}=${val}; `;
+    }
+
+    // Добавляем параметры из options
+    for (const [key, optionValue] of Object.entries(options)) {
+        if (key === "maxAge") {
+            cookieString += `Max-Age=${optionValue}; `;
+        } else if (key === "path") {
+            cookieString += `Path=${optionValue}; `;
+        } else if (key === "expires") {
+            cookieString += `Expires=${optionValue.toUTCString()}; `;
+        } else {
+            cookieString += `${key}=${optionValue}; `;
+        }
+    }
+
+    return cookieString.trim(); // Возвращаем итоговую строку куки без лишних пробелов
+}
+
 // Функция для замены параметров в HTML-шаблоне
 function renderTemplate(filePath, params) {
     let html = fs.readFileSync(filePath, "utf-8");
 
-    // Находим все плейсхолдеры {{param}} в шаблоне
     html = html.replace(/{{(.*?)}}/g, (match, key) => {
-        // Если параметр определен в объекте params, подставляем его значение,
-        // иначе заменяем на пустую строку
-        return params[key] !== undefined ? params[key] : '';
+        return params[key] !== undefined ? params[key] : "";
     });
 
     return html;
 }
 
-module.exports = { parseJson };
-module.exports = { parseCookies };
-module.exports = { renderTemplate };
+module.exports = { parseJson, parseCookies, createCookie, renderTemplate }; // Экспортируем все функции

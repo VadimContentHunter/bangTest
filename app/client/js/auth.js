@@ -138,7 +138,6 @@ function main() {
 
     // Инициализация класса NotificationsHtml и работа с WebSocket
     const notificationsHtml = new NotificationsHtml("header .notifications");
-
     websocketClient(
         serverIp,
         (data) => {

