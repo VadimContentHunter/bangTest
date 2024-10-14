@@ -122,6 +122,62 @@ function sendForm(ws, selectorForm, selectorButtonSend) {
     });
 }
 
+function updateSessionId({ sessionId, maxAge, path }) {
+    if(!sessionId || !maxAge || !path) {
+        throw new Error("Не удалось обновить сессию");
+    }
+
+    document.cookie = `sessionId=${sessionId}; max-age=${maxAge}; path=${path};`;
+}
+
+function responseServer(response) {
+    clearStaticNotifications(selectorStaticNotification);
+    addStaticNotification(
+        selectorStaticNotification,
+        "Имя должно содержать только латинские буквы (A-Za-z).",
+        StaticNotificationStatusClasses.WARNING
+    );
+    if (response.result) {
+        console.log(response.result);
+
+        // notificationsHtml.addNotification(response.result);
+    } else if (response.error) {
+        const error = JsonRpcFormatter.verificationError(response.error);
+        notificationsHtml.addNotification(error.message);
+    } else {
+        console.error("Неизвестный ответ:", response);
+    }
+}
+
+function requestServer(request) {
+    switch (request.method) {
+        case "updateSessionId":
+            updateSessionId(request?.params);
+            break;
+        default:
+            console.error("Неизвестный запрос от сервера:", response);
+    }
+}
+
+function errorHandler(error, notificationsHtml) {
+    if (error instanceof JsonRpcFormatterError && notificationsHtml instanceof NotificationsHtml) {
+        notificationsHtml.addNotification(error.message);
+        clearStaticNotifications(selectorStaticNotification);
+        addStaticNotification(
+            selectorStaticNotification,
+            error.message,
+            StaticNotificationStatusClasses.ERROR
+        );
+    } else {
+        clearStaticNotifications(selectorStaticNotification);
+        addStaticNotification(
+            selectorStaticNotification,
+            error.message,
+            StaticNotificationStatusClasses.ERROR
+        );
+    }
+}
+
 // Основная логика
 function main() {
     if (typeof serverIp !== "string") {
@@ -180,37 +236,16 @@ function main() {
         serverIp,
         (data) => {
             try {
-                clearStaticNotifications(selectorStaticNotification);
-                addStaticNotification(
-                    selectorStaticNotification,
-                    "Имя должно содержать только латинские буквы (A-Za-z).",
-                    StaticNotificationStatusClasses.WARNING
-                );
-                const response = JsonRpcFormatter.deserializeResponse(data);
-                if (response.result) {
-                    // notificationsHtml.addNotification(response.result);
-                } else if (response.error) {
-                    const error = JsonRpcFormatter.verificationError(response.error);
-                    notificationsHtml.addNotification(error.message);
-                } else {
-                    console.error("Неизвестный ответ:", response);
-                }
+                responseServer(JsonRpcFormatter.deserializeResponse(data));
             } catch (error) {
                 if (error instanceof JsonRpcFormatterError) {
-                    notificationsHtml.addNotification(error.message);
-                    clearStaticNotifications(selectorStaticNotification);
-                    addStaticNotification(
-                        selectorStaticNotification,
-                        error.message,
-                        StaticNotificationStatusClasses.ERROR
-                    );
+                    try {
+                        requestServer(JsonRpcFormatter.deserializeRequest(data));
+                    } catch (error) {
+                        errorHandler(error, notificationsHtml);
+                    }
                 } else {
-                    clearStaticNotifications(selectorStaticNotification);
-                    addStaticNotification(
-                        selectorStaticNotification,
-                        error.message,
-                        StaticNotificationStatusClasses.ERROR
-                    );
+                    errorHandler(error, notificationsHtml);
                 }
             }
         },
