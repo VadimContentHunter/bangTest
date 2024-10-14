@@ -1,6 +1,6 @@
 {
   "name": "vadimcontenthunter-jsonrpc-formatter",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A package for working with JSON-RPC 2.0. It automates the process of data formatting, supports all required fields and methods of the specification",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

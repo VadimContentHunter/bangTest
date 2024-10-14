@@ -139,7 +139,7 @@ class JsonRpcFormatter {
             // If result exists, ensure it's not undefined (and handle error validation if error exists)
             if (
                 parsedResponse.hasOwnProperty("result") &&
-                typeof parsedResponse.result !== "undefined"
+                typeof parsedResponse.result === "undefined"
             ) {
                 throw new JsonRpcFormatterError("Invalid or missing property result");
             }
@@ -151,7 +151,13 @@ class JsonRpcFormatter {
 
             return parsedResponse;
         } catch (error) {
-            throw new JsonRpcFormatterError("Invalid JSON-RPC response format");
+            // Проверка на ошибки парсинга JSON
+            if (error instanceof SyntaxError) {
+                throw new JsonRpcFormatterError("Invalid JSON format");
+            }
+
+            // Выброс других ошибок, если это не ошибка синтаксиса
+            throw new JsonRpcFormatterError(error.message);
         }
     }
 
