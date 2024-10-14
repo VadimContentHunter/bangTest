@@ -27,8 +27,6 @@ app.use(
 // Middleware для загрузки сессий
 app.use((req, res, next) => {
     SessionHandler.loadSessions(); // Загружаем сессии из файла
-    // console.log(req.headers.cookie);
-
     req.sessionId = SessionHandler.getCreateSessionId(req.headers.cookie); // Получаем или создаем sessionId
     res.setHeader(
         "Set-Cookie",
@@ -42,6 +40,8 @@ app.use((req, res, next) => {
 
 // Обрабатываем запрос на корень ("/")
 app.get("/", (req, res) => {
+    SessionHandler.addParametersToSession(req.sessionId, { lastUrl: req.url });
+
     const templatePath = path.join(pathClientHtml, "index.html");
     const htmlContent = renderTemplate(templatePath, {
         pageTitle: "Bang!-Test",
