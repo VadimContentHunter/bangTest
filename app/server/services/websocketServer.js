@@ -8,10 +8,6 @@ const { parseCookies, createCookie } = require("./helper"); // Импортир�
 const url = require("url");
 const SessionHandler = require("../handlers/SessionHandler");
 
-// function updateCookies(cookies) {
-//     const sessionId = SessionHandler.getCreateSessionId(cookies);
-//     return JsonRpcFormatter.serializeRequest("updateSessionId", sessionId);
-// }
 
 module.exports = function setupWebSocketServer(server) {
     const wss = new WebSocket.Server({ server });
@@ -29,7 +25,6 @@ module.exports = function setupWebSocketServer(server) {
         // Слушаем сообщения от клиента
         ws.on("message", (message) => {
             try {
-                const requestRpc = JsonRpcFormatter.deserializeRequest(message);
                 const sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
                 ws.send(
                     JsonRpcFormatter.serializeRequest("updateSessionId", {
@@ -39,8 +34,14 @@ module.exports = function setupWebSocketServer(server) {
                     })
                 );
 
-                const currentUserUrl = SessionHandler.getSessionData(sessionId);
-                // ws.send(JsonRpcFormatter.serializeResponse(sessionId, requestRpc?.id));
+                const requestRpc = JsonRpcFormatter.deserializeRequest(message);
+                const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc);
+                const responseResult = jsonRpcMethodHandler.getResult();
+                if (responseResult !== null) {
+                    ws.send(JsonRpcFormatter.serializeResponse(responseResult, requestRpc?.id));
+                }   
+
+                // const currentUserUrl = SessionHandler.getSessionData(sessionId);
             } catch (error) {
                 if (error instanceof JsonRpcFormatterError) {
                     console.error("Ошибка при десериализации запроса:", error.message);
