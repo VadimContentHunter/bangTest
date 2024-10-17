@@ -57,6 +57,7 @@ app.get("/", (req, res) => {
             <script src="/module/vadimcontenthunter-jsonrpc-formatter/JsonRpcFormatter.js"></script>
             <script src="/js/NotificationsHtml.js"></script>
             <script src="/js/websocketClient.js"></script>
+            <script src="/js/RequestManager.js"></script>
             <script>const serverIp = "127.0.0.1:8080";</script>
         `,
         scriptEndLinks: `

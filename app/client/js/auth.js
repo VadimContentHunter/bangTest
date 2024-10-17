@@ -4,7 +4,6 @@ const StaticNotificationStatusClasses = {
     WARNING: "warning-notification",
     ERROR: "error-notification",
 };
-let idRequest = 0;
 
 // Функция проверки существования класса и его методов (включая статические)
 function checkClassAndMethods(className, requiredMethods = [], staticMethods = []) {
@@ -85,23 +84,28 @@ function clearStaticNotifications(selector) {
     }
 }
 
-function sendForm(ws, selectorForm, selectorButtonSend) {
+function sendForm(requestManager, ws, selectorForm, selectorButtonSend) {
+    if (!(requestManager instanceof RequestManager)) {
+        console.error("requestManager not instanceof RequestManager");
+        return;
+    }
+
     const form = document.querySelector(selectorForm);
     if (!(form instanceof HTMLFormElement)) {
         console.error("Form not found");
-        return; // Выходим из функции, если элемент не найден
+        return;
     }
 
     const buttonSend = document.querySelector(selectorButtonSend);
     if (!(buttonSend instanceof HTMLButtonElement)) {
         console.error("Button send not found");
-        return; // Выходим из функции, если элемент не найден
+        return;
     }
 
     const inputs = form.querySelectorAll("input");
     if (!(inputs instanceof NodeList)) {
         console.error("Inputs not found");
-        return; // Выходим из функции, если элементы не найдены
+        return;
     }
 
     buttonSend.addEventListener("click", (e) => {
@@ -115,7 +119,7 @@ function sendForm(ws, selectorForm, selectorButtonSend) {
         });
 
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JsonRpcFormatter.serializeRequest("authorization", data, ++idRequest));
+            ws.send(requestManager.addRequest("Login", data));
         } else {
             console.error("WebSocket соединение не установлено.");
         }
@@ -123,24 +127,45 @@ function sendForm(ws, selectorForm, selectorButtonSend) {
 }
 
 function updateSessionId({ sessionId, maxAge, path }) {
-    if(!sessionId || !maxAge || !path) {
+    if (!sessionId || !maxAge || !path) {
         throw new Error("Не удалось обновить сессию");
     }
 
     document.cookie = `sessionId=${sessionId}; max-age=${maxAge}; path=${path};`;
 }
 
-function responseServer(response) {
-    clearStaticNotifications(selectorStaticNotification);
-    addStaticNotification(
-        selectorStaticNotification,
-        "Имя должно содержать только латинские буквы (A-Za-z).",
-        StaticNotificationStatusClasses.WARNING
-    );
-    if (response.result) {
-        console.log(response.result);
+function responseServer(requestManager, notificationsHtml, response) {
+    if (!(notificationsHtml instanceof NotificationsHtml)) {
+        console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
+        throw new Error("Не удалось обработать ответ.");
+    }
 
-        // notificationsHtml.addNotification(response.result);
+    if (!(requestManager instanceof RequestManager)) {
+        throw new Error("requestManager not instanceof RequestManager");
+    }
+
+    if (response.result) {
+        if (typeof response.id === "number") {
+            const requestItem = requestManager.removeRequestById(response.id);
+            switch (requestItem?.nameMethod) {
+                case "Login":
+                    let message = "Ура удалось пройти аутентификацию и авторизацию!!";
+                    notificationsHtml.addNotification(message);
+                    addStaticNotification(
+                        selectorStaticNotification,
+                        message,
+                        StaticNotificationStatusClasses.SUCCESS
+                    );
+                    window.location.href = "/game";
+                    break;
+                default:
+                    throw new Error("Id ответа не найден в списке запросов. id: " + response.id);
+            }
+        } else if (response.id === null) {
+        } else {
+            console.error("response id not corrected");
+            return;
+        }
     } else if (response.error) {
         const error = JsonRpcFormatter.verificationError(response.error);
         throw new Error(error.message);
@@ -156,21 +181,21 @@ function requestServer(request) {
             break;
         default:
             throw new Error("Неизвестный запрос от сервера: " + response);
-            // console.error("Неизвестный запрос от сервера:", response);
+        // console.error("Неизвестный запрос от сервера:", response);
     }
 }
 
 function errorHandler(error, notificationsHtml) {
     if (!(notificationsHtml instanceof NotificationsHtml)) {
         console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
-    }else {
+    } else {
         notificationsHtml.addNotification(error.message);
     }
 
     clearStaticNotifications(selectorStaticNotification);
     addStaticNotification(
         selectorStaticNotification,
-        error.message,  
+        error.message,
         StaticNotificationStatusClasses.ERROR
     );
 }
@@ -217,6 +242,19 @@ function main() {
         );
     }
 
+    if (
+        !checkClassAndMethods(RequestManager, [
+            "addRequest",
+            "removeRequestById",
+            "findRequestById",
+            "getAllRequests",
+        ])
+    ) {
+        return console.log(
+            "Класс NotificationsHtml не существует или не все методы существуют в нем."
+        );
+    }
+
     if (!checkErrorClass(WebSocketClientError)) {
         return console.log(
             "Класс WebSocketClientError не существует или не является наследником Error"
@@ -227,8 +265,16 @@ function main() {
         return console.log("Функция websocketClient не существует");
     }
 
-    // Инициализация класса NotificationsHtml и работа с WebSocket
+    /****************************************************************/
     const notificationsHtml = new NotificationsHtml("header .notifications");
+    const requestManager = new RequestManager();
+
+    clearStaticNotifications(selectorStaticNotification);
+    addStaticNotification(
+        selectorStaticNotification,
+        "Имя должно содержать только латинские буквы (A-Za-z).",
+        StaticNotificationStatusClasses.WARNING
+    );
     // for (let index = 0; index < 50; index++) {
     //     notificationsHtml.addNotification("Тестовое сообщение num: " + index);
     // }
@@ -236,21 +282,30 @@ function main() {
         serverIp,
         (data) => {
             try {
-                responseServer(JsonRpcFormatter.deserializeResponse(data));
+                responseServer(
+                    requestManager,
+                    notificationsHtml,
+                    JsonRpcFormatter.deserializeResponse(data)
+                );
             } catch (error) {
                 if (error instanceof JsonRpcFormatterError) {
                     try {
                         requestServer(JsonRpcFormatter.deserializeRequest(data));
                     } catch (error) {
                         errorHandler(error, notificationsHtml);
-                    }   
+                    }
                 } else {
                     errorHandler(error, notificationsHtml);
                 }
             }
         },
         (ws) => {
-            sendForm(ws, "main form.form-login-system", "main form.form-login-system button");
+            sendForm(
+                requestManager,
+                ws,
+                "main form.form-login-system",
+                "main form.form-login-system button"
+            );
         }
     );
 }
