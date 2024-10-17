@@ -71,13 +71,7 @@ class JsonRpcFormatter {
 
             return parsedRequest;
         } catch (error) {
-            // Проверка на ошибки парсинга JSON
-            if (error instanceof SyntaxError) {
-                throw new JsonRpcFormatterError("Invalid JSON format");
-            }
-
-            // Выброс других ошибок, если это не ошибка синтаксиса
-            throw new JsonRpcFormatterError(error.message);
+            throw error;
         }
     }
 
@@ -157,13 +151,7 @@ class JsonRpcFormatter {
 
             return parsedResponse;
         } catch (error) {
-            // Проверка на ошибки парсинга JSON
-            if (error instanceof SyntaxError) {
-                throw new JsonRpcFormatterError("Invalid JSON format");
-            }
-
-            // Выброс других ошибок, если это не ошибка синтаксиса
-            throw new JsonRpcFormatterError(error.message);
+            throw error;
         }
     }
 
