@@ -14,7 +14,10 @@
 .notifications ul {
     position: absolute;
     margin-top: 72px;
+    height: calc(100vh - 72px - 20px);
+    padding: 0px 20px;
     color: #333;
+    overflow: hidden;
 
     display: flex;
     flex-direction: column;

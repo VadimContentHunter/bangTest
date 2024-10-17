@@ -143,7 +143,7 @@ function responseServer(response) {
         // notificationsHtml.addNotification(response.result);
     } else if (response.error) {
         const error = JsonRpcFormatter.verificationError(response.error);
-        notificationsHtml.addNotification(error.message);
+        throw new Error(error.message);
     } else {
         console.error("Неизвестный ответ:", response);
     }
@@ -155,27 +155,24 @@ function requestServer(request) {
             updateSessionId(request?.params);
             break;
         default:
-            console.error("Неизвестный запрос от сервера:", response);
+            throw new Error("Неизвестный запрос от сервера: " + response);
+            // console.error("Неизвестный запрос от сервера:", response);
     }
 }
 
 function errorHandler(error, notificationsHtml) {
-    if (error instanceof JsonRpcFormatterError && notificationsHtml instanceof NotificationsHtml) {
+    if (!(notificationsHtml instanceof NotificationsHtml)) {
+        console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
+    }else {
         notificationsHtml.addNotification(error.message);
-        clearStaticNotifications(selectorStaticNotification);
-        addStaticNotification(
-            selectorStaticNotification,
-            error.message,
-            StaticNotificationStatusClasses.ERROR
-        );
-    } else {
-        clearStaticNotifications(selectorStaticNotification);
-        addStaticNotification(
-            selectorStaticNotification,
-            error.message,
-            StaticNotificationStatusClasses.ERROR
-        );
     }
+
+    clearStaticNotifications(selectorStaticNotification);
+    addStaticNotification(
+        selectorStaticNotification,
+        error.message,  
+        StaticNotificationStatusClasses.ERROR
+    );
 }
 
 // Основная логика
@@ -232,6 +229,9 @@ function main() {
 
     // Инициализация класса NotificationsHtml и работа с WebSocket
     const notificationsHtml = new NotificationsHtml("header .notifications");
+    // for (let index = 0; index < 50; index++) {
+    //     notificationsHtml.addNotification("Тестовое сообщение num: " + index);
+    // }
     websocketClient(
         serverIp,
         (data) => {
@@ -243,7 +243,7 @@ function main() {
                         requestServer(JsonRpcFormatter.deserializeRequest(data));
                     } catch (error) {
                         errorHandler(error, notificationsHtml);
-                    }
+                    }   
                 } else {
                     errorHandler(error, notificationsHtml);
                 }

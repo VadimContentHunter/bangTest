@@ -34,3 +34,5 @@ class JsonRpcMethodHandler {
         };
     }
 }
+
+module.exports = JsonRpcMethodHandler;
