@@ -1,30 +1,48 @@
 const ServerError = require("../Errors/ServerError");
+const ValidateLoginError = require("../Errors/ValidateLoginError");
 const { parseJson } = require("../services/helper");
 
 class AuthHandler {
-  constructor(input) {
-    let json = parseJson(input);
-
-    // Проверка наличия и типа поля 'name'
-    if (typeof json.name !== "string" || json.name === "") {
-      throw new ServerError("Неправильное имя пользователя", 401);
+    constructor(name = null, sessionId = null) {
+        this.name = name;
+        this.sessionId = sessionId;
     }
 
-    // Инициализация поля 'name'
-    this.name = json.name;
-  }
+    /**
+     * Проверка подлинности личности пользователя
+     */
+    Authentication() {
+        this.validateName(this.name);
+        return true;
+    }
 
-  /**
-   * Проверка подлинности личности пользователя
-   */
-  Authentication() {
-    // Ваша логика
-  }
+    /**
+     * Предоставление пользователю прав
+     */
+    Authorization() {
+        return true;
+    }
 
-  /**
-   * Предоставление пользователю прав
-   */
-  Authorization() {
-    // Ваша логика
-  }
+    validateName(name) {
+        // Проверка типа
+        if (typeof name !== "string") {
+            throw new ValidateLoginError("Имя должно быть строкой", 1);
+        }
+
+        // Проверка длины
+        if (name.length <= 4) {
+            throw new ValidateLoginError("Имя должно содержать более 4 символов", 1);
+        }
+
+        // Проверка на разрешенные символы (A-z)
+        const regex = /^[A-Za-z]+$/; // Регулярное выражение для проверки только латинских букв
+        if (!regex.test(name)) {
+            throw new ValidateLoginError(
+                "Имя может содержать только латинские буквы (A-Z, a-z)",
+                1
+            );
+        }
+    }
 }
+
+module.exports = AuthHandler;
