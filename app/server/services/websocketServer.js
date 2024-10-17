@@ -7,7 +7,17 @@ const {
 const { parseCookies, createCookie } = require("./helper"); // Импортируем функции из хелпера
 const url = require("url");
 const SessionHandler = require("../handlers/SessionHandler");
+const JsonRpcMethodHandler = require("./JsonRpcMethodHandler");
 
+function serverInfo(sessionId, clientIp, message) {
+    console.log({
+        calling: "setupWebSocketServer",
+        sessionId: sessionId,
+        clientIp: clientIp,
+        message: message,
+        timestamp: new Date().toLocaleString(),
+    });
+}
 
 module.exports = function setupWebSocketServer(server) {
     const wss = new WebSocket.Server({ server });
@@ -24,8 +34,8 @@ module.exports = function setupWebSocketServer(server) {
 
         // Слушаем сообщения от клиента
         ws.on("message", (message) => {
+            const sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
             try {
-                const sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
                 ws.send(
                     JsonRpcFormatter.serializeRequest("updateSessionId", {
                         sessionId: sessionId,
@@ -39,17 +49,16 @@ module.exports = function setupWebSocketServer(server) {
                 const responseResult = jsonRpcMethodHandler.getResult();
                 if (responseResult !== null) {
                     ws.send(JsonRpcFormatter.serializeResponse(responseResult, requestRpc?.id));
-                }   
+                }
 
                 // const currentUserUrl = SessionHandler.getSessionData(sessionId);
             } catch (error) {
-                if (error instanceof JsonRpcFormatterError) {
-                    console.error("Ошибка при десериализации запроса:", error.message);
-                    message = error.message;
-                }
-                message = error.message;
-                ws.send(JsonRpcFormatter.formatError(error.code, error.message));
-                console.log("Error Message: " + message + "Code: " + error.code);
+                ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
+                serverInfo(
+                    sessionId,
+                    ip,
+                    "Error Message: " + error.message + "; Code: " + error.code ?? -32000
+                );
             }
 
             // Отправляем полученное сообщение обратно всем клиентам

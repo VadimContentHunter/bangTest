@@ -1,3 +1,5 @@
+const Login = require("../controllers/Login");
+
 class JsonRpcMethodHandler {
     constructor(jsonRpcRequest) {
         // Проверка на валидность jsonRpcRequest
@@ -30,7 +32,7 @@ class JsonRpcMethodHandler {
     // Свойство, хранящее зарегистрированные классы
     get registeredClasses() {
         return {
-            exampleMethod: ExampleMethod,
+            Login: Login,
         };
     }
 }
