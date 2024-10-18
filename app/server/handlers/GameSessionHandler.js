@@ -59,7 +59,7 @@ class GameSessionHandler {
     }
 
     _validateHistory() {
-        return Array.isArray(this.history) && this.history.length > 0;
+        return Array.isArray(this.history);
     }
 
     // Добавление / обновление head
