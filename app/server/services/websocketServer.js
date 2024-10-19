@@ -8,6 +8,9 @@ const { parseCookies, createCookie } = require("./helper"); // Импортир�
 const url = require("url");
 const SessionHandler = require("../handlers/SessionHandler");
 const JsonRpcMethodHandler = require("./JsonRpcMethodHandler");
+const GameHandler = require("../handlers/GameHandler");
+const aResponseHandler = require("../interfaces/aResponseHandler");
+const { log } = require("console");
 
 function serverInfo(sessionId, clientIp, message) {
     console.log({
@@ -19,7 +22,11 @@ function serverInfo(sessionId, clientIp, message) {
     });
 }
 
-module.exports = function setupWebSocketServer(server) {
+module.exports = function setupWebSocketServer(server, gameHandler) {
+    if (!(gameHandler instanceof GameHandler)) {
+        throw new Error("gameHandler must be an instance of GameHandler");
+    }
+
     const wss = new WebSocket.Server({ server });
 
     // Событие при установлении нового соединения
@@ -45,20 +52,33 @@ module.exports = function setupWebSocketServer(server) {
                 );
 
                 const requestRpc = JsonRpcFormatter.deserializeRequest(message);
+                requestRpc.params.sessionId = sessionId;
+                requestRpc.params.gameHandler = gameHandler;
+
                 const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc);
-                const responseResult = jsonRpcMethodHandler.getResult();
-                if (responseResult !== null) {
-                    ws.send(JsonRpcFormatter.serializeResponse(responseResult, requestRpc?.id));
+
+                if (jsonRpcMethodHandler.instance instanceof aResponseHandler) {
+                    ws.send(
+                        JsonRpcFormatter.serializeResponse(
+                            jsonRpcMethodHandler.instance.getResult(),
+                            requestRpc?.id
+                        )
+                    );
                 }
 
                 // const currentUserUrl = SessionHandler.getSessionData(sessionId);
+                // if (currentUserUrl === "/playroom") {
+                //     jsonRpcMethodHandler.setAdditionalParams(gameHandler);
+                // }
             } catch (error) {
                 ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
-                serverInfo(
-                    sessionId,
-                    ip,
-                    "Error Message: " + error.message + "; Code: " + error.code ?? -32000
-                );
+                console.log(error);
+
+                // serverInfo(
+                //     sessionId,
+                //     ip,
+                //     "Error Message: " + error.message + "; Code: " + error.code ?? -32000
+                // );
             }
 
             // Отправляем полученное сообщение обратно всем клиентам

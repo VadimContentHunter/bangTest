@@ -1,17 +1,24 @@
 const ServerError = require("../Errors/ServerError");
 const AuthHandler = require("../handlers/AuthHandler");
+const aResponseHandler = require("../interfaces/aResponseHandler");
+const GameHandler = require("../handlers/GameHandler");
 
-class Login {
+class Login extends aResponseHandler {
     constructor(params) {
-        this.isStatusLogin = false;
+        super();
         console.log("Login:", params);
 
-        let authHandler = new AuthHandler(params?.user_name);
-        if (authHandler.Authentication()) {
-            if (authHandler.Authentication()) {
-                this.isStatusLogin = true;
-            }
-        }
+        this.sessionId = params?.sessionId;
+        this.userName = params?.user_name;
+        this.gameHandler = params?.gameHandler;
+        this.isStatusLogin = false;
+
+        this.authenticate();
+    }
+
+    authenticate() {
+        const authHandler = new AuthHandler(this.userName, this.sessionId, this.gameHandler);
+        this.isStatusLogin = authHandler.Authentication() && authHandler.Authorization();
     }
 
     getResult() {

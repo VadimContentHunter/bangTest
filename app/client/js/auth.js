@@ -156,7 +156,7 @@ function responseServer(requestManager, notificationsHtml, response) {
                         message,
                         StaticNotificationStatusClasses.SUCCESS
                     );
-                    window.location.href = "/game";
+                    window.location.href = "/playroom";
                     break;
                 default:
                     throw new Error("Id ответа не найден в списке запросов. id: " + response.id);

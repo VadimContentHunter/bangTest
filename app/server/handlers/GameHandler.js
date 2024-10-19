@@ -1,4 +1,6 @@
 const GameHandlerError = require("../Errors/GameHandlerError");
+const ValidatePlayerError = require("../Errors/ValidatePlayerError");
+const ValidateLoginError = require("../Errors/ValidateLoginError");
 const Player = require("../models/Player");
 const PlayerCollection = require("./PlayerCollection");
 const SessionHandler = require("./SessionHandler");
@@ -9,6 +11,21 @@ class GameHandler {
     }
 
     /**
+     * Обрабатывает ошибки, выбрасывая подходящие исключения.
+     * @param {Error} error - Ошибка, которую нужно обработать.
+     * @throws {GameHandlerError|ValidatePlayerError|ValidateLoginError} Пробрасывает соответствующую ошибку.
+     */
+    handleError(error) {
+        if (error instanceof ValidatePlayerError) {
+            throw error;
+        } else if (error instanceof ValidateLoginError) {
+            throw error;
+        } else {
+            throw new GameHandlerError(error.message);
+        }
+    }
+
+    /**
      * Добавляет игрока в онлайн с заданным именем и sessionId.
      * @param {string} name - Имя игрока.
      * @param {string} sessionId - ID сессии.
@@ -16,33 +33,13 @@ class GameHandler {
      */
     addPlayerOnline(name, sessionId) {
         try {
-            // Проверка существования сессии
-            if (!SessionHandler.getSessionId(sessionId)) {
-                throw new GameHandlerError(`Сессия с ID "${sessionId}" не найдена.`);
-            }
-
-            // Проверка, существует ли игрок с таким именем и активной сессией
-            const existingPlayer = this.playerOnline.getPlayerByName(name);
-            if (existingPlayer && existingPlayer.sessionId === sessionId) {
-                throw new GameHandlerError(
-                    `Игрок с именем "${name}" уже занят сессией "${sessionId}".`
-                );
-            } else if (existingPlayer) {
-                throw new GameHandlerError(`Игрок с именем "${name}" уже занят другой сессией.`);
-            }
-
-            // Создаем нового игрока и добавляем его в коллекцию
-            const player = new Player(name, sessionId); // Создаем игрока с sessionId
-            this.playerOnline.addPlayer(player); // Добавляем игрока в коллекцию
-
-            console.log(
-                `Игрок ${name} добавлен в онлайн с ID ${player.id} и сессией ${sessionId}.`
-            );
+            this.playerOnline.addPlayer(name, sessionId); // Добавляем игрока в коллекцию
+            console.log(`Игрок ${name} и сессией ${sessionId} добавлен в онлайн.`);
 
             // Добавляем игрока в сессии
-            SessionHandler.addParametersToSession(sessionId, { playerId: player.id });
+            SessionHandler.addParametersToSession(sessionId, { playerName: name });
         } catch (error) {
-            throw new GameHandlerError(error.message);
+            this.handleError(error);
         }
     }
 
@@ -54,10 +51,14 @@ class GameHandler {
      */
     updatePlayerOnlineByName(name, updates) {
         try {
+            if (typeof name !== "string" || name.trim() === "") {
+                throw new GameHandlerError("Имя должно быть непустой строкой.");
+            }
+
             this.playerOnline.updatePlayer(name, updates); // Обновляем игрока в коллекции
             console.log(`Игрок ${name} обновлен.`);
         } catch (error) {
-            throw new GameHandlerError(error.message);
+            this.handleError(error);
         }
     }
 
@@ -69,6 +70,10 @@ class GameHandler {
      */
     updateSessionData(sessionId, params) {
         try {
+            if (typeof sessionId !== "string" || sessionId.trim() === "") {
+                throw new GameHandlerError("ID сессии должно быть непустой строкой.");
+            }
+
             const sessionData = SessionHandler.getSessionData(sessionId);
             if (!sessionData) {
                 throw new GameHandlerError(`Сессия с ID "${sessionId}" не найдена.`);
@@ -77,7 +82,7 @@ class GameHandler {
             SessionHandler.addParametersToSession(sessionId, params); // Обновляем параметры сессии
             console.log(`Данные сессии ${sessionId} обновлены.`);
         } catch (error) {
-            throw new GameHandlerError(error.message);
+            this.handleError(error);
         }
     }
 
@@ -88,10 +93,14 @@ class GameHandler {
      */
     removePlayerOnlineByName(name) {
         try {
+            if (typeof name !== "string" || name.trim() === "") {
+                throw new GameHandlerError("Имя должно быть непустой строкой.");
+            }
+
             this.playerOnline.removePlayer(name); // Удаляем игрока из коллекции
             console.log(`Игрок ${name} удален из онлайн.`);
         } catch (error) {
-            throw new GameHandlerError(error.message);
+            this.handleError(error);
         }
     }
 
@@ -102,6 +111,10 @@ class GameHandler {
      */
     removePlayerBySession(sessionId) {
         try {
+            if (typeof sessionId !== "string" || sessionId.trim() === "") {
+                throw new GameHandlerError("ID сессии должно быть непустой строкой.");
+            }
+
             const player = this.playerOnline.getPlayerBySessionId(sessionId);
             if (!player) {
                 throw new GameHandlerError(`Игрок с сессией "${sessionId}" не найден.`);
@@ -111,7 +124,30 @@ class GameHandler {
             SessionHandler.deleteSession(sessionId); // Удаляем сессию
             console.log(`Игрок с сессией ${sessionId} был удален.`);
         } catch (error) {
-            throw new GameHandlerError(error.message);
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Проверяет наличие игрока онлайн по sessionId.
+     * @param {string} sessionId - ID сессии для проверки.
+     * @returns {Player|null} Игрок, если найден; null, если игрок не найден.
+     */
+    findPlayerBySession(sessionId) {
+        try {
+            if (typeof sessionId !== "string" || sessionId.trim() === "") {
+                throw new GameHandlerError("ID сессии должно быть непустой строкой.");
+            }
+
+            const player = this.playerOnline.getPlayerBySessionId(sessionId);
+            if (!player) {
+                console.log(`Игрок с сессией "${sessionId}" не найден.`);
+                return null; // Игрок не найден
+            }
+            console.log(`Игрок с сессией "${sessionId}" найден:`, player);
+            return player; // Игрок найден
+        } catch (error) {
+            this.handleError(error);
         }
     }
 

@@ -1,46 +1,71 @@
 const ServerError = require("../Errors/ServerError");
 const ValidateLoginError = require("../Errors/ValidateLoginError");
-const { parseJson } = require("../services/helper");
+const GameHandler = require("../handlers/GameHandler");
+const SessionHandler = require("../handlers/SessionHandler");
 
+/**
+ * Класс AuthHandler обрабатывает аутентификацию и авторизацию пользователей.
+ */
 class AuthHandler {
-    constructor(name = null, sessionId = null) {
+    /**
+     * Создает экземпляр AuthHandler.
+     * @param {string|null} name - Имя пользователя.
+     * @param {string|null} sessionId - ID сессии пользователя.
+     * @param {GameHandler|null} gameHandler - Обработчик игры.
+     */
+    constructor(name = null, sessionId = null, gameHandler = null) {
         this.name = name;
         this.sessionId = sessionId;
+        this.gameHandler = gameHandler;
     }
 
     /**
-     * Проверка подлинности личности пользователя
+     * Проверяет подлинность личности пользователя.
+     * @returns {boolean} Возвращает true, если аутентификация прошла успешно.
+     * @throws {ValidateLoginError} Если имя или sessionId некорректны.
      */
     Authentication() {
         this.validateName(this.name);
+        this.validateSessionId(this.sessionId);
         return true;
     }
 
     /**
-     * Предоставление пользователю прав
+     * Предоставляет пользователю права.
+     * @returns {boolean} Возвращает true, если авторизация прошла успешно.
+     * @throws {ValidateLoginError} Если игра не инициализирована.
      */
     Authorization() {
+        if (!(this.gameHandler instanceof GameHandler)) {
+            throw new ValidateLoginError("Игра не была инициализирована.", 500);
+        }
+
+        this.gameHandler.addPlayerOnline(this.name, this.sessionId);
         return true;
     }
 
+    /**
+     * Проверяет имя пользователя.
+     * @param {string} name - Имя пользователя.
+     * @throws {ValidateLoginError} Если имя некорректно.
+     */
     validateName(name) {
-        // Проверка типа
-        if (typeof name !== "string") {
-            throw new ValidateLoginError("Имя должно быть строкой", 1);
-        }
-
-        // Проверка длины
-        if (name.length <= 4) {
-            throw new ValidateLoginError("Имя должно содержать более 4 символов", 1);
-        }
-
-        // Проверка на разрешенные символы (A-z)
-        const regex = /^[A-Za-z]+$/; // Регулярное выражение для проверки только латинских букв
-        if (!regex.test(name)) {
+        if (typeof name !== "string" || name.length <= 4 || !/^[A-Za-z]+$/.test(name)) {
             throw new ValidateLoginError(
-                "Имя может содержать только латинские буквы (A-Z, a-z)",
+                "Имя должно быть строкой, содержать более 4 символов и только латинские буквы (A-Z, a-z).",
                 1
             );
+        }
+    }
+
+    /**
+     * Проверяет корректность ID сессии.
+     * @param {string} sessionId - ID сессии.
+     * @throws {ValidateLoginError} Если sessionId некорректен.
+     */
+    validateSessionId(sessionId) {
+        if (!SessionHandler.getSessionId(sessionId)) {
+            throw new ValidateLoginError("Session ID is required for login.", 1);
         }
     }
 }

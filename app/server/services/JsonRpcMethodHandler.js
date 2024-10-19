@@ -1,6 +1,25 @@
-const Login = require("../controllers/Login");
+const aResponseHandler = require("../interfaces/aResponseHandler");
 
+// Реестр классов
+const classRegistry = {
+    Login: require("../controllers/Login"),
+    // другие классы
+};
+
+/**
+ * Класс JsonRpcMethodHandler обрабатывает JSON-RPC запросы, динамически
+ * создавая экземпляры соответствующих классов, которые наследуют aResponseHandler.
+ */
 class JsonRpcMethodHandler {
+    /**
+     * Конструктор принимает JSON-RPC запрос и создает экземпляр класса
+     * на основе метода запроса.
+     * @param {Object} jsonRpcRequest - JSON-RPC объект запроса.
+     * @param {string} jsonRpcRequest.method - Имя метода JSON-RPC.
+     * @param {number|null} jsonRpcRequest.id - ID запроса или null.
+     * @param {Object} [jsonRpcRequest.params] - Параметры запроса.
+     * @throws {Error} Если jsonRpcRequest невалиден или не удается найти класс.
+     */
     constructor(jsonRpcRequest) {
         // Проверка на валидность jsonRpcRequest
         if (
@@ -17,23 +36,23 @@ class JsonRpcMethodHandler {
             throw new Error(`Class '${jsonRpcRequest.method}' not found`);
         }
 
+        // Проверка на наследование от aResponseHandler
         this.instance = new className(jsonRpcRequest.params ?? {});
+        if (!(this.instance instanceof aResponseHandler)) {
+            this.instance = null;
+            throw new Error(
+                `Class '${jsonRpcRequest.method}' не является наследником aResponseHandler`
+            );
+        }
     }
 
-    // Метод для получения класса по имени метода
+    /**
+     * Метод для получения класса по имени метода JSON-RPC.
+     * @param {string} methodName - Имя метода JSON-RPC.
+     * @returns {Function|null} Возвращает класс, соответствующий методу, или null.
+     */
     getClass(methodName) {
-        return this.registeredClasses[methodName] || null;
-    }
-
-    getResult() {
-        return this.instance.getResult?.() ?? null;
-    }
-
-    // Свойство, хранящее зарегистрированные классы
-    get registeredClasses() {
-        return {
-            Login: Login,
-        };
+        return classRegistry[methodName] || null;
     }
 }
 
