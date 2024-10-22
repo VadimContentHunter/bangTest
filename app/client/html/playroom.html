@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{pageTitle}}</title>
+
+        {{cssLinks}} {{scriptHeadLinks}}
+    </head>
+    <body>
+        <div class="container-main">
+            <header>
+                <div class="container-inner">
+                    <h1>{{pageTitle}}</h1>
+
+                    <section class="menu-line-mini">
+                        <article class="notifications">
+                            <div class="base-icon-medium">
+                                <i class="icon-notification-fill"></i>
+                            </div>
+                            <ul></ul>
+                        </article>
+                    </section>
+                </div>
+            </header>
+
+            <main>{{content}}</main>
+
+            <footer>
+                <section class="developer-info">
+                    <h2>Информация о разработчике</h2>
+                    <p><strong>Имя:</strong> Иван Иванов</p>
+                    <p><strong>Email:</strong> ivan.ivanov@example.com</p>
+                    <p>
+                        <strong>Описание:</strong> Разработчик веб-приложений с опытом работы более
+                        5 лет. Увлекается JavaScript и современными фреймворками.
+                    </p>
+                </section>
+            </footer>
+        </div>
+    </body>
+    {{scriptEndLinks}}
+</html>

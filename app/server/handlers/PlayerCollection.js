@@ -75,6 +75,14 @@ class PlayerCollection {
     }
 
     /**
+     * Возвращает массив всех игроков, которые являются экземплярами Player.
+     * @returns {Player[]} Массив игроков.
+     */
+    getPlayers() {
+        return Object.values(this.players).filter((player) => player instanceof Player);
+    }
+
+    /**
      * Обновляет информацию об игроке.
      * @param {number} id - ID игрока.
      * @param {Object} updates - Объект с обновляемыми данными.
@@ -110,6 +118,24 @@ class PlayerCollection {
         } else {
             throw new ValidatePlayerError("Игрок не найден");
         }
+    }
+
+    /**
+     * Подсчитывает общее количество игроков, которые являются экземплярами Player.
+     * @returns {number} Количество игроков.
+     */
+    countAllPlayers() {
+        return Object.values(this.players).filter((player) => player instanceof Player).length;
+    }
+
+    /**
+     * Подсчитывает количество игроков с активной сессией (sessionId != null), которые являются экземплярами Player.
+     * @returns {number} Количество игроков с активной сессией.
+     */
+    countPlayersWithSession() {
+        return Object.values(this.players).filter(
+            (player) => player instanceof Player && player.sessionId !== null
+        ).length;
     }
 }
 

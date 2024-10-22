@@ -134,6 +134,21 @@ function updateSessionId({ sessionId, maxAge, path }) {
     document.cookie = `sessionId=${sessionId}; max-age=${maxAge}; path=${path};`;
 }
 
+function updateUserCount({ quantity }, selector) {
+    if (typeof quantity !== "number") {
+        throw new Error("Не удалось обновить количество игроков онлайн.");
+    }
+
+    const userCountElement = document.querySelector(selector);
+    if (!(userCountElement instanceof HTMLElement)) {
+        throw new Error("Не удалось найти элемент для кол-ва игроков онлайн.");
+    }
+
+    userCountElement.innerText = quantity;
+}
+
+/**=============================================================================================**/
+
 function responseServer(requestManager, notificationsHtml, response) {
     if (!(notificationsHtml instanceof NotificationsHtml)) {
         console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
@@ -178,6 +193,9 @@ function requestServer(request) {
     switch (request.method) {
         case "updateSessionId":
             updateSessionId(request?.params);
+            break;
+        case "updateUserCount":
+            updateUserCount(request?.params, "#user-count");
             break;
         default:
             throw new Error("Неизвестный запрос от сервера: " + response);
