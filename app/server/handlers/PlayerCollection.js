@@ -36,6 +36,10 @@ class PlayerCollection {
             throw new ValidatePlayerError("sessionId должен быть строкой или null.");
         }
 
+        if (sessionId !== null && this.getPlayerBySessionId(sessionId) !== null) {
+            throw new ValidatePlayerError("Игрок с таким sessionId уже в игре.");
+        }
+
         // Проверка на существование игрока
         if (this.getPlayerByName(name) !== null) {
             throw new ValidatePlayerError(`Игрок с именем "${name}" уже существует.`);
@@ -82,13 +86,8 @@ class PlayerCollection {
         return Object.values(this.players).filter((player) => player instanceof Player);
     }
 
-    /**
-     * Обновляет информацию об игроке.
-     * @param {number} id - ID игрока.
-     * @param {Object} updates - Объект с обновляемыми данными.
-     * @throws {ValidatePlayerError} Если игрок не найден или ID не является числом.
-     */
-    updatePlayer(id, updates) {
+    // Обновляет информацию об игроке по ID
+    updatePlayerById(id, updates) {
         if (typeof id !== "number") {
             throw new ValidatePlayerError("ID должен быть числом.");
         }
@@ -96,8 +95,39 @@ class PlayerCollection {
         const player = this.getPlayerById(id);
         if (player) {
             player.update(updates);
+            console.log(`Игрок с ID ${id} обновлён.`);
         } else {
             throw new ValidatePlayerError("Игрок не найден");
+        }
+    }
+
+    // Обновляет информацию об игроке по имени
+    updatePlayerByName(name, updates) {
+        if (typeof name !== "string" || name.length === 0) {
+            throw new ValidatePlayerError("Имя должно быть строкой и не должно быть пустым.");
+        }
+
+        const player = this.getPlayerByName(name);
+        if (player) {
+            player.update(updates);
+            console.log(`Игрок с именем "${name}" обновлён.`);
+        } else {
+            throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
+        }
+    }
+
+    // Обновляет информацию об игроке по sessionId
+    updatePlayerBySessionId(sessionId, updates) {
+        if (typeof sessionId !== "string") {
+            throw new ValidatePlayerError("sessionId должен быть строкой.");
+        }
+
+        const player = this.getPlayerBySessionId(sessionId);
+        if (player) {
+            player.update(updates);
+            console.log(`Игрок с sessionId "${sessionId}" обновлён.`);
+        } else {
+            throw new ValidatePlayerError(`Игрок с sessionId "${sessionId}" не найден.`);
         }
     }
 
@@ -106,7 +136,7 @@ class PlayerCollection {
      * @param {number} id - ID игрока.
      * @throws {ValidatePlayerError} Если игрок не найден или ID не является числом.
      */
-    removePlayer(id) {
+    removePlayerById(id) {
         if (typeof id !== "number") {
             throw new ValidatePlayerError("ID должен быть числом.");
         }
@@ -117,6 +147,33 @@ class PlayerCollection {
             console.log(`Игрок с ID ${id} удалён.`);
         } else {
             throw new ValidatePlayerError("Игрок не найден");
+        }
+    }
+
+    /**
+     * Удаляет всех игроков.
+     */
+    removeAllPlayers() {
+        this.players = {};
+        this.nextId = 1;
+    }
+
+    /**
+     * Удаляет игрока по имени.
+     * @param {string} name - Имя игрока.
+     * @throws {ValidatePlayerError} Если игрок не найден или name не является строкой.
+     */
+    removePlayerByName(name) {
+        if (typeof name !== "string" || name.length === 0) {
+            throw new ValidatePlayerError("Имя должно быть строкой и не должно быть пустым.");
+        }
+
+        const player = this.getPlayerByName(name); // Используем метод getPlayerByName для поиска игрока
+        if (player) {
+            delete this.players[player.id]; // Удаляем игрока по его ID
+            console.log(`Игрок с именем "${name}" и ID ${player.id} удалён.`);
+        } else {
+            throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
         }
     }
 

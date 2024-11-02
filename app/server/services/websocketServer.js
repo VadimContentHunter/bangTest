@@ -8,19 +8,10 @@ const { parseCookies, createCookie } = require("./helper"); // Импортир�
 const url = require("url");
 const SessionHandler = require("../handlers/SessionHandler");
 const JsonRpcMethodHandler = require("./JsonRpcMethodHandler");
+const GameHandlerError = require("../Errors/GameHandlerError");
 const GameHandler = require("../handlers/GameHandler");
 const aResponseHandler = require("../interfaces/aResponseHandler");
 const { log } = require("console");
-
-function serverInfo(sessionId, clientIp, message) {
-    console.log({
-        calling: "setupWebSocketServer",
-        sessionId: sessionId,
-        clientIp: clientIp,
-        message: message,
-        timestamp: new Date().toLocaleString(),
-    });
-}
 
 module.exports = function setupWebSocketServer(server, gameHandler) {
     if (!(gameHandler instanceof GameHandler)) {
@@ -36,8 +27,16 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
         const ip = clientIp.startsWith("::ffff:") ? clientIp.slice(7) : clientIp;
         console.log(`WebSocket: Новое соединение установлено с IP: ${ip}`);
 
-        // Отправляем сообщение клиенту, когда он подключается
-        ws.send("Добро пожаловать на сервер!");
+        // Отправляем сообщение всем клиентам, когда клиент подключается
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                ws.send(
+                    JsonRpcFormatter.serializeRequest("updateUserCount", {
+                        quantity: gameHandler.countPlayersOnline(),
+                    })
+                );
+            }
+        });
 
         // Слушаем сообщения от клиента
         ws.on("message", (message) => {
@@ -56,7 +55,6 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
                 requestRpc.params.gameHandler = gameHandler;
 
                 const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc);
-
                 if (jsonRpcMethodHandler.instance instanceof aResponseHandler) {
                     ws.send(
                         JsonRpcFormatter.serializeResponse(
@@ -91,6 +89,28 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
 
         // Обрабатываем отключение клиента
         ws.on("close", () => {
+            try {
+                const sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
+                gameHandler.removePlayerBySession(sessionId);
+                // console.log(gameHandler.countPlayersOnline());
+                
+
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        ws.send(
+                            JsonRpcFormatter.serializeRequest(
+                                "updateUserCount",
+                                gameHandler.countPlayersOnline()
+                            )
+                        );
+                    }
+                });
+            } catch (error) {
+                if (error instanceof GameHandlerError) {
+                    console.log(error.message);
+                }
+            }
+
             console.log("WebSocket: Соединение закрыто");
         });
     });

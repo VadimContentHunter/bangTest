@@ -4,10 +4,13 @@ const ValidateLoginError = require("../Errors/ValidateLoginError");
 const Player = require("../models/Player");
 const PlayerCollection = require("./PlayerCollection");
 const SessionHandler = require("./SessionHandler");
+const GameSessionHandler = require("./GameSessionHandler");
 
 class GameHandler {
     constructor() {
         this.playerOnline = new PlayerCollection(); // Используем коллекцию игроков
+        this.gameSessionHandler = new GameSessionHandler();
+        this.gameSessionHandler.createGameSession();
     }
 
     /**
@@ -33,13 +36,13 @@ class GameHandler {
      */
     addPlayerOnline(name, sessionId) {
         try {
+            this.gameSessionHandler.addOrUpdatePlayer(name, sessionId);
+
             this.playerOnline.addPlayer(name, sessionId); // Добавляем игрока в коллекцию
             console.log(`Игрок ${name} и сессией ${sessionId} добавлен в онлайн.`);
-
-            // Добавляем игрока в сессии
-            SessionHandler.addParametersToSession(sessionId, { playerName: name });
         } catch (error) {
             this.handleError(error);
+            return;
         }
     }
 
@@ -79,7 +82,7 @@ class GameHandler {
                 throw new GameHandlerError(`Сессия с ID "${sessionId}" не найдена.`);
             }
 
-            SessionHandler.addParametersToSession(sessionId, params); // Обновляем параметры сессии
+            // SessionHandler.addParametersToSession(sessionId, params); // Обновляем параметры сессии
             console.log(`Данные сессии ${sessionId} обновлены.`);
         } catch (error) {
             this.handleError(error);
@@ -97,7 +100,7 @@ class GameHandler {
                 throw new GameHandlerError("Имя должно быть непустой строкой.");
             }
 
-            this.playerOnline.removePlayer(name); // Удаляем игрока из коллекции
+            this.playerOnline.removePlayerByName(name); // Удаляем игрока из коллекции
             console.log(`Игрок ${name} удален из онлайн.`);
         } catch (error) {
             this.handleError(error);
@@ -120,8 +123,8 @@ class GameHandler {
                 throw new GameHandlerError(`Игрок с сессией "${sessionId}" не найден.`);
             }
 
-            this.playerOnline.removePlayer(player.id); // Удаляем игрока из коллекции
-            SessionHandler.deleteSession(sessionId); // Удаляем сессию
+            this.playerOnline.removePlayerById(player.id); // Удаляем игрока из коллекции
+            // SessionHandler.deleteSession(sessionId); // Удаляем сессию
             console.log(`Игрок с сессией ${sessionId} был удален.`);
         } catch (error) {
             this.handleError(error);
@@ -135,12 +138,8 @@ class GameHandler {
      */
     findPlayerBySession(sessionId) {
         try {
-            if (typeof sessionId !== "string" || sessionId.trim() === "") {
-                throw new GameHandlerError("ID сессии должно быть непустой строкой.");
-            }
-
             const player = this.playerOnline.getPlayerBySessionId(sessionId);
-            if (!player) {
+            if (!(player instanceof Player)) {
                 console.log(`Игрок с сессией "${sessionId}" не найден.`);
                 return null; // Игрок не найден
             }
@@ -156,8 +155,7 @@ class GameHandler {
      * @returns {number} Количество игроков онлайн.
      */
     countPlayersOnline() {
-        return this.playerOnline.getAllPlayers().filter((player) => player.sessionId !== null)
-            .length;
+        return this.playerOnline.countPlayersWithSession();
     }
 
     /**
@@ -165,7 +163,7 @@ class GameHandler {
      * @returns {Player[]} Массив игроков онлайн.
      */
     getOnlinePlayers() {
-        return this.playerOnline.getAllPlayers(); // Получаем всех игроков в коллекции
+        return this.playerOnline.getPlayers(); // Получаем всех игроков в коллекции
     }
 }
 

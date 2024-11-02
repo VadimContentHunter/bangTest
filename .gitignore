@@ -1,3 +1,4 @@
 /app/sessions.json
 /node_modules
 /node_modules/vadimcontenthunter-jsonrpc-formatter
+/app/gameSessions
