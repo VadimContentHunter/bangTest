@@ -9,8 +9,8 @@ const GameSessionHandler = require("./GameSessionHandler");
 class GameHandler {
     constructor() {
         this.playerOnline = new PlayerCollection(); // Используем коллекцию игроков
-        this.gameSessionHandler = new GameSessionHandler();
-        this.gameSessionHandler.createGameSession();
+        // this.gameSessionHandler = new GameSessionHandler();
+        // this.gameSessionHandler.createGameSession();
     }
 
     /**
@@ -28,6 +28,23 @@ class GameHandler {
         }
     }
 
+    connect(sessionId) {
+        const player = this.playerOnline.getPlayerBySessionId(sessionId);
+        if (player instanceof Player) {
+            console.log(`GameHandler: Игрок подключился:`, player);
+            return player;
+        }
+
+        // const playerGameSession = this.gameSessionHandler.getPlayerBySessionId(sessionId);
+        // if (playerGameSession instanceof Player) {
+        //     this.addPlayerOnline(playerGameSession.name, playerGameSession.sessionId);
+        //     return player;
+        // }
+
+        console.log(`GameHandler: Игрок с сессией "${sessionId}" - не подключен.`);
+        return null;
+    }
+
     /**
      * Добавляет игрока в онлайн с заданным именем и sessionId.
      * @param {string} name - Имя игрока.
@@ -36,7 +53,7 @@ class GameHandler {
      */
     addPlayerOnline(name, sessionId) {
         try {
-            this.gameSessionHandler.addOrUpdatePlayer(name, sessionId);
+            // this.gameSessionHandler.addOrUpdatePlayer(name, sessionId);
 
             this.playerOnline.addPlayer(name, sessionId); // Добавляем игрока в коллекцию
             console.log(`Игрок ${name} и сессией ${sessionId} добавлен в онлайн.`);
@@ -47,72 +64,11 @@ class GameHandler {
     }
 
     /**
-     * Обновляет информацию об игроке в онлайн по имени.
-     * @param {string} name - Имя игрока для обновления.
-     * @param {Object} updates - Объект с обновляемыми данными.
-     * @throws {GameHandlerError} Если игрок не найден или произошла ошибка обновления.
-     */
-    updatePlayerOnlineByName(name, updates) {
-        try {
-            if (typeof name !== "string" || name.trim() === "") {
-                throw new GameHandlerError("Имя должно быть непустой строкой.");
-            }
-
-            this.playerOnline.updatePlayer(name, updates); // Обновляем игрока в коллекции
-            console.log(`Игрок ${name} обновлен.`);
-        } catch (error) {
-            this.handleError(error);
-        }
-    }
-
-    /**
-     * Обновляет данные сессии по sessionId.
-     * @param {string} sessionId - ID сессии.
-     * @param {Object} params - Параметры для обновления.
-     * @throws {GameHandlerError} Если сессия не найдена.
-     */
-    updateSessionData(sessionId, params) {
-        try {
-            if (typeof sessionId !== "string" || sessionId.trim() === "") {
-                throw new GameHandlerError("ID сессии должно быть непустой строкой.");
-            }
-
-            const sessionData = SessionHandler.getSessionData(sessionId);
-            if (!sessionData) {
-                throw new GameHandlerError(`Сессия с ID "${sessionId}" не найдена.`);
-            }
-
-            // SessionHandler.addParametersToSession(sessionId, params); // Обновляем параметры сессии
-            console.log(`Данные сессии ${sessionId} обновлены.`);
-        } catch (error) {
-            this.handleError(error);
-        }
-    }
-
-    /**
-     * Удаляет игрока из онлайна по имени.
-     * @param {string} name - Имя игрока для удаления.
-     * @throws {GameHandlerError} Если игрок не найден или произошла ошибка удаления.
-     */
-    removePlayerOnlineByName(name) {
-        try {
-            if (typeof name !== "string" || name.trim() === "") {
-                throw new GameHandlerError("Имя должно быть непустой строкой.");
-            }
-
-            this.playerOnline.removePlayerByName(name); // Удаляем игрока из коллекции
-            console.log(`Игрок ${name} удален из онлайн.`);
-        } catch (error) {
-            this.handleError(error);
-        }
-    }
-
-    /**
      * Удаляет игрока из онлайна по sessionId.
      * @param {string} sessionId - ID сессии.
      * @throws {GameHandlerError} Если игрок с сессией не найден.
      */
-    removePlayerBySession(sessionId) {
+    removePlayerOnlineBySession(sessionId) {
         try {
             if (typeof sessionId !== "string" || sessionId.trim() === "") {
                 throw new GameHandlerError("ID сессии должно быть непустой строкой.");
@@ -125,26 +81,7 @@ class GameHandler {
 
             this.playerOnline.removePlayerById(player.id); // Удаляем игрока из коллекции
             // SessionHandler.deleteSession(sessionId); // Удаляем сессию
-            console.log(`Игрок с сессией ${sessionId} был удален.`);
-        } catch (error) {
-            this.handleError(error);
-        }
-    }
-
-    /**
-     * Проверяет наличие игрока онлайн по sessionId.
-     * @param {string} sessionId - ID сессии для проверки.
-     * @returns {Player|null} Игрок, если найден; null, если игрок не найден.
-     */
-    findPlayerBySession(sessionId) {
-        try {
-            const player = this.playerOnline.getPlayerBySessionId(sessionId);
-            if (!(player instanceof Player)) {
-                console.log(`Игрок с сессией "${sessionId}" не найден.`);
-                return null; // Игрок не найден
-            }
-            console.log(`Игрок с сессией "${sessionId}" найден:`, player);
-            return player; // Игрок найден
+            console.log(`GameHandler: Игрок с сессией ${sessionId} был удален.`);
         } catch (error) {
             this.handleError(error);
         }
@@ -156,14 +93,6 @@ class GameHandler {
      */
     countPlayersOnline() {
         return this.playerOnline.countPlayersWithSession();
-    }
-
-    /**
-     * Получает всех игроков, находящихся онлайн.
-     * @returns {Player[]} Массив игроков онлайн.
-     */
-    getOnlinePlayers() {
-        return this.playerOnline.getPlayers(); // Получаем всех игроков в коллекции
     }
 }
 
