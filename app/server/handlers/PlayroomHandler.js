@@ -27,17 +27,27 @@ class PlayroomHandler {
     }
 
     connect(sessionId) {
-        const player = this.playerOnline.getPlayerBySessionId(sessionId);
+        let player = this.playerOnline.getPlayerBySessionId(sessionId);
         if (player instanceof Player) {
             console.log(`GameHandler: Игрок подключился:`, player);
             return player;
         }
 
-        // const playerGameSession = this.gameSessionHandler.getPlayerBySessionId(sessionId);
-        // if (playerGameSession instanceof Player) {
-        //     this.addPlayerOnline(playerGameSession.name, playerGameSession.sessionId);
-        //     return player;
-        // }
+        try {
+            const playerFromSession = SessionHandler.getSessionData(sessionId);
+            if (
+                playerFromSession !== null &&
+                typeof playerFromSession.lastName === "string" &&
+                playerFromSession.lastName.length > 0
+            ) {
+                this.addPlayerOnline(playerFromSession.lastName, sessionId);
+                player = this.playerOnline.getPlayerBySessionId(sessionId);
+                if (player instanceof Player) {
+                    console.log(`GameHandler: Игрок подключился:`, player);
+                    return player;
+                }
+            }
+        } catch (error) {}
 
         console.log(`GameHandler: Игрок с сессией "${sessionId}" - не подключен.`);
         return null;
