@@ -72,7 +72,9 @@ class GameSessionHandler {
 
     updatePlayerByName(name, sessionId) {
         this.loadData();
-        this.players.updatePlayerByName(name, sessionId);
+        this.players.updatePlayerByName(name, {
+            sessionId: sessionId,
+        });
         this.saveData(); // Сохранение данных после добавления игрока
         console.log(`GameSessionHandler: Player added (Name: ${name}). Data saved.`);
     }
@@ -97,6 +99,15 @@ class GameSessionHandler {
     getPlayerByName(name) {
         this.loadData(); // Загрузка данных перед поиском игрока
         const player = this.players.getPlayerByName(name);
+        if (!(player instanceof Player)) {
+            return null;
+        }
+        return player;
+    }
+
+    getPlayerBySessionId(sessionId) {
+        this.loadData(); // Загрузка данных перед поиском игрока
+        const player = this.players.getPlayerBySessionId(sessionId);
         if (!(player instanceof Player)) {
             return null;
         }
@@ -178,7 +189,7 @@ class GameSessionHandler {
                     this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
                 });
                 // console.log(`loadData ${this.players}`);
-                
+
                 this.history = history;
                 console.log("GameSessionHandler: Data loaded successfully.");
             } else {
