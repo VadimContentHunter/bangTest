@@ -79,6 +79,19 @@ class PlayerCollection {
     }
 
     /**
+     * Получает всех игроков по sessionId.
+     * @param {string} sessionId - ID сессии игрока.
+     * @returns {Player[]} Массив игроков с указанным sessionId. Пустой массив, если игроки не найдены.
+     * @throws {ValidatePlayerError} Если sessionId не является строкой.
+     */
+    getAllPlayersBySessionId(sessionId) {
+        if (typeof sessionId !== "string") {
+            throw new ValidatePlayerError("sessionId должен быть строкой.");
+        }
+        return Object.values(this.players).filter((player) => player.sessionId === sessionId);
+    }
+
+    /**
      * Возвращает массив всех игроков, которые являются экземплярами Player.
      * @returns {Player[]} Массив игроков.
      */
