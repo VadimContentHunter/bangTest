@@ -269,7 +269,7 @@ function main() {
         ])
     ) {
         return console.log(
-            "Класс NotificationsHtml не существует или не все методы существуют в нем."
+            "Класс RequestManager не существует или не все методы существуют в нем."
         );
     }
 
