@@ -75,7 +75,7 @@ app.get("/", (req, res) => {
 // Обрабатываем запрос на корень ("/")
 app.get("/playroom", (req, res) => {
     SessionHandler.addParametersToSession(req.sessionId, { lastUrl: req.url });
-    const player = gameHandler.findPlayerBySession(req.sessionId);
+    const player = gameHandler.connect(req.sessionId);
 
     if (player instanceof Player) {
         const templatePath = path.join(pathClientHtml, "playroom.html");
