@@ -41,6 +41,7 @@ class AuthHandler {
         }
 
         this.gameHandler.addPlayerOnline(this.name, this.sessionId);
+        SessionHandler.addParametersToSession(this.sessionId, { lastName: this.name });
         return true;
     }
 
