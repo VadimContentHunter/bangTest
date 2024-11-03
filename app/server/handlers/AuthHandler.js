@@ -1,6 +1,6 @@
 const ServerError = require("../Errors/ServerError");
 const ValidateLoginError = require("../Errors/ValidateLoginError");
-const GameHandler = require("../handlers/GameHandler");
+const PlayroomHandler = require("../handlers/PlayroomHandler");
 const SessionHandler = require("../handlers/SessionHandler");
 
 /**
@@ -11,12 +11,12 @@ class AuthHandler {
      * Создает экземпляр AuthHandler.
      * @param {string|null} name - Имя пользователя.
      * @param {string|null} sessionId - ID сессии пользователя.
-     * @param {GameHandler|null} gameHandler - Обработчик игры.
+     * @param {PlayroomHandler|null} playroomHandler - Обработчик игры.
      */
-    constructor(name = null, sessionId = null, gameHandler = null) {
+    constructor(name = null, sessionId = null, playroomHandler = null) {
         this.name = name;
         this.sessionId = sessionId;
-        this.gameHandler = gameHandler;
+        this.playroomHandler = playroomHandler;
     }
 
     /**
@@ -36,11 +36,11 @@ class AuthHandler {
      * @throws {ValidateLoginError} Если игра не инициализирована.
      */
     Authorization() {
-        if (!(this.gameHandler instanceof GameHandler)) {
+        if (!(this.playroomHandler instanceof PlayroomHandler)) {
             throw new ValidateLoginError("Игра не была инициализирована.", 500);
         }
 
-        this.gameHandler.addPlayerOnline(this.name, this.sessionId);
+        this.playroomHandler.addPlayerOnline(this.name, this.sessionId);
         SessionHandler.addParametersToSession(this.sessionId, { lastName: this.name });
         return true;
     }

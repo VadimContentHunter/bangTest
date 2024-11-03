@@ -3,7 +3,7 @@ const path = require("path");
 const setupWebSocketServer = require("./server/services/websocketServer");
 const SessionHandler = require("./server/handlers/SessionHandler");
 const { renderTemplate, parseCookies, createCookie } = require("./server/services/helper"); // Импортируем необходимые функции
-const GameHandler = require("./server/handlers/GameHandler");
+const PlayroomHandler = require("./server/handlers/PlayroomHandler");
 const Player = require("./server/models/Player");
 
 const app = express();
@@ -17,7 +17,7 @@ const pathClientResources = path.join(pathClient, "resources");
 const pathClientNodeModuleJs = path.resolve(__dirname, "../node_modules");
 
 SessionHandler.sessionLifetime = 3600;
-const gameHandler = new GameHandler();
+const playroomHandler = new PlayroomHandler();
 
 // Обслуживаем статические файлы из соответствующих папок
 app.use("/html", express.static(pathClientHtml));
@@ -75,7 +75,7 @@ app.get("/", (req, res) => {
 // Обрабатываем запрос на корень ("/")
 app.get("/playroom", (req, res) => {
     SessionHandler.addParametersToSession(req.sessionId, { lastUrl: req.url });
-    const player = gameHandler.connect(req.sessionId);
+    const player = playroomHandler.connect(req.sessionId);
 
     if (player instanceof Player) {
         const templatePath = path.join(pathClientHtml, "playroom.html");
@@ -96,7 +96,7 @@ app.get("/playroom", (req, res) => {
             <script>const serverIp = "${serverIp}:${port}";</script>
         `,
             scriptEndLinks: `
-            <script src=""></script>
+            <script src="/js/playroom.js"></script>
         `,
             content: `
             <h1>Игрок</h1>
@@ -133,4 +133,4 @@ const server = app.listen(port, () => {
     console.log(`HTTP сервер запущен на http://localhost:${port}`);
 });
 
-setupWebSocketServer(server, gameHandler);
+setupWebSocketServer(server, playroomHandler);

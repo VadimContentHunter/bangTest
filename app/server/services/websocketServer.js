@@ -8,14 +8,14 @@ const { parseCookies, createCookie } = require("./helper"); // Импортир�
 const url = require("url");
 const SessionHandler = require("../handlers/SessionHandler");
 const JsonRpcMethodHandler = require("./JsonRpcMethodHandler");
-const GameHandlerError = require("../Errors/GameHandlerError");
-const GameHandler = require("../handlers/GameHandler");
+const PlayroomHandlerError = require("../Errors/PlayroomHandlerError");
+const PlayroomHandler = require("../handlers/PlayroomHandler");
 const aResponseHandler = require("../interfaces/aResponseHandler");
 const { log } = require("console");
 
-module.exports = function setupWebSocketServer(server, gameHandler) {
-    if (!(gameHandler instanceof GameHandler)) {
-        throw new Error("gameHandler must be an instance of GameHandler");
+module.exports = function setupWebSocketServer(server, playroomHandler) {
+    if (!(playroomHandler instanceof PlayroomHandler)) {
+        throw new Error("playroomHandler must be an instance of PlayroomHandler");
     }
 
     const wss = new WebSocket.Server({ server });
@@ -32,7 +32,7 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
             if (client.readyState === WebSocket.OPEN) {
                 ws.send(
                     JsonRpcFormatter.serializeRequest("updateUserCount", {
-                        quantity: gameHandler.countPlayersOnline(),
+                        quantity: playroomHandler.countPlayersOnline(),
                     })
                 );
             }
@@ -52,7 +52,7 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
 
                 const requestRpc = JsonRpcFormatter.deserializeRequest(message);
                 requestRpc.params.sessionId = sessionId;
-                requestRpc.params.gameHandler = gameHandler;
+                requestRpc.params.playroomHandler = playroomHandler;
 
                 const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc);
                 if (jsonRpcMethodHandler.instance instanceof aResponseHandler) {
@@ -66,7 +66,7 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
 
                 // const currentUserUrl = SessionHandler.getSessionData(sessionId);
                 // if (currentUserUrl === "/playroom") {
-                //     jsonRpcMethodHandler.setAdditionalParams(gameHandler);
+                //     jsonRpcMethodHandler.setAdditionalParams(playroomHandler);
                 // }
             } catch (error) {
                 ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
@@ -91,8 +91,8 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
         ws.on("close", () => {
             try {
                 const sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
-                gameHandler.removePlayerBySession(sessionId);
-                // console.log(gameHandler.countPlayersOnline());
+                playroomHandler.removePlayerOnlineBySession(sessionId);
+                // console.log(playroomHandler.countPlayersOnline());
                 
 
                 wss.clients.forEach((client) => {
@@ -100,13 +100,13 @@ module.exports = function setupWebSocketServer(server, gameHandler) {
                         ws.send(
                             JsonRpcFormatter.serializeRequest(
                                 "updateUserCount",
-                                gameHandler.countPlayersOnline()
+                                playroomHandler.countPlayersOnline()
                             )
                         );
                     }
                 });
             } catch (error) {
-                if (error instanceof GameHandlerError) {
+                if (error instanceof PlayroomHandlerError) {
                     console.log(error.message);
                 }
             }

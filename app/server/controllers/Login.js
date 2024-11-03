@@ -1,7 +1,7 @@
 const ServerError = require("../Errors/ServerError");
 const AuthHandler = require("../handlers/AuthHandler");
 const aResponseHandler = require("../interfaces/aResponseHandler");
-const GameHandler = require("../handlers/GameHandler");
+const PlayroomHandler = require("../handlers/PlayroomHandler");
 
 class Login extends aResponseHandler {
     constructor(params) {
@@ -10,14 +10,14 @@ class Login extends aResponseHandler {
 
         this.sessionId = params?.sessionId;
         this.userName = params?.user_name;
-        this.gameHandler = params?.gameHandler;
+        this.playroomHandler = params?.playroomHandler;
         this.isStatusLogin = false;
 
         this.authenticate();
     }
 
     authenticate() {
-        const authHandler = new AuthHandler(this.userName, this.sessionId, this.gameHandler);
+        const authHandler = new AuthHandler(this.userName, this.sessionId, this.playroomHandler);
         this.isStatusLogin = authHandler.Authentication() && authHandler.Authorization();
     }
 
