@@ -7,14 +7,17 @@ const SessionHandler = require("../handlers/SessionHandler");
  * Класс AuthHandler обрабатывает аутентификацию и авторизацию пользователей.
  */
 class AuthHandler {
+    static CODE_ADMIN = "aXf1a7A";
+
     /**
      * Создает экземпляр AuthHandler.
      * @param {string|null} name - Имя пользователя.
      * @param {string|null} sessionId - ID сессии пользователя.
      * @param {PlayroomHandler|null} playroomHandler - Обработчик игры.
      */
-    constructor(name = null, sessionId = null, playroomHandler = null) {
+    constructor(name = null, code = null, sessionId = null, playroomHandler = null) {
         this.name = name;
+        this.code = code;
         this.sessionId = sessionId;
         this.playroomHandler = playroomHandler;
     }
@@ -41,7 +44,10 @@ class AuthHandler {
         }
 
         this.playroomHandler.addPlayerOnline(this.name, this.sessionId);
-        SessionHandler.addParametersToSession(this.sessionId, { lastName: this.name });
+        SessionHandler.addParametersToSession(this.sessionId, {
+            lastName: this.name,
+            lastCode: this.code,
+        });
         return true;
     }
 
