@@ -7,8 +7,6 @@ const SessionHandler = require("../handlers/SessionHandler");
  * Класс AuthHandler обрабатывает аутентификацию и авторизацию пользователей.
  */
 class AuthHandler {
-    static CODE_ADMIN = "aXf1a7A";
-
     /**
      * Создает экземпляр AuthHandler.
      * @param {string|null} name - Имя пользователя.
