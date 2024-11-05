@@ -1,3 +1,57 @@
+const webSocket = {};
+
+class ResponseServerError extends Error {
+    constructor(message, statusCode = 1000) {
+        super(message);
+        this.name = this.constructor.name;
+        this.statusCode = statusCode;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+class RequestServerError extends Error {
+    constructor(message, statusCode = 2000) {
+        super(message);
+        this.name = this.constructor.name;
+        this.statusCode = statusCode;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+/**
+ * Функция для извлечения <script> тегов из HTML и их выполнения
+ * @param {string} html - HTML строка, содержащая <script> теги
+ */
+function executeScriptsFromHTML(html) {
+    // Создаём временный элемент для работы с HTML-контентом
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+
+    // Вставляем основной HTML (без <script> тегов) в DOM
+    document.body.insertAdjacentHTML(
+        "beforeend",
+        tempDiv.innerHTML.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    );
+
+    // Извлекаем все <script> теги
+    const scripts = tempDiv.querySelectorAll("script");
+
+    // Добавляем каждый <script> в конец <body> для выполнения
+    scripts.forEach((script) => {
+        const newScript = document.createElement("script");
+
+        if (script.src) {
+            // Если есть src, загружаем скрипт по ссылке
+            newScript.src = script.src;
+        } else {
+            // Если скрипт встроенный, добавляем его содержимое
+            newScript.textContent = script.textContent;
+        }
+
+        document.body.append(newScript);
+    });
+}
+
 // Функция проверки существования класса и его методов (включая статические)
 function checkClassAndMethods(className, requiredMethods = [], staticMethods = []) {
     if (typeof className === "undefined") {
@@ -74,17 +128,31 @@ function eventActivatedMenu(selectorElementClick, selectorElementMenu) {
 function responseServer(requestManager, notificationsHtml, response) {
     if (!(notificationsHtml instanceof NotificationsHtml)) {
         console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
-        throw new Error("Не удалось обработать ответ.");
+        throw new ResponseServerError("Не удалось обработать ответ.");
     }
 
     if (!(requestManager instanceof RequestManager)) {
-        throw new Error("requestManager not instanceof RequestManager");
+        throw new ResponseServerError("requestManager not instanceof RequestManager");
     }
 
     if (response.result) {
         if (typeof response.id === "number") {
             const requestItem = requestManager.removeRequestById(response.id);
             switch (requestItem?.nameMethod) {
+                case "GetAdminMenu":
+                    const menu = document.querySelector("header .menu-line-mini");
+                    if (menu instanceof HTMLElement && typeof response.result === "string") {
+                        const tempDiv = document.createElement("div");
+                        tempDiv.innerHTML = response.result.replace(
+                            /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
+                            ""
+                        );
+
+                        menu.prepend(...tempDiv.childNodes);
+
+                        executeScriptsFromHTML(response.result);
+                    }
+                    break;
                 // case "Login":
                 //     let message = "Ура удалось пройти аутентификацию и авторизацию!!";
                 //     notificationsHtml.addNotification(message);
@@ -96,7 +164,9 @@ function responseServer(requestManager, notificationsHtml, response) {
                 //     window.location.href = "/playroom";
                 //     break;
                 default:
-                    throw new Error("Id ответа не найден в списке запросов. id: " + response.id);
+                    throw new ResponseServerError(
+                        "Id ответа не найден в списке запросов. id: " + response.id
+                    );
             }
         } else if (response.id === null) {
         } else {
@@ -105,7 +175,7 @@ function responseServer(requestManager, notificationsHtml, response) {
         }
     } else if (response.error) {
         const error = JsonRpcFormatter.verificationError(response.error);
-        throw new Error(error.message);
+        throw new ResponseServerError(error?.message ?? "Неизвестная ошибка", error?.code ?? -1);
     } else {
         console.error("Неизвестный ответ:", response);
     }
@@ -120,7 +190,7 @@ function requestServer(request) {
             updateUserCount(request?.params, "#user-count");
             break;
         default:
-            throw new Error("Неизвестный запрос от сервера: " + response);
+            throw new RequestServerError("Неизвестный запрос от сервера: " + response);
         // console.error("Неизвестный запрос от сервера:", response);
     }
 }
@@ -242,12 +312,13 @@ function main() {
                 responseServer(
                     requestManager,
                     notificationsHtml,
-                    JsonRpcFormatter.deserializeResponse(data)
+                    JsonRpcFormatter.deserializeResponse(data),
+                    ws
                 );
             } catch (error) {
                 if (error instanceof JsonRpcFormatterError) {
                     try {
-                        requestServer(JsonRpcFormatter.deserializeRequest(data));
+                        requestServer(JsonRpcFormatter.deserializeRequest(data), ws);
                     } catch (error) {
                         errorHandler(error, notificationsHtml);
                     }
@@ -257,7 +328,12 @@ function main() {
             }
         },
         (ws) => {
-            ws.send(requestManager.addRequest("Connect", {}));
+            ws.send(requestManager.addRequest("GetAdminMenu", {}));
+
+            document.addEventListener("sendServer", (event) => {
+                const { data, action } = event.detail; // Извлечение параметров
+                ws.send(requestManager.addRequest(action, data));
+            });
             // sendActionAdminMenu(
             //     requestManager,
             //     ws,
@@ -269,9 +345,5 @@ function main() {
 
 // Запуск основной логики
 document.addEventListener("DOMContentLoaded", () => {
-    eventActivatedMenu(
-        ".menu-line-mini .setting-room .base-icon-medium",
-        ".menu-line-mini .setting-room"
-    );
     main();
 });

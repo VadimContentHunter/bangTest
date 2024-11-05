@@ -3,7 +3,7 @@ const aResponseHandler = require("../interfaces/aResponseHandler");
 // Реестр классов
 const classRegistry = {
     Login: require("../controllers/Login"),
-    Connect: require("../controllers/Connect"),
+    GetAdminMenu: require("../controllers/GetAdminMenu"),
     // другие классы
 };
 

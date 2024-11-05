@@ -1,0 +1,42 @@
+<article class="setting-room" id="admin-menu-setting-room">
+    <div class="base-icon-medium">
+        <i class="icon-setting-room-fill"></i>
+    </div>
+    <ul>
+        <li data="startGame">Начать игру</li>
+        <li data="">Загрузить игровую сессию</li>
+        <li data="">Перемешать игроков</li>
+    </ul>
+    <script>
+        eventActivatedMenu(
+            "#admin-menu-setting-room .base-icon-medium",
+            "#admin-menu-setting-room"
+        );
+    </script>
+
+    <script>
+        function eventSendActionsMenu(selectorElementClick) {
+            const menuItemsElements = document.querySelectorAll(selectorElementClick);
+            if (!(menuItemsElements instanceof NodeList)) {
+                throw new Error("Не удалось найти пункты меню.");
+            }
+            menuItemsElements.forEach((item) => {
+                if (item instanceof HTMLElement) {
+                    item.addEventListener("click", (e) => {
+                        if (item.hasAttribute("data")) {
+                            document.dispatchEvent(
+                                new CustomEvent("sendServer", {
+                                    detail: {
+                                        data: {},
+                                        action: item.getAttribute("data"),
+                                    },
+                                })
+                            );
+                        }
+                    });
+                }
+            });
+        }
+        eventSendActionsMenu("#admin-menu-setting-room ul > li");
+    </script>
+</article>
