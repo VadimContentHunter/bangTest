@@ -2,8 +2,8 @@ const aResponseHandler = require("../interfaces/aResponseHandler");
 
 // Реестр классов
 const classRegistry = {
-    Login: require("../actions/Login"),
-    Connect: require("../actions/Connect"),
+    Login: require("../controllers/Login"),
+    Connect: require("../controllers/Connect"),
     // другие классы
 };
 
