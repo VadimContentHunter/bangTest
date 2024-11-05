@@ -1,0 +1,55 @@
+.setting-room {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.setting-room ul {
+    position: absolute;
+    /* right: 32px; */
+    margin-top: 72px;
+    min-width: 200px;
+    border-radius: var(--border-radius-element);
+    box-shadow: var(--box-shadow-element);
+    color: #ffffff;
+    background-color: var(--alt-color);
+    z-index: 100;
+
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.setting-room ul li {
+    width: 100%;
+    padding: var(--padding-element);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.setting-room ul li:hover {
+    cursor: pointer;
+    color: var(--alt-color);
+    background-color: #ffffff;
+}
+
+.setting-room .base-icon-medium:hover {
+    cursor: pointer;
+}
+
+.setting-room .base-icon-medium:hover i {
+    background-color: var(--alt-color);
+}
+
+.setting-room.activate ul {
+    display: flex;
+}
+
+.setting-room.activate .base-icon-medium i {
+    background-color: var(--alt-color);
+}
+
+main {}

@@ -18,6 +18,7 @@ body {
 .menu-line-mini {
     display: flex;
     flex-direction: row;
+    gap: 20px;
 }
 
 /**********************************
