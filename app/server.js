@@ -86,6 +86,7 @@ app.get("/playroom", (req, res) => {
             <link rel="stylesheet" href="/css/reset.css" />
             <link rel="stylesheet" href="/css/icons.css" />
             <link rel="stylesheet" href="/css/main.css" />
+            <link rel="stylesheet" href="/css/playroom.css" />
             <link rel="stylesheet" href="/css/notification.css" />
         `,
             scriptHeadLinks: `

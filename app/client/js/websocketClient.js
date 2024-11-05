@@ -55,15 +55,14 @@ function websocketClient(ip, callbackHandlerResponse, callbackHandlerRequest) {
     const ws = new WebSocket("ws://" + ip + "?cookies=" + cookies);
     ws.onopen = () => {
         console.log("Соединение установлено с сервером");
+        callbackHandlerRequest(ws);
     };
 
     ws.onmessage = (event) => {
-        callbackHandlerResponse(event.data);
+        callbackHandlerResponse(event.data, ws);
     };
 
     ws.onclose = () => {
         console.log("Соединение закрыто");
     };
-
-    callbackHandlerRequest(ws);
 }

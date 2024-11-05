@@ -29,6 +29,48 @@ function checkErrorClass(errorClass) {
     return typeof errorClass !== "undefined" && errorClass.prototype instanceof Error;
 }
 
+function updateSessionId({ sessionId, maxAge, path }) {
+    if (!sessionId || !maxAge || !path) {
+        throw new Error("Не удалось обновить сессию");
+    }
+
+    document.cookie = `sessionId=${sessionId}; max-age=${maxAge}; path=${path};`;
+}
+
+function updateUserCount({ quantity }, selector) {
+    if (typeof quantity !== "number") {
+        throw new Error("Не удалось обновить количество игроков онлайн.");
+    }
+
+    console.log("Всего онлайн " + quantity);
+
+    // const userCountElement = document.querySelector(selector);
+    // if (!(userCountElement instanceof HTMLElement)) {
+    //     throw new Error("Не удалось найти элемент для кол-ва игроков онлайн.");
+    // }
+
+    // userCountElement.innerText = quantity;
+}
+
+function eventActivatedMenu(selectorElementClick, selectorElementMenu) {
+    const menuElement = document.querySelector(selectorElementMenu);
+    if (!(menuElement instanceof HTMLElement)) {
+        throw new Error("Не удалось найти меню");
+    }
+
+    const clickElements = document.querySelector(selectorElementClick);
+    if (!(clickElements instanceof HTMLElement)) {
+        throw new Error("Не удалось найти элементы для клика");
+    }
+
+    clickElements.addEventListener("click", (event) => {
+        event.preventDefault();
+        menuElement.classList.toggle("activate");
+    });
+}
+
+/**=============================================================================================**/
+
 function responseServer(requestManager, notificationsHtml, response) {
     if (!(notificationsHtml instanceof NotificationsHtml)) {
         console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
@@ -90,6 +132,36 @@ function errorHandler(error, notificationsHtml) {
         notificationsHtml.addNotification(error.message);
     }
 }
+
+// function sendActionAdminMenu(requestManager, ws, selectorButtonSend) {
+//     if (!(requestManager instanceof RequestManager)) {
+//         console.error("requestManager not instanceof RequestManager");
+//         return;
+//     }
+
+//     const buttonSend = document.querySelector(selectorButtonSend);
+//     if (!(buttonSend instanceof HTMLElement)) {
+//         console.error("Button send not found");
+//         return;
+//     }
+
+//     if (!buttonSend.hasAttribute("data")) {
+//         console.error("The button does not have a data attribute.");
+//         return;
+//     }
+
+//     buttonSend.addEventListener("click", (e) => {
+//         if (ws.readyState === WebSocket.OPEN) {
+//             ws.send(
+//                 requestManager.addRequest("adminMenu", {
+//                     data: buttonSend.getAttribute("data"),
+//                 })
+//             );
+//         } else {
+//             console.error("WebSocket соединение не установлено.");
+//         }
+//     });
+// }
 
 // Основная логика
 function main() {
@@ -165,7 +237,7 @@ function main() {
     // }
     websocketClient(
         serverIp,
-        (data) => {
+        (data, ws) => {
             try {
                 responseServer(
                     requestManager,
@@ -185,11 +257,11 @@ function main() {
             }
         },
         (ws) => {
-            // sendForm(
+            ws.send(requestManager.addRequest("connect", {}));
+            // sendActionAdminMenu(
             //     requestManager,
             //     ws,
-            //     "main form.form-login-system",
-            //     "main form.form-login-system button"
+            //     "#admin-menu button"
             // );
         }
     );
@@ -197,5 +269,9 @@ function main() {
 
 // Запуск основной логики
 document.addEventListener("DOMContentLoaded", () => {
+    eventActivatedMenu(
+        ".menu-line-mini .setting-room .base-icon-medium",
+        ".menu-line-mini .setting-room"
+    );
     main();
 });
