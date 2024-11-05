@@ -257,7 +257,7 @@ function main() {
             }
         },
         (ws) => {
-            ws.send(requestManager.addRequest("connect", {}));
+            ws.send(requestManager.addRequest("Connect", {}));
             // sendActionAdminMenu(
             //     requestManager,
             //     ws,
