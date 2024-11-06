@@ -202,6 +202,41 @@ class SessionHandler {
             throw new ServerError("Session not found");
         }
     }
+
+    /**
+     * Обновляет данные сессии, не затрагивая указанные поля.
+     * @param {string} sessionId - ID сессии.
+     * @param {Object} newData - Новые данные для обновления.
+     * @param {Array<string>} preserveFields - Список полей, которые не должны изменяться.
+     * @throws {ServerError} Если сессия не найдена.
+     */
+    static setParametersToSession(sessionId, newData, preserveFields = []) {
+        const session = this.getSessionData(sessionId);
+        if (session) {
+            if (this.isSessionExpired(sessionId)) {
+                this.deleteSession(sessionId);
+                sessionId = this.createSession(newData);
+                console.log(`SessionHandler: Session expired and recreated: ${sessionId}`);
+            } else {
+                // Копируем только те поля из старых данных, которые указаны в preserveFields
+                const preservedData = {};
+                preserveFields.forEach((field) => {
+                    if (field in session) {
+                        preservedData[field] = session[field];
+                    }
+                });
+
+                // Объединяем сохраненные поля с новыми данными
+                this.sessions[sessionId] = { ...newData, ...preservedData };
+                this.saveSessions();
+                console.log(
+                    `SessionHandler: Updated session: ${sessionId} with new data, preserving fields: ${preserveFields}`
+                );
+            }
+        } else {
+            throw new ServerError("Session not found");
+        }
+    }
 }
 
 module.exports = SessionHandler;

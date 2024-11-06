@@ -45,7 +45,11 @@ app.use((req, res, next) => {
 
 // Обрабатываем запрос на корень ("/")
 app.get("/", (req, res) => {
-    SessionHandler.addParametersToSession(req.sessionId, { lastUrl: req.url });
+    SessionHandler.setParametersToSession(req.sessionId, { lastUrl: req.url }, [
+        "createdAt",
+        "createdAtFormatted",
+    ]);
+    // SessionHandler.
 
     const templatePath = path.join(pathClientHtml, "index.html");
     const htmlContent = renderTemplate(templatePath, {
