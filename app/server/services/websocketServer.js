@@ -60,7 +60,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
                 const requestRpc = JsonRpcFormatter.deserializeRequest(message);
                 requestRpc.params.sessionId = sessionId;
-                requestRpc.params.playroomHandler = playroomHandler;
 
                 const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc);
                 if (

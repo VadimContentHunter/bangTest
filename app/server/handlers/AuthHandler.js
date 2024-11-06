@@ -11,13 +11,11 @@ class AuthHandler {
      * Создает экземпляр AuthHandler.
      * @param {string|null} name - Имя пользователя.
      * @param {string|null} sessionId - ID сессии пользователя.
-     * @param {PlayroomHandler|null} playroomHandler - Обработчик игры.
      */
-    constructor(name = null, code = null, sessionId = null, playroomHandler = null) {
+    constructor(name = null, code = null, sessionId = null) {
         this.name = name;
         this.code = code;
         this.sessionId = sessionId;
-        this.playroomHandler = playroomHandler;
     }
 
     /**
@@ -37,11 +35,6 @@ class AuthHandler {
      * @throws {ValidateLoginError} Если игра не инициализирована.
      */
     Authorization() {
-        if (!(this.playroomHandler instanceof PlayroomHandler)) {
-            throw new ValidateLoginError("Игра не была инициализирована.", 500);
-        }
-
-        this.playroomHandler.addPlayerOnline(this.name, this.sessionId);
         SessionHandler.addParametersToSession(this.sessionId, {
             lastName: this.name,
             lastCode: this.code,

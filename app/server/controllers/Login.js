@@ -11,7 +11,6 @@ class Login extends aResponseHandler {
         this.sessionId = params?.sessionId;
         this.userName = params?.user_name;
         this.code = params?.code;
-        this.playroomHandler = params?.playroomHandler;
         this.isStatusLogin = false;
 
         this.authenticate();
@@ -21,8 +20,7 @@ class Login extends aResponseHandler {
         const authHandler = new AuthHandler(
             this.userName,
             this.code,
-            this.sessionId,
-            this.playroomHandler
+            this.sessionId
         );
         this.isStatusLogin = authHandler.Authentication() && authHandler.Authorization();
     }
