@@ -8,14 +8,24 @@
         <li data="">Перемешать игроков</li>
     </ul>
     <script>
-        eventActivatedMenu(
-            "#admin-menu-setting-room .base-icon-medium",
-            "#admin-menu-setting-room"
-        );
-    </script>
+        function eventActivatedMenu(selectorElementClick, selectorElementMenu) {
+            const menuElement = document.querySelector(selectorElementMenu);
+            if (!(menuElement instanceof HTMLElement)) {
+                throw new Error("Не удалось найти меню");
+            }
 
-    <script>
-        function eventSendActionsMenu(selectorElementClick) {
+            const clickElements = document.querySelector(selectorElementClick);
+            if (!(clickElements instanceof HTMLElement)) {
+                throw new Error("Не удалось найти элементы для клика");
+            }
+
+            clickElements.addEventListener("click", (event) => {
+                event.preventDefault();
+                menuElement.classList.toggle("activate");
+            });
+        }
+
+        function eventSendActionsMenu(selectorElementClick, selectorElementMenu = null) {
             const menuItemsElements = document.querySelectorAll(selectorElementClick);
             if (!(menuItemsElements instanceof NodeList)) {
                 throw new Error("Не удалось найти пункты меню.");
@@ -32,11 +42,23 @@
                                     },
                                 })
                             );
+
+                            const menuElement = document.querySelector(selectorElementMenu);
+                            if (menuElement instanceof HTMLElement && menuElement.classList.contains("activate")) {
+                                menuElement.classList.remove("activate");
+                            }
                         }
                     });
                 }
             });
         }
-        eventSendActionsMenu("#admin-menu-setting-room ul > li");
+    </script>
+
+    <script>
+        eventActivatedMenu(
+            "#admin-menu-setting-room .base-icon-medium",
+            "#admin-menu-setting-room"
+        );
+        eventSendActionsMenu("#admin-menu-setting-room ul > li", "#admin-menu-setting-room");
     </script>
 </article>

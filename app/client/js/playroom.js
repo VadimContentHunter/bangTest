@@ -28,10 +28,10 @@ function executeScriptsFromHTML(html) {
     tempDiv.innerHTML = html;
 
     // Вставляем основной HTML (без <script> тегов) в DOM
-    document.body.insertAdjacentHTML(
-        "beforeend",
-        tempDiv.innerHTML.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    );
+    // document.body.insertAdjacentHTML(
+    //     "beforeend",
+    //     tempDiv.innerHTML.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    // );
 
     // Извлекаем все <script> теги
     const scripts = tempDiv.querySelectorAll("script");
@@ -97,30 +97,6 @@ function updateUserCount({ quantity }, selector) {
     }
 
     console.log("Всего онлайн " + quantity);
-
-    // const userCountElement = document.querySelector(selector);
-    // if (!(userCountElement instanceof HTMLElement)) {
-    //     throw new Error("Не удалось найти элемент для кол-ва игроков онлайн.");
-    // }
-
-    // userCountElement.innerText = quantity;
-}
-
-function eventActivatedMenu(selectorElementClick, selectorElementMenu) {
-    const menuElement = document.querySelector(selectorElementMenu);
-    if (!(menuElement instanceof HTMLElement)) {
-        throw new Error("Не удалось найти меню");
-    }
-
-    const clickElements = document.querySelector(selectorElementClick);
-    if (!(clickElements instanceof HTMLElement)) {
-        throw new Error("Не удалось найти элементы для клика");
-    }
-
-    clickElements.addEventListener("click", (event) => {
-        event.preventDefault();
-        menuElement.classList.toggle("activate");
-    });
 }
 
 /**=============================================================================================**/
@@ -153,16 +129,6 @@ function responseServer(requestManager, notificationsHtml, response) {
                         executeScriptsFromHTML(response.result);
                     }
                     break;
-                // case "Login":
-                //     let message = "Ура удалось пройти аутентификацию и авторизацию!!";
-                //     notificationsHtml.addNotification(message);
-                //     addStaticNotification(
-                //         selectorStaticNotification,
-                //         message,
-                //         StaticNotificationStatusClasses.SUCCESS
-                //     );
-                //     window.location.href = "/playroom";
-                //     break;
                 default:
                     throw new ResponseServerError(
                         "Id ответа не найден в списке запросов. id: " + response.id
@@ -202,36 +168,6 @@ function errorHandler(error, notificationsHtml) {
         notificationsHtml.addNotification(error.message);
     }
 }
-
-// function sendActionAdminMenu(requestManager, ws, selectorButtonSend) {
-//     if (!(requestManager instanceof RequestManager)) {
-//         console.error("requestManager not instanceof RequestManager");
-//         return;
-//     }
-
-//     const buttonSend = document.querySelector(selectorButtonSend);
-//     if (!(buttonSend instanceof HTMLElement)) {
-//         console.error("Button send not found");
-//         return;
-//     }
-
-//     if (!buttonSend.hasAttribute("data")) {
-//         console.error("The button does not have a data attribute.");
-//         return;
-//     }
-
-//     buttonSend.addEventListener("click", (e) => {
-//         if (ws.readyState === WebSocket.OPEN) {
-//             ws.send(
-//                 requestManager.addRequest("adminMenu", {
-//                     data: buttonSend.getAttribute("data"),
-//                 })
-//             );
-//         } else {
-//             console.error("WebSocket соединение не установлено.");
-//         }
-//     });
-// }
 
 // Основная логика
 function main() {
