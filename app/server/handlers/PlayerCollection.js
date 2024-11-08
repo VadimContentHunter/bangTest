@@ -2,9 +2,29 @@ const ValidatePlayerError = require("../Errors/ValidatePlayerError");
 const Player = require("../models/Player");
 
 class PlayerCollection {
-    constructor() {
+    constructor(useIncrementalId = true) {
         this.players = {};
         this.nextId = 1; // Следующий уникальный идентификатор для нового игрока
+        this.useIncrementalId = useIncrementalId; // Флаг, определяющий, как будет происходить идентификация
+    }
+
+    /**
+     * Генерирует новый ID для игрока.
+     * Если useIncrementalId равно true, то используется инкрементный ID.
+     * Если false, то используется первый свободный ID.
+     * @returns {number} Новый ID игрока.
+     */
+    generateId() {
+        if (this.useIncrementalId) {
+            return this.nextId++;
+        } else {
+            // Находим первый свободный ID
+            let id = 0;
+            while (this.players.hasOwnProperty(id)) {
+                id++;
+            }
+            return id;
+        }
     }
 
     /**
@@ -45,7 +65,7 @@ class PlayerCollection {
             throw new ValidatePlayerError(`Игрок с именем "${name}" уже существует.`);
         }
 
-        const id = this.nextId++; // Генерация уникального ID для игрока
+        const id = this.generateId(); // Генерация уникального ID для игрока
         const player = new Player(id, name, sessionId); // Создание нового игрока
         this.players[id] = player; // Добавляем игрока в коллекцию по его ID
         console.log(`Добавлен игрок с именем: ${name} и ID: ${id}`);
