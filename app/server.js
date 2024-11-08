@@ -98,6 +98,7 @@ app.get("/playroom", (req, res) => {
             <script src="/js/NotificationsHtml.js"></script>
             <script src="/js/websocketClient.js"></script>
             <script src="/js/RequestManager.js"></script>
+             <script src="/js/GameField.js"></script>
             <script>const serverIp = "${serverIp}:${port}";</script>
         `,
             scriptEndLinks: `
