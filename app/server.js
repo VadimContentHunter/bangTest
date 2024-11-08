@@ -17,7 +17,7 @@ const pathClientResources = path.join(pathClient, "resources");
 const pathClientNodeModuleJs = path.resolve(__dirname, "../node_modules");
 
 SessionHandler.sessionLifetime = 3600;
-const playroomHandler = new PlayroomHandler();
+const playroomHandler = new PlayroomHandler(7);
 
 // Обслуживаем статические файлы из соответствующих папок
 app.use("/html", express.static(pathClientHtml));
@@ -72,6 +72,7 @@ app.get("/", (req, res) => {
         scriptEndLinks: `
             <script src="/js/auth.js"></script>
         `,
+        userMaxCount: playroomHandler.maxPlayers,
     });
     res.send(htmlContent);
 });
@@ -79,13 +80,13 @@ app.get("/", (req, res) => {
 // Обрабатываем запрос на корень ("/")
 app.get("/playroom", (req, res) => {
     SessionHandler.addParametersToSession(req.sessionId, { lastUrl: req.url });
-    const player = playroomHandler.connect(req.sessionId);
-
-    if (player instanceof Player) {
-        const templatePath = path.join(pathClientHtml, "playroom.html");
-        const htmlContent = renderTemplate(templatePath, {
-            pageTitle: "Bang!-Test",
-            cssLinks: `
+    try {
+        const player = playroomHandler.connect(req.sessionId);
+        if (player instanceof Player) {
+            const templatePath = path.join(pathClientHtml, "playroom.html");
+            const htmlContent = renderTemplate(templatePath, {
+                pageTitle: "Bang!-Test",
+                cssLinks: `
             <link rel="stylesheet" href="/css/vars.css" />
             <link rel="stylesheet" href="/css/reset.css" />
             <link rel="stylesheet" href="/css/icons.css" />
@@ -93,7 +94,7 @@ app.get("/playroom", (req, res) => {
             <link rel="stylesheet" href="/css/playroom.css" />
             <link rel="stylesheet" href="/css/notification.css" />
         `,
-            scriptHeadLinks: `
+                scriptHeadLinks: `
             <script src="/module/vadimcontenthunter-jsonrpc-formatter/JsonRpcFormatter.js"></script>
             <script src="/js/NotificationsHtml.js"></script>
             <script src="/js/websocketClient.js"></script>
@@ -101,20 +102,23 @@ app.get("/playroom", (req, res) => {
              <script src="/js/GameField.js"></script>
             <script>const serverIp = "${serverIp}:${port}";</script>
         `,
-            scriptEndLinks: `
+                scriptEndLinks: `
             <script src="/js/playroom.js"></script>
         `,
-            content: `
+                content: `
             <h1>Игрок</h1>
             <h2>id: ${player?.id ?? "---"}</h2>
             <h2>name: ${player?.name ?? "---"}</h2>
             <h2>sessionId: ${player?.sessionId ?? "---"}</h2>
         `,
-        });
-        res.send(htmlContent);
-    } else {
-        res.send(`Игрок не найден. <a href="/">Попробовать снова</a>`);
-        // res.redirect(301, "/");
+            });
+            res.send(htmlContent);
+        } else {
+            res.send(`Игрок не найден. <a href="/">Попробовать снова</a>`);
+            // res.redirect(301, "/");
+        }
+    } catch (error) {
+        res.send(`Игрок не найден. <a href="/">Попробовать снова</a> <br><br><h3>ОШИБКА: ${error.message}</h3>`);
     }
 });
 
