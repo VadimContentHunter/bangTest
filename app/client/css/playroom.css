@@ -60,19 +60,31 @@ main {
     height: calc(100vh - 72px);
 }
 
+.game-card {
+    max-width: 80px;
+    max-height: 124px;
+    border-radius: 12px;
+}
+
+.game-card img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+}
+
 .game-field {
     width: 100%;
     height: 100%;
 
-    background-color: #e5bc80;
+    /* background-color: #e5bc80; */
 
-    background-image: url('../resources/imgs/pack1/sand.png');
+    /* background-image: url('../resources/imgs/pack1/sand.png'); */
     /* Масштабирование изображения по размеру блока */
-    background-size: cover;
+    /* background-size: cover; */
     /* Отменяет повторение */
     /* background-repeat: no-repeat; */
     /* Позиционирует изображение по центру */
-    background-position: top left;
+    /* background-position: top left; */
 
     display: grid;
     grid-template-rows: 1fr auto 1fr;
@@ -81,22 +93,146 @@ main {
     place-items: center;
 }
 
-.game-field .top-image {
+.players-field {
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
+
+
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto auto auto;
+    justify-items: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.players-field .grid-item {
+    /* padding: 20px; */
+    /* background-color: #c5c5c5; */
+    text-align: center;
+    /* border: 1px solid #fff2f2; */
+}
+
+.center-item {
+    grid-column: 2 / 3;
+    grid-row: 2 / 4;
+
+    width: 100px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-item img {
+    width: 100%;
+    height: 100%;
+}
+
+.players-field .grid-item.my-player {
+    grid-column: 2 / 3;
+    grid-row: 4 / 4;
+
+    /* height: 100px; */
+    /* width: 200px; */
+    background-color: #ffa8a8;
+}
+
+/************************** GAME BOARD **************************/
+.players-field .game-board {
+    border-radius: var(--card-radius);
+    padding: var(--game-board-gap);
+    background-image: url('../resources/imgs/background/game_board_0.png');
+    /* Масштабирование изображения по размеру блока */
+    background-size: cover;
+    /* Отменяет повторение */
+    background-repeat: no-repeat;
+    /* Позиционирует изображение по центру */
+    background-position: top left;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--game-board-gap);
+}
+
+.game-board .player-name {
+    padding: var(--game-board-spacer);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--game-board-main-color);
+    font-size: 20px;
+    font-weight: bold;
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--card-radius);
+}
+
+/*========================= LIVES ==============================*/
+.game-board .lives {
+    padding: 4px;
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--card-radius);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.lives .icon-live-bullet-not {
+    width: 32px;
+    height: 32px;
+    /* background-color: #ffffff; */
+}
+
+.lives .icon-live-bullet-not>i {
+    background-color: #fff;
+}
+
+.lives .icon-live-bullet {
+    width: 32px;
+    height: 32px;
+}
+
+.lives .icon-live-bullet>i {
+    background-color: var(--game-board-main-color);
+}
+
+/*==============================================================*/
+
+/*========================= INFO ==============================*/
+
+.game-board .info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: var(--game-board-gap);
+}
+
+.info .role {}
+
+.info .character {}
+
+.info .weapon {}
+
+/*==============================================================*/
+
+/* .game-field .top-image {
     width: 60%;
 
     grid-row: 1 / 2;
-    grid-column: 2 / 3;
+    grid-column: 2 / 3;*/
 
-    /* Прижимает изображение к верхнему краю ячейки */
-    align-self: start;
-}
+/* Прижимает изображение к верхнему краю ячейки */
+/* align-self: start; */
+/* } */
 
-.game-field .center-image {
+/* .game-field .center-image {
     width: 24%;
 
     grid-row: 2 / 3;
     grid-column: 2 / 3;
-}
+} */
 
 .game-controls {
     position: absolute;

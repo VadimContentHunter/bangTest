@@ -8,4 +8,11 @@
 
     --main-color: #007bff;
     --alt-color: #173d65;
+    --colored-spacer-white: #ffffff57;
+
+    --card-radius: 12px;
+
+    --game-board-main-color: #36101a;
+    --game-board-gap: 8px;
+    --game-board-spacer: 4px
 }

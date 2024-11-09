@@ -53,3 +53,43 @@
     mask-size: contain;
     /* background-color: #838383; */
 }
+
+/************** icon-bullet **************/
+.icon-bullet {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-bullet.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-bullet.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
+
+.icon-bullet-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-bullet-fill.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-bullet-fill.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
+
+.icon-bullet-full-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-bullet-full-fill.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-bullet-full-fill.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
