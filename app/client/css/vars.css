@@ -11,8 +11,14 @@
     --colored-spacer-white: #ffffff57;
 
     --card-radius: 12px;
+    --card-max-width: 80px;
+    --card-max-height: 124px;
+    --card-min-width: 50px;
+    --card-min-height: 84px;
 
     --game-board-main-color: #36101a;
     --game-board-gap: 8px;
-    --game-board-spacer: 4px
+    --game-board-spacer: 4px;
+    --game-board-radius: 12px;
+    --game-board-name-size: 16px;
 }

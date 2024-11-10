@@ -56,19 +56,33 @@
 
 
 main {
+    padding: 40px 0%;
     width: 100%;
-    height: calc(100vh - 72px);
+    min-height: calc(100vh - 72px);
 }
 
 .game-card {
-    max-width: 80px;
-    max-height: 124px;
-    border-radius: 12px;
+    max-width: var(--card-max-width);
+    max-height: var(--card-max-height);
+    min-width: var(--card-min-width);
+    min-height: var(--card-min-height);
+    border-radius: var(--card-radius);
+}
+
+.game-card-none {
+    max-width: var(--card-max-width);
+    max-height: var(--card-max-height);
+    min-width: var(--card-min-width);
+    min-height: var(--card-min-height);
+    border-radius: var(--card-radius);
+    background-color: rgba(255, 255, 255, 0.6)
 }
 
 .game-card img {
     width: 100%;
     height: 100%;
+    min-width: inherit;
+    min-height: inherit;
     border-radius: inherit;
 }
 
@@ -109,25 +123,79 @@ main {
 .players-field .grid-item {
     /* padding: 20px; */
     /* background-color: #c5c5c5; */
-    text-align: center;
+    /* text-align: center; */
     /* border: 1px solid #fff2f2; */
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
 }
 
-.center-item {
+/************************** battle zone **************************/
+.battle-zone {
     grid-column: 2 / 3;
     grid-row: 2 / 4;
 
-    width: 100px;
-
     display: flex;
+    flex-direction: column !important;
     align-items: center;
     justify-content: center;
 }
 
-.center-item img {
-    width: 100%;
-    height: 100%;
+.battle-zone .fighting-line {
+    position: relative;
+    padding: 8px;
+    border-radius: var(--game-board-radius);
+    background-image: url('../resources/imgs/background/temp_area_0.png');
+    background-size: cover;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }
+
+.battle-zone .step {
+    display: flex;
+    padding: 8px;
+    border-radius: var(--game-board-radius);
+    background-color: var(--game-board-main-color);
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.battle-zone .player-card-area {
+    padding: 4px;
+    border: 2px dashed var(--game-board-main-color);
+    border-radius: var(--game-board-radius);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--game-board-gap);
+}
+
+.player-card-area .player-name {
+    padding: var(--game-board-spacer);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--game-board-main-color);
+    font-size: var(--game-board-name-size);
+    font-weight: bold;
+    background-color: #ffffffa3;
+    border-radius: var(--game-board-radius);
+}
+
+.player-card-area .card-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: var(--game-board-gap);
+}
+
+/************************** players field **************************/
 
 .players-field .grid-item.my-player {
     grid-column: 2 / 3;
@@ -139,20 +207,20 @@ main {
 }
 
 /************************** GAME BOARD **************************/
-.players-field .game-board {
-    border-radius: var(--card-radius);
+.game-board {
+    height: 100%;
+    border-radius: var(--game-board-radius);
     padding: var(--game-board-gap);
     background-image: url('../resources/imgs/background/game_board_0.png');
-    /* Масштабирование изображения по размеру блока */
     background-size: cover;
-    /* Отменяет повторение */
     background-repeat: no-repeat;
-    /* Позиционирует изображение по центру */
     background-position: top left;
 
     display: flex;
     flex-direction: column;
     gap: var(--game-board-gap);
+    align-items: center;
+    justify-content: center;
 }
 
 .game-board .player-name {
@@ -162,17 +230,18 @@ main {
     justify-content: center;
     align-items: center;
     color: var(--game-board-main-color);
-    font-size: 20px;
+    font-size: var(--game-board-name-size);
     font-weight: bold;
     background-color: var(--colored-spacer-white);
-    border-radius: var(--card-radius);
+    border-radius: var(--game-board-radius);
 }
 
 /*========================= LIVES ==============================*/
 .game-board .lives {
+    width: 100%;
     padding: 4px;
     background-color: var(--colored-spacer-white);
-    border-radius: var(--card-radius);
+    border-radius: var(--game-board-radius);
 
     display: flex;
     flex-direction: row;
@@ -186,7 +255,7 @@ main {
 }
 
 .lives .icon-live-bullet-not>i {
-    background-color: #fff;
+    background-color: #ffffffa8;
 }
 
 .lives .icon-live-bullet {
@@ -217,6 +286,44 @@ main {
 
 /*==============================================================*/
 
+.card-temp-area {
+    position: relative;
+    padding: 8px;
+    /* width: var(--card-max-width); */
+    border-radius: var(--game-board-radius);
+    background-image: url('../resources/imgs/background/temp_area_0.png');
+    background-size: cover;
+    /* background-repeat: no-repeat; */
+    /* background-position: top left; */
+}
+
+.card-temp-area::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background-color: rgba(0, 0, 0, 0.2);
+    /* Полупрозрачная заливка */
+    z-index: 1;
+    /* Псевдоэлемент накрывает фоновое изображение */
+}
+
+.card-temp-area .card-container {
+    position: relative;
+    padding: 2px;
+    max-width: var(--card-max-width);
+    min-width: var(--card-min-width);
+    height: 100%;
+    border: 2px dashed #fff;
+    border-radius: var(--card-radius);
+    z-index: 2;
+    /* display: flex; */
+
+}
+
 /* .game-field .top-image {
     width: 60%;
 
@@ -235,6 +342,7 @@ main {
 } */
 
 .game-controls {
+    display: none !important;
     position: absolute;
     width: 100%;
     background: #a3a3a369;
