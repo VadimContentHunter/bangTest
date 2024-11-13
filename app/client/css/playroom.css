@@ -56,9 +56,12 @@
 
 
 main {
-    padding: 40px 0%;
     width: 100%;
     min-height: calc(100vh - 72px);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .game-card {
@@ -86,31 +89,8 @@ main {
     border-radius: inherit;
 }
 
-.game-field {
-    width: 100%;
-    height: 100%;
-
-    /* background-color: #e5bc80; */
-
-    /* background-image: url('../resources/imgs/pack1/sand.png'); */
-    /* Масштабирование изображения по размеру блока */
-    /* background-size: cover; */
-    /* Отменяет повторение */
-    /* background-repeat: no-repeat; */
-    /* Позиционирует изображение по центру */
-    /* background-position: top left; */
-
-    display: grid;
-    grid-template-rows: 1fr auto 1fr;
-    grid-template-columns: 1fr auto 1fr;
-    /* Центрирует содержимое ячеек */
-    place-items: center;
-}
-
 .players-field {
-    grid-row: 2 / 3;
-    grid-column: 2 / 3;
-
+    padding: 40px 0px;
 
     display: grid;
     grid-template-columns: auto auto auto;
@@ -135,14 +115,11 @@ main {
     grid-column: 2 / 3;
     grid-row: 2 / 4;
 
-    display: flex;
-    flex-direction: column !important;
-    align-items: center;
-    justify-content: center;
-}
-
-.battle-zone .fighting-line {
     position: relative;
+    min-width: var(--card-min-width);
+    min-height: var(--card-min-height);
+    height: 100%;
+    width: 100%;
     padding: 8px;
     border-radius: var(--game-board-radius);
     background-image: url('../resources/imgs/background/temp_area_0.png');
@@ -155,41 +132,9 @@ main {
     gap: 20px;
 }
 
-.battle-zone .step {
+.battle-zone .card-container {
     display: flex;
-    padding: 8px;
-    border-radius: var(--game-board-radius);
-    background-color: var(--game-board-main-color);
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-}
-
-.battle-zone .player-card-area {
-    padding: 4px;
-    border: 2px dashed var(--game-board-main-color);
-    border-radius: var(--game-board-radius);
-
-    display: flex;
-    flex-direction: column;
-    gap: var(--game-board-gap);
-}
-
-.player-card-area .player-name {
-    padding: var(--game-board-spacer);
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--game-board-main-color);
-    font-size: var(--game-board-name-size);
-    font-weight: bold;
-    background-color: #ffffffa3;
-    border-radius: var(--game-board-radius);
-}
-
-.player-card-area .card-container {
-    display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
     justify-content: space-around;
     gap: var(--game-board-gap);
@@ -223,6 +168,15 @@ main {
     justify-content: center;
 }
 
+/*========================= front panel ==============================*/
+.game-board .front-panel {
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    gap: var(--game-board-gap);
+}
+
 .game-board .player-name {
     padding: var(--game-board-spacer);
     width: 100%;
@@ -235,6 +189,28 @@ main {
     background-color: var(--colored-spacer-white);
     border-radius: var(--game-board-radius);
 }
+
+.game-board .control-item {
+    padding: var(--player-hand-cards-padding);
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--player-hand-radius);
+    color: #36101b;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.game-board .icon-control {}
+
+.game-board .icon-control>i {
+    width: 24px;
+    height: 24px;
+    background-color: #36101b;
+}
+
+.game-board .item-value {}
 
 /*========================= LIVES ==============================*/
 .game-board .lives {
@@ -249,8 +225,8 @@ main {
 }
 
 .lives .icon-live-bullet-not {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     /* background-color: #ffffff; */
 }
 
@@ -259,8 +235,8 @@ main {
 }
 
 .lives .icon-live-bullet {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
 }
 
 .lives .icon-live-bullet>i {
@@ -288,7 +264,7 @@ main {
 
 .card-temp-area {
     position: relative;
-    padding: 8px;
+    padding: 4px;
     /* width: var(--card-max-width); */
     border-radius: var(--game-board-radius);
     background-image: url('../resources/imgs/background/temp_area_0.png');
@@ -324,23 +300,6 @@ main {
 
 }
 
-/* .game-field .top-image {
-    width: 60%;
-
-    grid-row: 1 / 2;
-    grid-column: 2 / 3;*/
-
-/* Прижимает изображение к верхнему краю ячейки */
-/* align-self: start; */
-/* } */
-
-/* .game-field .center-image {
-    width: 24%;
-
-    grid-row: 2 / 3;
-    grid-column: 2 / 3;
-} */
-
 .game-controls {
     display: none !important;
     position: absolute;
@@ -348,4 +307,145 @@ main {
     background: #a3a3a369;
     display: flex;
     flex-direction: column;
+}
+
+/************************** player hand **************************/
+
+.player-hand {
+    position: sticky;
+    bottom: 0px;
+    /* background-color: #81ffff; */
+    width: 100%;
+    padding: var(--player-hand-main-padding);
+    z-index: 100;
+    background-image: url('../resources/imgs/background/background_0.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    -webkit-box-shadow: var(--player-hand-main-box-shadow);
+    -moz-box-shadow: var(--player-hand-main-box-shadow);
+    box-shadow: var(--player-hand-main-box-shadow);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--player-hand-spacer);
+}
+
+.player-hand .game-card {
+    min-height: var(--card-max-height);
+    min-width: var(--card-max-width);
+}
+
+.player-hand .front-panel {
+    display: flex;
+    flex-direction: row;
+    gap: var(--player-hand-spacer);
+}
+
+.player-hand .player-name {
+    padding: var(--game-board-spacer);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--game-board-main-color);
+    font-size: var(--game-board-name-size);
+    font-weight: bold;
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--game-board-radius);
+}
+
+
+/*==============================================================*/
+.player-hand .player-lives {
+    padding: var(--player-hand-cards-padding);
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--player-hand-radius);
+
+    display: flex;
+    flex-direction: row;
+    gap: var(--player-hand-front-panel-gap);
+}
+
+.player-lives .icon-live-bullet-not {
+    width: 32px;
+    height: 32px;
+    /* background-color: #ffffff; */
+}
+
+.player-lives .icon-live-bullet-not>i {
+    background-color: #ffffffa8;
+}
+
+.player-lives .icon-live-bullet {
+    width: 32px;
+    height: 32px;
+}
+
+.player-lives .icon-live-bullet>i {
+    background-color: var(--game-board-main-color);
+}
+
+/*==============================================================*/
+.player-hand .player-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--player-hand-front-panel-gap);
+}
+
+.player-controls .icon-control {
+    padding: var(--player-hand-cards-padding);
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--player-hand-radius);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.player-controls .icon-control>i {
+    width: 24px;
+    height: 24px;
+    background-color: #36101b;
+}
+
+/*==============================================================*/
+
+.player-hand .main-panel {
+    max-height: 280px;
+    padding: 4px 0px;
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: row;
+    gap: var(--player-hand-spacer);
+}
+
+.player-hand .cards-container {
+    height: 100%;
+    padding: 8px 8px;
+    border-radius: var(--player-hand-radius);
+    /* background-color: var(--colored-spacer-white); */
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--player-hand-spacer);
+}
+
+.player-hand .cards-info {}
+
+.player-hand .cards-temp {
+    min-width: var(--card-max-width);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.player-hand .cards-hand {
+    min-width: var(--card-max-width);
+    align-items: center;
+    flex-wrap: wrap;
 }

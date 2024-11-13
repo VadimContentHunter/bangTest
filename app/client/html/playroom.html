@@ -30,82 +30,175 @@
                     <div class="content">{{content}}</div>
                 </section>
 
-                <section class="game-field">
-                    <!-- <img src="../resources/imgs/pack1/building_sherif.png" class="top-image">
-                    <img src="../resources/imgs/pack1/kolodec.png" class="center-image"> -->
-                    <div class="players-field">
-                        <div class="grid-item">
-                            <section class="game-board">
+                <section class="players-field">
+                    <div class="grid-item">
+                        <section class="game-board">
+                            <div class="front-panel">
                                 <div class="player-name">Vadim</div>
-                                <div class="lives">
-                                    <div class="icon-live-bullet">
-                                        <i class="icon-bullet"></i>
+                                <div class="control-item">
+                                    <div class="icon-control icon-all-cards">
+                                        <i class="icon-cards"></i>
                                     </div>
-                                    <div class="icon-live-bullet">
-                                        <i class="icon-bullet"></i>
-                                    </div>
-                                    <div class="icon-live-bullet-not">
-                                        <i class="icon-bullet-full-fill"></i>
-                                    </div>
-                                    <div class="icon-live-bullet-not">
-                                        <i class="icon-bullet-full-fill"></i>
-                                    </div>
-                                    <div class="icon-live-bullet-not">
-                                        <i class="icon-bullet-full-fill"></i>
-                                    </div>
+                                    <i class="item-value">14</i>
                                 </div>
-                                <div class="info">
-                                    <div class="role game-card">
-                                        <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                                <div class="control-item">
+                                    <div class="icon-control icon-range">
+                                        <i class="icon-target"></i>
                                     </div>
-                                    <div class="character game-card">
-                                        <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                    </div>
-                                    <div class="weapon game-card">
-                                        <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                    </div>
+                                    <i class="item-value">3</i>
                                 </div>
-                            </section>
-                            <section class="card-temp-area">
-                                <div class="card-container"></div>
-                            </section>
-                        </div>
-                        <div class="grid-item my-player">Мой персонаж</div>
-                        <div class="grid-item battle-zone">
-                            <section class="fighting-line">
-                                <div class="step">+</div>
-                                <section class="player-card-area">
-                                    <div class="player-name">Vadim</div>
-                                    <div class="card-container">
-                                        <div class="game-card">
-                                            <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                        </div>
-                                        <div class="game-card-none"></div>
-                                    </div>
-                                </section>
-                            </section>
-                            <section class="fighting-line">
-                                <div class="step">1</div>
-                                <section class="player-card-area">
-                                    <div class="player-name">Vadim</div>
-                                    <div class="card-container">
-                                        <div class="game-card">
-                                            <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                        </div>
-                                        <div class="game-card">
-                                            <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                        </div>
-                                    </div>
-                                </section>
-                                <section class="player-card-area">
-                                    <div class="player-name">Kakoito vtoroi igrok</div>
-                                    <div class="card-container"></div>
-                                </section>
-                            </section>
+                            </div>
 
-                            <!-- <img src="../resources/imgs/pack1/kolodec.png" /> -->
+                            <div class="lives">
+                                <div class="icon-live-bullet">
+                                    <i class="icon-bullet"></i>
+                                </div>
+                                <div class="icon-live-bullet">
+                                    <i class="icon-bullet"></i>
+                                </div>
+                                <div class="icon-live-bullet-not">
+                                    <i class="icon-bullet-full-fill"></i>
+                                </div>
+                                <div class="icon-live-bullet-not">
+                                    <i class="icon-bullet-full-fill"></i>
+                                </div>
+                                <div class="icon-live-bullet-not">
+                                    <i class="icon-bullet-full-fill"></i>
+                                </div>
+                            </div>
+                            <div class="info">
+                                <div class="role game-card">
+                                    <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                                </div>
+                                <div class="character game-card">
+                                    <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                                </div>
+                                <div class="weapon game-card">
+                                    <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                                </div>
+                            </div>
+                        </section>
+                        <section class="card-temp-area">
+                            <div class="card-container"></div>
+                        </section>
+                    </div>
+                    <div class="grid-item my-player">Мой персонаж</div>
+                    <div class="grid-item battle-zone">
+                        <div class="card-container">
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
                         </div>
                     </div>
+                </section>
+                <section class="player-hand">
+                    <section class="front-panel">
+                        <!-- <div class="info"></div> -->
+                        <div class="player-name">Vadim</div>
+                        <div class="player-lives">
+                            <div class="icon-live-bullet">
+                                <i class="icon-bullet"></i>
+                            </div>
+                            <div class="icon-live-bullet">
+                                <i class="icon-bullet"></i>
+                            </div>
+                            <div class="icon-live-bullet-not">
+                                <i class="icon-bullet-full-fill"></i>
+                            </div>
+                            <div class="icon-live-bullet-not">
+                                <i class="icon-bullet-full-fill"></i>
+                            </div>
+                            <div class="icon-live-bullet-not">
+                                <i class="icon-bullet-full-fill"></i>
+                            </div>
+                        </div>
+                        <div class="player-controls">
+                            <div class="icon-control icon-all-cards">
+                                <i class="icon-cards"></i>
+                                <div class="item-value">14</div>
+                            </div>
+
+                            <div class="icon-control icon-range">
+                                <i class="icon-target"></i>
+                                <div class="item-value">3</div>
+                            </div>
+
+                            <div class="icon-control icon-control-collapse">
+                                <i class="icon-collapse"></i>
+                            </div>
+                            <div class="icon-control icon-control-expand">
+                                <i class="icon-expand"></i>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="main-panel">
+                        <div class="cards-container cards-info">
+                            <div class="role game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="character game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="weapon game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                        </div>
+                        <div class="cards-container cards-temp">
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                        </div>
+                        <div class="cards-container cards-hand">
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                            <div class="game-card">
+                                <img src="../resources/imgs/cards/cardBacks/girl.png" />
+                            </div>
+                        </div>
+                    </section>
                 </section>
             </main>
 

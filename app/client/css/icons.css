@@ -93,3 +93,59 @@
     mask-size: contain;
     /* background-color: #838383; */
 }
+
+/************** icon-collapse **************/
+.icon-collapse {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-collapse.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-collapse.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
+
+/************** icon-expand **************/
+.icon-expand {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-expand.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-expand.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
+
+/************** icon-cards **************/
+.icon-cards {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-cards.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-cards.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
+
+/************** icon-target **************/
+.icon-target {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-target.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-target.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
