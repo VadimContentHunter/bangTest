@@ -1,5 +1,3 @@
-const webSocket = {};
-
 class ResponseServerError extends Error {
     constructor(message, statusCode = 1000) {
         super(message);

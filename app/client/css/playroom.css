@@ -300,15 +300,6 @@ main {
 
 }
 
-.game-controls {
-    display: none !important;
-    position: absolute;
-    width: 100%;
-    background: #a3a3a369;
-    display: flex;
-    flex-direction: column;
-}
-
 /************************** player hand **************************/
 
 .player-hand {
@@ -448,4 +439,107 @@ main {
     min-width: var(--card-max-width);
     align-items: center;
     flex-wrap: wrap;
+}
+
+
+/************************** game controls **************************/
+.game-controls {
+    /* display: none !important; */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #454545b5;
+    /* background-image: url(../resources/imgs/background/bulletin_board_0.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top left; */
+    /* opacity: 0.5; */
+    z-index: 200;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.game-controls .controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.game-controls .icon-control {
+    padding: var(--player-hand-cards-padding);
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--player-hand-radius);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.game-controls .icon-control>i {
+    width: 24px;
+    height: 24px;
+    background-color: #36101b;
+}
+
+.game-controls .content {
+    display: none !important;
+}
+
+.game-controls .cards-selection {
+    border-radius: 12px;
+    padding: 20px;
+    margin: 30px 0px;
+    max-width: 560px;
+    color: #36101b;
+    background-image: url(../resources/imgs/background/old_paper_0.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top left;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cards-selection .header {
+    padding: 8px;
+    border-radius: 12px;
+    background-color: var(--colored-spacer-white);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cards-selection .header h5 {
+    padding: 0px 0px 8px 0px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #36101b;
+}
+
+.cards-selection .cards-container {
+    max-width: 560px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 12px;
+}
+
+.cards-selection>p {
+    padding: 8px;
+    border-radius: 12px;
+    background-color: var(--colored-spacer-white);
+}
+
+.cards-selection p>i {
+    text-decoration: underline;
+    font-weight: bold;
+    padding: 0px 4px;
 }
