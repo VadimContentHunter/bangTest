@@ -152,28 +152,42 @@
 
 /************** icon-timer **************/
 .icon-timer {
-     display: block;
-     width: 100%;
-     height: 100%;
-     -webkit-mask: url(../resources/icons/icon-timer.svg);
-     -webkit-mask-repeat: no-repeat;
-     -webkit-mask-size: contain;
-     mask: url(../resources/icons/icon-timer.svg);
-     mask-repeat: no-repeat;
-     mask-size: contain;
-     /* background-color: #838383; */
- }
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-timer.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-timer.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
 
- /************** icon-fold **************/
- .icon-fold {
-     display: block;
-     width: 100%;
-     height: 100%;
-     -webkit-mask: url(../resources/icons/icon-fold.svg);
-     -webkit-mask-repeat: no-repeat;
-     -webkit-mask-size: contain;
-     mask: url(../resources/icons/icon-fold.svg);
-     mask-repeat: no-repeat;
-     mask-size: contain;
-     /* background-color: #838383; */
- }
+/************** icon-fold **************/
+.icon-fold {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-fold.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-fold.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}
+
+/************** icon-fullscreen **************/
+.icon-fullscreen {
+    display: block;
+    width: 100%;
+    height: 100%;
+    -webkit-mask: url(../resources/icons/icon-fullscreen.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask: url(../resources/icons/icon-fullscreen.svg);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    /* background-color: #838383; */
+}

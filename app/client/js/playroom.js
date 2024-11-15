@@ -228,6 +228,16 @@ function main() {
         );
     }
 
+    if (
+        !checkClassAndMethods(
+            GameField,
+            ["init"], // Обычные методы
+            [] // Статические методы
+        )
+    ) {
+        return console.log("Класс GameField не существует или не все методы существуют в нем.");
+    }
+
     if (typeof websocketClient !== "function") {
         return console.log("Функция websocketClient не существует");
     }
@@ -235,6 +245,8 @@ function main() {
     /****************************************************************/
     const notificationsHtml = new NotificationsHtml("header .notifications");
     const requestManager = new RequestManager();
+    const gameField = new GameField();
+    gameField.init();
 
     // for (let index = 0; index < 50; index++) {
     //     notificationsHtml.addNotification("Тестовое сообщение num: " + index);
