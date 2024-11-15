@@ -65,6 +65,7 @@ main {
 }
 
 .game-card {
+    position: relative;
     max-width: var(--card-max-width);
     max-height: var(--card-max-height);
     min-width: var(--card-min-width);
@@ -89,6 +90,73 @@ main {
     border-radius: inherit;
 }
 
+/* .game-card .description {
+    position: absolute;
+    border: 2px solid #380f19;
+    margin: -90px -120px 40px 90px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4caf3e63;
+    border-radius: inherit;
+    z-index: 4;
+    background-image: url(../resources/imgs/cards/cardBacks/girl.png);
+    background-size: cover;
+
+    opacity: 0;
+    pointer-events: none;
+    animation: none;
+}
+
+@keyframes showBlock {
+    to {
+        opacity: 1;
+    }
+}
+
+.game-card:hover .description {
+    animation: showBlock 1s ease-in 1s forwards;
+} */
+
+.game-card:hover::before {
+    content: "";
+    cursor: pointer;
+    position: absolute;
+    border: 2px solid #4baf3e;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4caf3e63;
+    border-radius: inherit;
+}
+
+.icon-control {
+    padding: var(--player-hand-cards-padding);
+    background-color: var(--colored-spacer-white);
+    border-radius: var(--player-hand-radius);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.icon-control > .item-value {}
+
+.icon-control>i {
+    width: 24px;
+    height: 24px;
+    background-color: #36101b;
+}
+
+.icon-control:hover {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+/************************** players field **************************/
 .players-field {
     padding: 40px 0px;
 
@@ -132,7 +200,7 @@ main {
     gap: 20px;
 }
 
-.battle-zone .card-container {
+.battle-zone .cards-container {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -153,7 +221,9 @@ main {
 
 /************************** GAME BOARD **************************/
 .game-board {
+    position: relative;
     height: 100%;
+    border: 4px solid #ffffff;
     border-radius: var(--game-board-radius);
     padding: var(--game-board-gap);
     background-image: url('../resources/imgs/background/game_board_0.png');
@@ -167,6 +237,23 @@ main {
     align-items: center;
     justify-content: center;
 }
+
+.game-board:hover {
+    border: 4px solid #af3e3e;
+}
+
+/* .game-board:hover::before {
+    content: "";
+    cursor: pointer;
+    position: absolute;
+    border: 2px solid #4baf3e;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4caf3e63;
+    border-radius: inherit;
+} */
 
 /*========================= front panel ==============================*/
 .game-board .front-panel {
@@ -189,28 +276,6 @@ main {
     background-color: var(--colored-spacer-white);
     border-radius: var(--game-board-radius);
 }
-
-.game-board .control-item {
-    padding: var(--player-hand-cards-padding);
-    background-color: var(--colored-spacer-white);
-    border-radius: var(--player-hand-radius);
-    color: #36101b;
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-}
-
-.game-board .icon-control {}
-
-.game-board .icon-control>i {
-    width: 24px;
-    height: 24px;
-    background-color: #36101b;
-}
-
-.game-board .item-value {}
 
 /*========================= LIVES ==============================*/
 .game-board .lives {
@@ -287,7 +352,7 @@ main {
     /* Псевдоэлемент накрывает фоновое изображение */
 }
 
-.card-temp-area .card-container {
+.card-temp-area .cards-container {
     position: relative;
     padding: 2px;
     max-width: var(--card-max-width);
@@ -386,23 +451,6 @@ main {
     gap: var(--player-hand-front-panel-gap);
 }
 
-.player-controls .icon-control {
-    padding: var(--player-hand-cards-padding);
-    background-color: var(--colored-spacer-white);
-    border-radius: var(--player-hand-radius);
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-}
-
-.player-controls .icon-control>i {
-    width: 24px;
-    height: 24px;
-    background-color: #36101b;
-}
-
 /*==============================================================*/
 
 .player-hand .main-panel {
@@ -444,7 +492,7 @@ main {
 
 /************************** game controls **************************/
 .game-controls {
-    /* display: none !important; */
+    display: none !important;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -465,23 +513,6 @@ main {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-}
-
-.game-controls .icon-control {
-    padding: var(--player-hand-cards-padding);
-    background-color: var(--colored-spacer-white);
-    border-radius: var(--player-hand-radius);
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-}
-
-.game-controls .icon-control>i {
-    width: 24px;
-    height: 24px;
-    background-color: #36101b;
 }
 
 .game-controls .content {
