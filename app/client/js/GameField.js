@@ -116,10 +116,78 @@ class PlayerHand {
     }
 }
 
+class CardsHandler {
+    constructor(selectorDescription) {
+        this.descriptionElement = document.querySelector(selectorDescription) ?? null;
+        this.cardElements = [];
+        this.timerCollection = new WeakMap(); // Хранилище таймеров для каждой карточки
+    }
+
+    initializeAllHtmlCards(selectorCardElement) {
+        this.cardElements = Array.from(document.querySelectorAll(selectorCardElement)) ?? [];
+        console.log(this.cardElements);
+        
+        this.cardElements.forEach((cardElement) => {
+            this.setupCardHoverListeners(cardElement);
+        });
+    }
+
+    createdGetCard(src){
+
+    }
+
+    setupCardHoverListeners(cardElement) {
+        if (cardElement instanceof HTMLElement) {
+            cardElement.addEventListener("mouseenter", () => this.handleMouseEnter(cardElement));
+            cardElement.addEventListener("mouseleave", () => this.handleMouseLeave(cardElement));
+        }
+    }
+
+    handleMouseEnter(cardElement) {
+        const timer = setTimeout(() => {
+            this.showDescription(cardElement);
+        }, 2000); // Ждём 2 секунды
+
+        this.timerCollection.set(cardElement, timer); // Сохраняем таймер
+    }
+
+    handleMouseLeave(cardElement) {
+        if (this.timerCollection.has(cardElement)) {
+            clearTimeout(this.timerCollection.get(cardElement)); // Очищаем таймер
+            this.timerCollection.delete(cardElement); // Удаляем из WeakMap
+        }
+        this.hideDescription(); // Убираем описание
+    }
+
+    showDescription(cardElement) {
+        const imageCard = cardElement.querySelector("img");
+        const imageDescription = this.descriptionElement.querySelector("img");
+        if (
+            this.descriptionElement instanceof HTMLElement &&
+            imageCard instanceof HTMLImageElement &&
+            imageDescription instanceof HTMLImageElement
+        ) {
+            this.descriptionElement.style.display = "block";
+            imageDescription.src = imageCard.src;
+        }
+    }
+
+    hideDescription() {
+        const imageDescription = this.descriptionElement.querySelector("img");
+        if (this.descriptionElement instanceof HTMLElement) {
+            this.descriptionElement.style.display = "none"; // Скрываем блок
+            imageDescription.src = "";
+        }
+    }
+}
+
 class GameField {
     init() {
         this.playerHand = new PlayerHand("main .player-hand");
         this.playerHand.init();
+
+        this.cards = new CardsHandler(".card-description");
+        this.cards.initializeAllHtmlCards(".game-card");
     }
 }
 

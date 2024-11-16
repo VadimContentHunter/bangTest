@@ -90,34 +90,22 @@ main {
     border-radius: inherit;
 }
 
-/* .game-card .description {
+.card-description {
     position: absolute;
-    border: 2px solid #380f19;
-    margin: -90px -120px 40px 90px;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #4caf3e63;
-    border-radius: inherit;
-    z-index: 4;
-    background-image: url(../resources/imgs/cards/cardBacks/girl.png);
-    background-size: cover;
-
-    opacity: 0;
-    pointer-events: none;
-    animation: none;
+    display: none;
+    top: 80px;
+    left: 12px;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: var(--card-radius);
+    z-index: 1000;
+    white-space: nowrap;
 }
 
-@keyframes showBlock {
-    to {
-        opacity: 1;
-    }
+.card-description img {
+    width: 256px;
+    height: auto;
 }
-
-.game-card:hover .description {
-    animation: showBlock 1s ease-in 1s forwards;
-} */
 
 .game-card:hover::before {
     content: "";
@@ -200,7 +188,7 @@ main {
     gap: 20px;
 }
 
-.battle-zone .controls{
+.battle-zone .controls {
     display: flex;
     flex-direction: row;
     gap: 8px;
