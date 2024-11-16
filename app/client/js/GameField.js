@@ -52,6 +52,7 @@ class PlayerHand {
     init() {
         this.setupFoldListener();
         this.setupCollapseListener();
+        this.setupFullscreenListener();
     }
 
     setupFoldListener() {
@@ -72,8 +73,8 @@ class PlayerHand {
         this.collapseElement.addEventListener("click", () => {
             if (this.mainPanel.style.maxHeight == "") {
                 this.mainPanel.style.maxHeight = "140px";
-                if(iElement instanceof HTMLElement){
-                    if(iElement.classList.contains("icon-collapse")){
+                if (iElement instanceof HTMLElement) {
+                    if (iElement.classList.contains("icon-collapse")) {
                         iElement.classList.remove("icon-collapse");
                         iElement.classList.add("icon-expand");
                     }
@@ -84,6 +85,30 @@ class PlayerHand {
                     if (iElement.classList.contains("icon-expand")) {
                         iElement.classList.remove("icon-expand");
                         iElement.classList.add("icon-collapse");
+                    }
+                }
+            }
+        });
+    }
+
+    setupFullscreenListener() {
+        let iElement = this.fullscreenElement?.querySelector("i");
+
+        this.fullscreenElement.addEventListener("click", () => {
+            if (this.mainPanel.style.maxHeight !== "none") {
+                this.mainPanel.style.maxHeight = "none";
+                if (iElement instanceof HTMLElement) {
+                    if (iElement.classList.contains("icon-fullscreen")) {
+                        iElement.classList.remove("icon-fullscreen");
+                        iElement.classList.add("icon-fullscreen-exit");
+                    }
+                }
+            } else {
+                this.mainPanel.style.maxHeight = "";
+                if (iElement instanceof HTMLElement) {
+                    if (iElement.classList.contains("icon-fullscreen-exit")) {
+                        iElement.classList.remove("icon-fullscreen-exit");
+                        iElement.classList.add("icon-fullscreen");
                     }
                 }
             }
