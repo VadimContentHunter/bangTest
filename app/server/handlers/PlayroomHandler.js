@@ -64,7 +64,7 @@ class PlayroomHandler {
                 }
             }
         } catch (error) {
-            // this.handleError(error);
+            this.handleError(error);
             // return;
         }
 

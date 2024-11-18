@@ -8,6 +8,7 @@ const { parseCookies, createCookie } = require("./helper"); // Импортир�
 const url = require("url");
 const SessionHandler = require("../handlers/SessionHandler");
 const JsonRpcMethodHandler = require("./JsonRpcMethodHandler");
+const AuthHandler = require("../handlers/AuthHandler");
 const PlayroomHandlerError = require("../Errors/PlayroomHandlerError");
 const PlayroomHandler = require("../handlers/PlayroomHandler");
 const aResponseHandler = require("../interfaces/aResponseHandler");
@@ -20,6 +21,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         throw new Error("playroomHandler must be an instance of PlayroomHandler");
     }
 
+    AuthHandler.playroomHandler = playroomHandler;
     const wss = new WebSocket.Server({ server });
 
     // Подписка на хуки
