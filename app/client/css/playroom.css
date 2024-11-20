@@ -523,7 +523,7 @@ main {
 
 /************************** game controls **************************/
 .game-controls {
-    display: none !important;
+    display: none;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -535,7 +535,7 @@ main {
     /* opacity: 0.5; */
     z-index: 200;
 
-    display: flex;
+    /* display: flex; */
     flex-direction: column;
     align-items: center;
 }
