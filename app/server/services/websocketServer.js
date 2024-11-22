@@ -37,6 +37,22 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         });
     });
 
+    myHooks.on("requestAllUser", (requestMethodName, requestData) => {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JsonRpcFormatter.serializeRequest(requestMethodName, requestData));
+            }
+        });
+    });
+
+    myHooks.on("responseAllUser", (result, id = null) => {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                cws.send(JsonRpcFormatter.serializeResponse(result, id));
+            }
+        });
+    });
+
     // Событие при установлении нового соединения
     wss.on("connection", (ws, req) => {
         const queryParams = url.parse(req.url, true).query;
@@ -45,7 +61,12 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         let sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
         console.log(`WebSocket: Новое соединение установлено с IP: ${ip}`);
 
-        playroomHandler.connect(sessionId);
+        try {
+            const player = playroomHandler.connect(sessionId);
+        } catch (error) {
+            ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
+            console.log(error);
+        }
         myHooks.emit("updateUserCount");
 
         // Слушаем сообщения от клиента
@@ -69,8 +90,16 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     typeof requestRpc.id === "number"
                 ) {
                     const result = jsonRpcMethodHandler.instance.getResult();
-                    if (result !== null) {
+                    if (
+                        result !== null &&
+                        jsonRpcMethodHandler.instance.hasResultForAllClients() === false
+                    ) {
                         ws.send(JsonRpcFormatter.serializeResponse(result, requestRpc?.id));
+                    } else if (
+                        result !== null &&
+                        jsonRpcMethodHandler.instance.hasResultForAllClients() === true
+                    ) {
+                        myHooks.emit("responseAllUser", result, requestRpc?.id);
                     }
                 }
 
