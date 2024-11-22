@@ -153,6 +153,9 @@ function requestServer(request) {
         case "updateUserCount":
             updateUserCount(request?.params, "#user-count");
             break;
+        case "getMyPlayer":
+            updateUserCount(request?.params, "#user-count");
+            break;
         default:
             throw new RequestServerError("Неизвестный запрос от сервера: " + response);
         // console.error("Неизвестный запрос от сервера:", response);
@@ -230,12 +233,48 @@ function main() {
 
     if (
         !checkClassAndMethods(
-            GameField,
-            ["init"], // Обычные методы
+            CardModel,
+            ["isCreatedCartElement", "createHtmlShell"], // Обычные методы
+            ["setupCardHoverListeners", "showDescription", "hideDescription"] // Статические методы
+        )
+    ) {
+        return console.log("Класс CardModel не существует или не все методы существуют в нем.");
+    }
+
+    if (
+        !checkClassAndMethods(
+            GameControls,
+            ["showMainController", "hideMainController", "floatingMainController"], // Обычные методы
             [] // Статические методы
         )
     ) {
-        return console.log("Класс GameField не существует или не все методы существуют в нем.");
+        return console.log("Класс GameControls не существует или не все методы существуют в нем.");
+    }
+
+    if (
+        !checkClassAndMethods(
+            CardSelection,
+            ["checkElements", "init", "setupCollapseListener"], // Обычные методы
+            [] // Статические методы
+        )
+    ) {
+        return console.log("Класс CardSelection не существует или не все методы существуют в нем.");
+    }
+
+    if (
+        !checkClassAndMethods(
+            PlayerHand,
+            [
+                "checkElements",
+                "init",
+                "setupFoldListener",
+                "setupCollapseListener",
+                "setupFullscreenListener",
+            ], // Обычные методы
+            [] // Статические методы
+        )
+    ) {
+        return console.log("Класс PlayerHand не существует или не все методы существуют в нем.");
     }
 
     if (typeof websocketClient !== "function") {
@@ -245,8 +284,12 @@ function main() {
     /****************************************************************/
     const notificationsHtml = new NotificationsHtml("header .notifications");
     const requestManager = new RequestManager();
-    const gameField = new GameField();
-    gameField.init();
+
+    const playerHand = new PlayerHand("main .player-hand");
+    playerHand.init();
+
+    const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
+    cardSelection.init();
 
     // for (let index = 0; index < 50; index++) {
     //     notificationsHtml.addNotification("Тестовое сообщение num: " + index);

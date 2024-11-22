@@ -99,7 +99,9 @@ app.get("/playroom", (req, res) => {
             <script src="/js/NotificationsHtml.js"></script>
             <script src="/js/websocketClient.js"></script>
             <script src="/js/RequestManager.js"></script>
-             <script src="/js/GameField.js"></script>
+            <script src="/js/CardModel.js"></script>
+            <script src="/js/GameControls.js"></script>
+            <script src="/js/PlayerHand.js"></script>
             <script>const serverIp = "${serverIp}:${port}";</script>
         `,
                 scriptEndLinks: `
@@ -118,7 +120,9 @@ app.get("/playroom", (req, res) => {
             // res.redirect(301, "/");
         }
     } catch (error) {
-        res.send(`Игрок не найден. <a href="/">Попробовать снова</a> <br><br><h3>ОШИБКА: ${error.message}</h3>`);
+        res.send(
+            `Игрок не найден. <a href="/">Попробовать снова</a> <br><br><h3>ОШИБКА: ${error.message}</h3>`
+        );
     }
 });
 
