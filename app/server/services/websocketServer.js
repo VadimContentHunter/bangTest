@@ -63,6 +63,12 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
         try {
             const player = playroomHandler.connect(sessionId);
+            ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player.getInfo()));
+            myHooks.emit(
+                "requestAllUser",
+                "getAllPlayers",
+                playroomHandler.getAllPlayersSummaryInfo()
+            );
         } catch (error) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
             console.log(error);

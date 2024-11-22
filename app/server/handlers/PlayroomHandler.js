@@ -118,6 +118,10 @@ class PlayroomHandler {
         }
     }
 
+    getAllPlayersSummaryInfo(){
+        return this.playerOnline.getDataSummaryAllPlayers();
+    };
+
     /**
      * Подсчитывает количество игроков, находящихся онлайн.
      * @returns {number} Количество игроков онлайн.

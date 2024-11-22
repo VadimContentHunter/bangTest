@@ -5,6 +5,13 @@ class Player {
         this.id = id; // Идентификатор теперь передается при создании игрока
         this.name = name;
         this.sessionId = sessionId;
+        this._lives = null;
+        this._distance = null;
+        this._role = null;
+        this._character = null;
+        this._weapon = null;
+        this._temporaryCards = null;
+        this._hand = null;
     }
 
     setSession(sessionId) {
@@ -20,6 +27,28 @@ class Player {
             id: this.id,
             name: this.name,
             sessionId: this.sessionId,
+            lives: this._lives,
+            distance: this._distance,
+            role: this._role,
+            character: this._character,
+            weapon: this._weapon,
+            temporaryCards: this._temporaryCards,
+            hand: this._hand,
+        };
+    }
+
+    getSummaryInfo() {
+        return {
+            id: this.id,
+            name: this.name,
+            sessionId: this.sessionId,
+            lives: this._lives,
+            distance: this._distance,
+            role: null, // TODO: Показывает только шерифа
+            character: this._character,
+            weapon: this._weapon,
+            temporaryCards: this._temporaryCards,
+            countHand: null,
         };
     }
 

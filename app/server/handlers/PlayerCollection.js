@@ -211,6 +211,17 @@ class PlayerCollection {
     }
 
     /**
+     * Собирает данные всех игроков с помощью их метода getSummaryInfo.
+     * @returns {Array<Object>} Массив данных всех игроков, полученных из getSummaryInfo.
+     * @throws {Error} Если у игрока отсутствует метод getSummaryInfo.
+     */
+    getDataSummaryAllPlayers() {
+        return Object.values(this.players)
+            .filter((player) => typeof player.getSummaryInfo === "function") // Проверяем наличие метода getSummaryInfo
+            .map((player) => player.getSummaryInfo()); // Вызываем метод getSummaryInfo и собираем данные в массив
+    }
+
+    /**
      * Подсчитывает общее количество игроков, которые являются экземплярами Player.
      * @returns {number} Количество игроков.
      */
