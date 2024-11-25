@@ -63,7 +63,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
         try {
             const player = playroomHandler.connect(sessionId);
-            ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player.getInfo()));
+            ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
             myHooks.emit(
                 "requestAllUser",
                 "getAllPlayers",

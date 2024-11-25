@@ -145,7 +145,7 @@ function responseServer(requestManager, notificationsHtml, response) {
     }
 }
 
-function requestServer(request) {
+function requestServer(request, data = {}, ws) {
     switch (request.method) {
         case "updateSessionId":
             updateSessionId(request?.params);
@@ -154,7 +154,21 @@ function requestServer(request) {
             updateUserCount(request?.params, "#user-count");
             break;
         case "getMyPlayer":
-            updateUserCount(request?.params, "#user-count");
+            if (data.playerHand instanceof PlayerHand) {
+                data.playerHand.name = request?.params?.name;
+                data.playerHand.lives = request?.params?.lives ?? 0;
+                data.playerHand.renderUpdatedData();
+            } else {
+                console.error("requestServer ('getMyPlayer'): data.playerHand must be PlayerHand");
+            }
+            // if (data.cardSelection instanceof CardSelection) {
+            //     data.cardSelection;
+            // } else {
+            //     console.error("requestServer: data.cardSelection must be CardSelection");
+            // }
+            break;
+        case "getAllPlayers":
+            
             break;
         default:
             throw new RequestServerError("Неизвестный запрос от сервера: " + response);
@@ -287,6 +301,7 @@ function main() {
 
     const playerHand = new PlayerHand("main .player-hand");
     playerHand.init();
+    playerHand.renderUpdatedData();
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
@@ -307,7 +322,14 @@ function main() {
             } catch (error) {
                 if (error instanceof JsonRpcFormatterError) {
                     try {
-                        requestServer(JsonRpcFormatter.deserializeRequest(data), ws);
+                        requestServer(
+                            JsonRpcFormatter.deserializeRequest(data),
+                            {
+                                cardSelection: cardSelection,
+                                playerHand: playerHand,
+                            },
+                            ws
+                        );
                     } catch (error) {
                         errorHandler(error, notificationsHtml);
                     }
