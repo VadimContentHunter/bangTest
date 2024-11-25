@@ -167,8 +167,43 @@ function requestServer(request, data = {}, ws) {
             //     console.error("requestServer: data.cardSelection must be CardSelection");
             // }
             break;
-        case "getAllPlayers":
-            
+        case "createAllGameBoard":
+            if (!(data.playersFieldElement instanceof HTMLElement)) {
+                console.error("requestServer: data.playersFieldElement must be HTMLElement");
+                return;
+            }
+            const elementsToRemove = data.playersFieldElement.querySelectorAll(
+                ".grid-item:not(.battle-zone)"
+            );
+            elementsToRemove.forEach((element) => {
+                if (element.gameBoardInstance instanceof GameBoard) {
+                    element.gameBoardInstance.destroy();
+                }
+                element.remove();
+            });
+
+            const collectionPlayers = request?.params;
+            if (Array.isArray(collectionPlayers) && collectionPlayers.length > 0) {
+                collectionPlayers.forEach((player) => {
+                    const gridItem = document.createElement("div");
+                    gridItem.classList.add("grid-item");
+                    if (
+                        data.playerHand instanceof PlayerHand &&
+                        data.playerHand.name === player?.name
+                    ) {
+                        gridItem.classList.add("my-player");
+                    }
+
+                    const gameBoard = new GameBoard();
+                    gameBoard.name = player.name;
+                    gameBoard.lives = player?.lives ?? 0;
+                    gameBoard.initAndCreateToContainer(gridItem);
+                    gameBoard.renderUpdatedData();
+
+                    gridItem.gameBoardInstance = gameBoard;
+                    data.playersFieldElement.append(gridItem);
+                });
+            }
             break;
         default:
             throw new RequestServerError("Неизвестный запрос от сервера: " + response);
@@ -291,6 +326,24 @@ function main() {
         return console.log("Класс PlayerHand не существует или не все методы существуют в нем.");
     }
 
+    if (
+        !checkClassAndMethods(
+            GameBoard,
+            [
+                "checkElements",
+                "checkCardTempAreaElements",
+                "initAndCreateToContainer",
+                "initToContainer",
+                "createGameBoard",
+                "createCardTempArea",
+                "renderUpdatedData",
+            ], // Обычные методы
+            [] // Статические методы
+        )
+    ) {
+        return console.log("Класс PlayerHand не существует или не все методы существуют в нем.");
+    }
+
     if (typeof websocketClient !== "function") {
         return console.log("Функция websocketClient не существует");
     }
@@ -305,6 +358,10 @@ function main() {
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
+
+    // const gameBoard = new GameBoard();
+
+    const playersFieldElement = document.querySelector("main .players-field");
 
     // for (let index = 0; index < 50; index++) {
     //     notificationsHtml.addNotification("Тестовое сообщение num: " + index);
@@ -327,6 +384,7 @@ function main() {
                             {
                                 cardSelection: cardSelection,
                                 playerHand: playerHand,
+                                playersFieldElement: playersFieldElement,
                             },
                             ws
                         );

@@ -32,9 +32,7 @@ class PlayerHand {
 
     set name(value) {
         if (typeof value !== "string" || value.trim() === "") {
-            console.error("PlayerHand.name(value): value must be a non-empty string.");
-            return;
-            // throw new Error("PlayerHand.name(value): value must be a non-empty string.");
+            throw new Error("PlayerHand.name(value): value must be a non-empty string.");
         }
 
         this._name = value;
@@ -54,20 +52,18 @@ class PlayerHand {
 
     set lives(value) {
         if (!Number.isInteger(value) || value < 0) {
-            console.error(
+            throw new Error(
                 "PlayerHand.lives(value): value must be an integer or value must be greater than zero"
             );
-            return;
         }
         this._lives = value;
     }
 
     set maxLives(value) {
         if (!Number.isInteger(value) || value < 0) {
-            console.error(
+            throw new Error(
                 "PlayerHand.maxLives(value): value must be an integer or value must be greater than zero."
             );
-            return;
         }
         this._maxLives = value;
     }
@@ -107,20 +103,18 @@ class PlayerHand {
 
     get lives() {
         if (!Number.isInteger(this._lives) || this._lives < 0) {
-            console.error(
+            throw new Error(
                 "PlayerHand.lives(value): value must be an integer or value must be greater than zero "
             );
-            return;
         }
         return this._lives;
     }
 
     get maxLives() {
         if (!Number.isInteger(this._maxLives) || this._maxLives < 0) {
-            console.error(
+            throw new Error(
                 "PlayerHand.maxLives(value): value must be an integer or value must be greater than zero."
             );
-            return;
         }
         return this._maxLives;
     }

@@ -43,7 +43,7 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this._lives,
-            distance: this._distance,
+            // distance: this._distance,
             role: null, // TODO: Показывает только шерифа
             character: this._character,
             weapon: this._weapon,

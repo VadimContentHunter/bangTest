@@ -102,6 +102,7 @@ app.get("/playroom", (req, res) => {
             <script src="/js/CardModel.js"></script>
             <script src="/js/GameControls.js"></script>
             <script src="/js/PlayerHand.js"></script>
+            <script src="/js/GameBoard.js"></script>
             <script>const serverIp = "${serverIp}:${port}";</script>
         `,
                 scriptEndLinks: `

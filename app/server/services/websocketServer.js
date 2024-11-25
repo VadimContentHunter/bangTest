@@ -66,7 +66,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
             myHooks.emit(
                 "requestAllUser",
-                "getAllPlayers",
+                "createAllGameBoard",
                 playroomHandler.getAllPlayersSummaryInfo()
             );
         } catch (error) {
