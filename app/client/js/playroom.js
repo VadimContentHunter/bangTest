@@ -157,6 +157,15 @@ function requestServer(request, data = {}, ws) {
             if (data.playerHand instanceof PlayerHand) {
                 data.playerHand.name = request?.params?.name;
                 data.playerHand.lives = request?.params?.lives ?? 0;
+                if (request?.params?.role != null) {
+                    data.playerHand.role = request?.params?.role;
+                }
+                if (request?.params?.character != null) {
+                    data.playerHand.character = request?.params?.character;
+                }
+                if (request?.params?.weapon != null) {
+                    data.playerHand.weapon = request?.params?.weapon;
+                }
                 data.playerHand.renderUpdatedData();
             } else {
                 console.error("requestServer ('getMyPlayer'): data.playerHand must be PlayerHand");
@@ -197,6 +206,15 @@ function requestServer(request, data = {}, ws) {
                     const gameBoard = new GameBoard();
                     gameBoard.name = player.name;
                     gameBoard.lives = player?.lives ?? 0;
+                    if (player?.role != null) {
+                        gameBoard.role = player?.role;
+                    }
+                    if (player?.character != null) {
+                        gameBoard.character = player?.character;
+                    }
+                    if (player?.weapon != null) {
+                        gameBoard.weapon = player?.weapon;
+                    }
                     gameBoard.initAndCreateToContainer(gridItem);
                     gameBoard.renderUpdatedData();
 

@@ -66,10 +66,10 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
         try {
             const player = playroomHandler.connect(sessionId);
-            player.role = new StubCard(CardType.ROLE);
-            player.character = new StubCard(CardType.CHARACTER);
-            player.weapon = new StubCard(CardType.WEAPON);
             if (player instanceof Player) {
+                player.role = new StubCard(CardType.ROLE);
+                player.character = new StubCard(CardType.CHARACTER);
+                player.weapon = new StubCard(CardType.WEAPON);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
                 myHooks.emit(
                     "requestAllUser",

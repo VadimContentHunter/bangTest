@@ -8,16 +8,16 @@ class CardModel {
 
     _cardId = null;
     _cardType = null;
-    _ownerName = null;
+    // _ownerName = null;
     _src = null;
     _timerDescription = {};
     _cartElement = null;
     _selectorDescriptionCart = null;
 
-    constructor(cardId, cardType, ownerName, src) {
-        this.cardId = cardId; // Используем сеттер для проверки
-        this.cardType = cardType; // Используем сеттер для проверки
-        this.ownerName = ownerName; // Используем сеттер для проверки
+    constructor(cardId, cardType, src) {
+        this.cardId = cardId;
+        this.cardType = cardType;
+        // this.ownerName = ownerName;
         this._src = src;
         this.selectorDescriptionCart = ".card-description";
     }
@@ -38,12 +38,12 @@ class CardModel {
         this._cardType = value;
     }
 
-    set ownerName(value) {
-        if (typeof value !== "string" || value.trim() === "") {
-            throw new Error("ownerName must be a non-empty string.");
-        }
-        this._ownerName = value;
-    }
+    // set ownerName(value) {
+    //     if (typeof value !== "string" || value.trim() === "") {
+    //         throw new Error("ownerName must be a non-empty string.");
+    //     }
+    //     this._ownerName = value;
+    // }
 
     set timerDescription(value) {
         this._timerDescription = value;
@@ -64,9 +64,9 @@ class CardModel {
         return this._cardType;
     }
 
-    get ownerName() {
-        return this._ownerName;
-    }
+    // get ownerName() {
+    //     return this._ownerName;
+    // }
 
     get timerDescription() {
         return this._timerDescription;
@@ -102,7 +102,7 @@ class CardModel {
         cardElement.setAttribute("data-card-id", this._cardId);
         cardElement.setAttribute("data-card-type", this._cardType);
 
-        this.setupCardHoverListeners(cardElement);
+        CardModel.setupCardHoverListeners(this);
         this._cartElement = cardElement;
         return this;
     }
@@ -129,6 +129,11 @@ class CardModel {
                 CardModel.hideDescription(descriptionElement); // Убираем описание
             });
         }
+    }
+
+    static init(cardId, cardType, src) {
+        const cardModel = new CardModel(cardId, cardType, src);
+        return cardModel.createHtmlShell();
     }
 
     static showDescription(cardElement, descriptionElement) {

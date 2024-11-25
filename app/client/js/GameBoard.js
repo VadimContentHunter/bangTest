@@ -38,15 +38,70 @@ class GameBoard {
         this._numDistance = value;
     }
 
+    /**
+     * Устанавливает роль для руки игрока.
+     * Если переданное значение не является экземпляром `CardModel`,
+     * метод пытается инициализировать его с помощью `CardModel.init`.
+     * Выбрасывает ошибку, если значение не удаётся преобразовать в допустимый `CardModel`.
+     *
+     * @param {CardModel|Object|null} value - Устанавливаемая роль. Может быть экземпляром `CardModel`
+     *                                   или объектом, который можно преобразовать в `CardModel`.
+     * @throws {Error} Выбрасывается, если значение не является экземпляром `CardModel` после преобразования.
+     */
     set role(value) {
+        if (!(value instanceof CardModel)) {
+            value = CardModel.init(value?.id, value?.type, value?.image);
+        }
+
+        if (!(value instanceof CardModel)) {
+            throw new Error("PlayerHand.role(value): value must be an instance of CardModel.");
+        }
         this._role = value;
     }
 
+    /**
+     * Устанавливает персонажа для руки игрока.
+     * Проверяет, является ли переданное значение экземпляром `CardModel`.
+     * Если нет, пытается инициализировать его через `CardModel.init(value)`.
+     *
+     * @param {Object} value - Устанавливаемое значение персонажа.
+     *                        Ожидается объект, который может быть инициализирован как `CardModel`.
+     * @throws {Error} Если значение не является экземпляром `CardModel` после инициализации.
+     */
     set character(value) {
+        // Если значение не является экземпляром CardModel, пытаемся инициализировать
+        if (!(value instanceof CardModel)) {
+            value = CardModel.init(value?.id, value?.type, value?.image);
+        }
+
+        // Если значение не является экземпляром CardModel даже после инициализации, выбрасываем ошибку
+        if (!(value instanceof CardModel)) {
+            throw new Error("PlayerHand.character(value): value must be an instance of CardModel.");
+        }
+
         this._character = value;
     }
 
+    /**
+     * Устанавливает оружие для руки игрока.
+     * Проверяет, является ли переданное значение экземпляром `CardModel`.
+     * Если нет, пытается инициализировать его через `CardModel.init(value)`.
+     *
+     * @param {Object} value - Устанавливаемое значение оружия.
+     *                        Ожидается объект, который может быть инициализирован как `CardModel`.
+     * @throws {Error} Если значение не является экземпляром `CardModel` после инициализации.
+     */
     set weapon(value) {
+        // Если значение не является экземпляром CardModel, пытаемся инициализировать
+        if (!(value instanceof CardModel)) {
+            value = CardModel.init(value?.id, value?.type, value?.image);
+        }
+
+        // Если значение не является экземпляром CardModel даже после инициализации, выбрасываем ошибку
+        if (!(value instanceof CardModel)) {
+            throw new Error("PlayerHand.weapon(value): value must be an instance of CardModel.");
+        }
+
         this._weapon = value;
     }
 
@@ -290,6 +345,16 @@ class GameBoard {
         }
         this.countHandCardsElement.innerText = this.countHandCards;
         this.distanceNumElement.innerText = this.numDistance;
+
+        if (this.role instanceof CardModel) {
+            this.roleElement.append(this.role.cartElement);
+        }
+        if (this.character instanceof CardModel) {
+            this.characterElement.append(this.character.cartElement);
+        }
+        if (this.weapon instanceof CardModel) {
+            this.weaponElement.append(this.weapon.cartElement);
+        }
     }
 
     destroy() {

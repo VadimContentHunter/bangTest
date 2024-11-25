@@ -48,6 +48,7 @@ class aCard {
     }
 
     set type(value) {
+        // let l = value.toUpperCase();
         if (!Object.values(CardType).includes(value)) {
             throw new CardError("Неверный тип карты.", 4);
         }
@@ -68,6 +69,15 @@ class aCard {
 
     get type() {
         return this._type;
+    }
+
+    toJSON() {
+        return {
+            id: this.id,
+            name: this.name,
+            image: this.image,
+            type: this.type,
+        };
     }
 }
 
