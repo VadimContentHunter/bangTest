@@ -31,7 +31,7 @@ class aCard {
     }
 
     set name(value) {
-        if (typeof name !== "string") {
+        if (typeof value !== "string") {
             throw new ValidatePlayerError("Имя должно быть строкой.");
         }
 
@@ -39,10 +39,10 @@ class aCard {
     }
 
     set image(imagePath) {
-        const fullPath = path.resolve(imagePath); // Полный путь к изображению
-        if (!fs.existsSync(fullPath)) {
-            throw new CardError(`Файл ${fullPath} не существует.`, 3);
-        }
+        // const fullPath = path.resolve(imagePath); // Полный путь к изображению
+        // if (!fs.existsSync(fullPath)) {
+        //     throw new CardError(`Файл ${fullPath} не существует.`, 3);
+        // }
 
         this._image = imagePath;
     }

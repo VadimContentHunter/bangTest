@@ -1,4 +1,7 @@
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
+const { aCard, CardType } = require("../interfaces/aCard");
+const StubCard = require("./cards/StubCard");
+const CardError = require("../Errors/CardError");
 
 class Player {
     constructor(id, name, sessionId = null) {
@@ -12,6 +15,72 @@ class Player {
         this._weapon = null;
         this._temporaryCards = null;
         this._hand = null;
+    }
+
+    /**
+     * @param {aCard} card
+     */
+    set role(card) {
+        if (!(card instanceof aCard)) {
+            throw new ValidatePlayerError("Роль игрока должен быть класса aCard.");
+        }
+
+        if (card.type !== CardType.ROLE) {
+            throw new ValidatePlayerError("Карта для роли должна быть type = ROLE.");
+        }
+
+        this._role = card;
+    }
+
+    /**
+     * @param {aCard} card
+     */
+    set character(card) {
+        if (!(card instanceof aCard)) {
+            throw new ValidatePlayerError("Персонаж игрока должен быть класса aCard.");
+        }
+
+        if (card.type !== CardType.CHARACTER) {
+            throw new ValidatePlayerError("Карта для Персонажа должна быть type = CHARACTER.");
+        }
+
+        this._character = card;
+    }
+
+    /**
+     * @param {aCard} card
+     */
+    set weapon(card) {
+        if (!(card instanceof aCard)) {
+            throw new ValidatePlayerError("Персонаж игрока должен быть класса aCard.");
+        }
+
+        if (card.type !== CardType.WEAPON) {
+            throw new ValidatePlayerError("Карта для роли должна быть type = WEAPON.");
+        }
+
+        this._weapon = card;
+    }
+
+    /**
+     * @returns {aCard | null}
+     */
+    get role() {
+        return this._role;
+    }
+
+    /**
+     * @returns {aCard | null}
+     */
+    get character() {
+        return this._character;
+    }
+
+    /**
+     * @returns {aCard | null}
+     */
+    get weapon() {
+        return this._weapon;
     }
 
     setSession(sessionId) {
