@@ -5,6 +5,7 @@ class PlayerHand {
     _weapon = null;
     _lives = 0;
     _maxLives = 5;
+    _quantityAllHandCards = 0;
     _handCards = [];
     _tempCards = [];
 
@@ -13,6 +14,8 @@ class PlayerHand {
         this.allCardsElement = this.mainElement?.querySelector(
             ".front-panel .player-controls .icon-all-cards"
         );
+
+        this.allCardsValueElement = this.allCardsElement.querySelector(".item-value");
 
         this.foldElement = this.mainElement?.querySelector(
             ".front-panel .player-controls .icon-control-fold"
@@ -27,12 +30,15 @@ class PlayerHand {
         this.playerLivesElement = this.mainElement?.querySelector(".front-panel .player-lives");
 
         this.mainPanelElement = this.mainElement?.querySelector(".main-panel");
+
         this.cardsInfoElement = this.mainPanelElement?.querySelector(".cards-info");
         this.roleElement = this.cardsInfoElement?.querySelector(".role");
         this.characterElement = this.cardsInfoElement?.querySelector(".character");
         this.weaponElement = this.cardsInfoElement?.querySelector(".weapon");
 
         this.cardsTempElement = this.mainPanelElement?.querySelector(".cards-temp");
+        this.cardsHandElement = this.mainPanelElement?.querySelector(".cards-hand");
+
         this.checkElements();
     }
 
@@ -129,11 +135,34 @@ class PlayerHand {
         this._maxLives = value;
     }
 
+    set quantityAllHandCards(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new Error(
+                "PlayerHand.quantityAllHandCards(value): value must be an integer or value must be greater than zero"
+            );
+        }
+        this._quantityAllHandCards = value;
+    }
+
     set handCards(value) {
         if (!Array.isArray(value)) {
             throw new Error("PlayerHand.handCards(value): value must be an array.");
         }
-        this._handCards = value;
+
+        // Преобразуем массив и фильтруем только корректные данные
+        this._handCards = value
+            .map((data) => {
+                try {
+                    return CardModel.init(data?.id, data?.type, data?.image);
+                } catch (e) {
+                    if (e instanceof CardModelError) {
+                        console.error(e.message);
+                        return null; // Пропускаем некорректный элемент
+                    }
+                    throw e; // Пробрасываем другие ошибки
+                }
+            })
+            .filter(Boolean); // Убираем null-значения из массива
     }
 
     set tempCards(value) {
@@ -194,10 +223,27 @@ class PlayerHand {
         return this._maxLives;
     }
 
+    get quantityAllHandCards() {
+        if (!Number.isInteger(this._quantityAllHandCards) || this._quantityAllHandCards < 0) {
+            throw new Error(
+                "PlayerHand.quantityAllHandCards(value): value must be an integer or value must be greater than zero."
+            );
+        }
+        return this._quantityAllHandCards;
+    }
+
     get handCards() {
         if (!Array.isArray(this._handCards)) {
             throw new Error("PlayerHand.handCards(value): value must be an array.");
         }
+
+        // Проверяем, что все элементы массива являются экземплярами CardModel
+        if (!this._handCards.every((card) => card instanceof CardModel)) {
+            throw new Error(
+                "PlayerHand.handCards: all elements of _handCards must be instances of CardModel."
+            );
+        }
+
         return this._handCards;
     }
 
@@ -222,6 +268,9 @@ class PlayerHand {
         }
         if (!(this.allCardsElement instanceof HTMLElement)) {
             throw new Error("Invalid all cards element selector");
+        }
+        if (!(this.allCardsValueElement instanceof HTMLElement)) {
+            throw new Error("Invalid all cards value selector");
         }
         if (!(this.foldElement instanceof HTMLElement)) {
             throw new Error("Invalid fold element selector");
@@ -254,7 +303,10 @@ class PlayerHand {
             throw new Error("Invalid weapon element selector");
         }
         if (!(this.cardsTempElement instanceof HTMLElement)) {
-            throw new Error("InvalidError temp element selector");
+            throw new Error("Invalid cards temp element selector");
+        }
+        if (!(this.cardsHandElement instanceof HTMLElement)) {
+            throw new Error("Invalid cards hand element selector");
         }
     }
 
@@ -267,6 +319,8 @@ class PlayerHand {
     renderUpdatedData() {
         this.playerNameElement.innerText = this.name;
         this.playerLivesElement.innerHTML = "";
+        this.allCardsValueElement.innerText = this.quantityAllHandCards;
+
         for (let i = 0; i < this.maxLives; i++) {
             if (this.lives > i) {
                 this.playerLivesElement.innerHTML += `
@@ -293,6 +347,7 @@ class PlayerHand {
         }
 
         this.renderUpdatedTempCards();
+        this.renderUpdatedHandCards();
     }
 
     renderUpdatedTempCards() {
@@ -310,6 +365,26 @@ class PlayerHand {
             } else {
                 console.error(
                     "PlayerHand.renderUpdatedTempCards: cardElem is not a valid HTMLElement."
+                );
+            }
+        });
+    }
+
+    renderUpdatedHandCards() {
+        this.handCards.forEach((handCard) => {
+            if (!(handCard instanceof CardModel)) {
+                console.error(
+                    "PlayerHand.renderUpdatedTempCards: tempCard is not an instance of CardModel."
+                );
+                return;
+            }
+
+            const cardElem = handCard.createHtmlShell()?.cartElement;
+            if (cardElem instanceof HTMLElement) {
+                this.cardsHandElement.append(cardElem); // Добавляем элемент в контейнер
+            } else {
+                console.error(
+                    "PlayerHand.renderUpdatedHandCards: cardElem is not a valid HTMLElement."
                 );
             }
         });
