@@ -157,6 +157,9 @@ function requestServer(request, data = {}, ws) {
             if (data.playerHand instanceof PlayerHand) {
                 data.playerHand.name = request?.params?.name;
                 data.playerHand.lives = request?.params?.lives ?? 0;
+                data.playerHand.tempCards = request?.params?.temporaryCards?.cards ?? [];
+                data.playerHand.hand = request?.params?.temporaryCards.cards ?? [];
+
                 if (request?.params?.role != null) {
                     data.playerHand.role = request?.params?.role;
                 }
@@ -206,6 +209,9 @@ function requestServer(request, data = {}, ws) {
                     const gameBoard = new GameBoard();
                     gameBoard.name = player.name;
                     gameBoard.lives = player?.lives ?? 0;
+                    gameBoard.tempCards = player?.temporaryCards?.cards ?? [];
+                    gameBoard.countHandCards = player?.countHand ?? 0;
+
                     if (player?.role != null) {
                         gameBoard.role = player?.role;
                     }
@@ -296,6 +302,10 @@ function main() {
         return console.log(
             "Класс WebSocketClientError не существует или не является наследником Error"
         );
+    }
+
+    if (!checkErrorClass(CardModelError)) {
+        return console.log("Класс CardModelError не существует или не является наследником Error");
     }
 
     if (

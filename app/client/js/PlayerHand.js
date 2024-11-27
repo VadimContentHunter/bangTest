@@ -31,6 +31,8 @@ class PlayerHand {
         this.roleElement = this.cardsInfoElement?.querySelector(".role");
         this.characterElement = this.cardsInfoElement?.querySelector(".character");
         this.weaponElement = this.cardsInfoElement?.querySelector(".weapon");
+
+        this.cardsTempElement = this.mainPanelElement?.querySelector(".cards-temp");
         this.checkElements();
     }
 
@@ -138,7 +140,21 @@ class PlayerHand {
         if (!Array.isArray(value)) {
             throw new Error("PlayerHand.tempCards(value): value must be an array.");
         }
-        this._tempCards = value;
+
+        // Преобразуем массив и фильтруем только корректные данные
+        this._tempCards = value
+            .map((data) => {
+                try {
+                    return CardModel.init(data?.id, data?.type, data?.image);
+                } catch (e) {
+                    if (e instanceof CardModelError) {
+                        console.error(e.message);
+                        return null; // Пропускаем некорректный элемент
+                    }
+                    throw e; // Пробрасываем другие ошибки
+                }
+            })
+            .filter(Boolean); // Убираем null-значения из массива
     }
 
     get name() {
@@ -189,6 +205,14 @@ class PlayerHand {
         if (!Array.isArray(this._tempCards)) {
             throw new Error("PlayerHand.tempCards(value): value must be an array.");
         }
+
+        // Проверяем, что все элементы массива являются экземплярами CardModel
+        if (!this._tempCards.every((card) => card instanceof CardModel)) {
+            throw new Error(
+                "PlayerHand.tempCards: all elements of _tempCards must be instances of CardModel."
+            );
+        }
+
         return this._tempCards;
     }
 
@@ -229,6 +253,9 @@ class PlayerHand {
         if (!(this.weaponElement instanceof HTMLElement)) {
             throw new Error("Invalid weapon element selector");
         }
+        if (!(this.cardsTempElement instanceof HTMLElement)) {
+            throw new Error("InvalidError temp element selector");
+        }
     }
 
     init() {
@@ -255,7 +282,7 @@ class PlayerHand {
                 `;
             }
         }
-        if(this.role instanceof CardModel){
+        if (this.role instanceof CardModel) {
             this.roleElement.append(this.role.cartElement);
         }
         if (this.character instanceof CardModel) {
@@ -264,7 +291,28 @@ class PlayerHand {
         if (this.weapon instanceof CardModel) {
             this.weaponElement.append(this.weapon.cartElement);
         }
-        // this.
+
+        this.renderUpdatedTempCards();
+    }
+
+    renderUpdatedTempCards() {
+        this.tempCards.forEach((tempCard) => {
+            if (!(tempCard instanceof CardModel)) {
+                console.error(
+                    "PlayerHand.renderUpdatedTempCards: tempCard is not an instance of CardModel."
+                );
+                return;
+            }
+
+            const cardElem = tempCard.createHtmlShell()?.cartElement;
+            if (cardElem instanceof HTMLElement) {
+                this.cardsTempElement.append(cardElem); // Добавляем элемент в контейнер
+            } else {
+                console.error(
+                    "PlayerHand.renderUpdatedTempCards: cardElem is not a valid HTMLElement."
+                );
+            }
+        });
     }
 
     setupFoldListener() {

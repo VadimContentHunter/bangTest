@@ -1,9 +1,18 @@
+class CardModelError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
 class CardModel {
     static CardTypes = {
         ROLE: "role",
         CHARACTER: "character",
         WEAPON: "weapon",
         HAND: "hand",
+        DEFAULT:  "default",
     };
 
     _cardId = null;
@@ -24,14 +33,14 @@ class CardModel {
 
     set cardId(value) {
         if (!Number.isInteger(value)) {
-            throw new Error("cardId must be an integer.");
+            throw new CardModelError("cardId must be an integer.");
         }
         this._cardId = value;
     }
 
     set cardType(value) {
         if (!Object.values(CardModel.CardTypes).includes(value)) {
-            throw new Error(
+            throw new CardModelError(
                 `cardType must be one of: ${Object.values(CardModel.CardTypes).join(", ")}`
             );
         }
@@ -40,7 +49,7 @@ class CardModel {
 
     // set ownerName(value) {
     //     if (typeof value !== "string" || value.trim() === "") {
-    //         throw new Error("ownerName must be a non-empty string.");
+    //         throw new CardModelError("ownerName must be a non-empty string.");
     //     }
     //     this._ownerName = value;
     // }
@@ -51,7 +60,7 @@ class CardModel {
 
     set selectorDescriptionCart(value) {
         if (typeof value !== "string" || value.trim() === "") {
-            throw new Error("ownerName must be a non-empty string.");
+            throw new CardModelError("ownerName must be a non-empty string.");
         }
         this._selectorDescriptionCart = value;
     }
@@ -105,6 +114,13 @@ class CardModel {
         CardModel.setupCardHoverListeners(this);
         this._cartElement = cardElement;
         return this;
+    }
+
+    removeHtml() {
+        if (this.cartElement) {
+            this.cartElement.remove();
+            this._cartElement = null;
+        }
     }
 
     static setupCardHoverListeners(cardModel) {

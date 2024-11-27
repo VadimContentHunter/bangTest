@@ -136,7 +136,21 @@ class GameBoard {
         if (!Array.isArray(value)) {
             throw new Error("GameBoard.tempCards(value): value must be an array.");
         }
-        this._tempCards = value;
+
+        // Преобразуем массив и фильтруем только корректные данные
+        this._tempCards = value
+            .map((data) => {
+                try {
+                    return CardModel.init(data?.id, data?.type, data?.image);
+                } catch (e) {
+                    if (e instanceof CardModelError) {
+                        console.error(e.message);
+                        return null; // Пропускаем некорректный элемент
+                    }
+                    throw e; // Пробрасываем другие ошибки
+                }
+            })
+            .filter(Boolean); // Убираем null-значения из массива
     }
 
     get name() {
@@ -198,6 +212,14 @@ class GameBoard {
         if (!Array.isArray(this._tempCards)) {
             throw new Error("GameBoard.tempCards(value): value must be an array.");
         }
+
+        // Проверяем, что все элементы массива являются экземплярами CardModel
+        if (!this._tempCards.every((card) => card instanceof CardModel)) {
+            throw new Error(
+                "GameBoard.tempCards: all elements of _tempCards must be instances of CardModel."
+            );
+        }
+
         return this._tempCards;
     }
 
@@ -355,6 +377,24 @@ class GameBoard {
         if (this.weapon instanceof CardModel) {
             this.weaponElement.append(this.weapon.cartElement);
         }
+
+        this.renderUpdatedTempCards();
+    }
+
+    renderUpdatedTempCards() {
+        this.tempCards.forEach((tempCard) => {
+            if (!(tempCard instanceof CardModel)) {
+                console.error("renderUpdatedTempCards: tempCard is not an instance of CardModel.");
+                return;
+            }
+
+            const cardElem = tempCard.createHtmlShell()?.cartElement;
+            if (cardElem instanceof HTMLElement) {
+                this.containerCardTempElement.append(cardElem); // Добавляем элемент в контейнер
+            } else {
+                console.error("renderUpdatedTempCards: cardElem is not a valid HTMLElement.");
+            }
+        });
     }
 
     destroy() {
