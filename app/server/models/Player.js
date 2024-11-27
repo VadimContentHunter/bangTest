@@ -1,6 +1,7 @@
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../interfaces/aCard");
-const StubCard = require("./cards/StubCard");
+
+const CardsCollection = require("../handlers/CardsCollection");
 const CardError = require("../Errors/CardError");
 
 class Player {
@@ -13,8 +14,8 @@ class Player {
         this._role = null;
         this._character = null;
         this._weapon = null;
-        this._temporaryCards = null;
-        this._hand = null;
+        this._temporaryCards = new CardsCollection();
+        this._hand = new CardsCollection();
     }
 
     /**
@@ -62,6 +63,26 @@ class Player {
         this._weapon = card;
     }
 
+    set temporaryCards(collection) {
+        if (!(collection instanceof CardsCollection)) {
+            throw new ValidatePlayerError(
+                "Коллекция временных карт должна быть экземпляром CardsCollection."
+            );
+        }
+
+        this._temporaryCards = collection;
+    }
+
+    set hand(collection) {
+        if (!(collection instanceof CardsCollection)) {
+            throw new ValidatePlayerError(
+                "Коллекция карт в руке должна быть экземпляром CardsCollection."
+            );
+        }
+
+        this._hand = collection;
+    }
+
     /**
      * @returns {aCard | null}
      */
@@ -83,6 +104,25 @@ class Player {
         return this._weapon;
     }
 
+    get temporaryCards() {
+        if (!(this._temporaryCards instanceof CardsCollection)) {
+            throw new ValidatePlayerError(
+                "Коллекция временных карт должна быть экземпляром CardsCollection."
+            );
+        }
+        return this._temporaryCards;
+    }
+
+    get hand() {
+        if (!(this._hand instanceof CardsCollection)) {
+            throw new ValidatePlayerError(
+                "Коллекция карт в руке должна быть экземпляром CardsCollection."
+            );
+        }
+
+        return this._hand;
+    }
+
     setSession(sessionId) {
         if (typeof sessionId !== "string" || sessionId.length === 0) {
             throw new ValidatePlayerError("Некорректный идентификатор сессии");
@@ -98,11 +138,11 @@ class Player {
             sessionId: this.sessionId,
             lives: this._lives,
             distance: this._distance,
-            role: this._role,
-            character: this._character,
-            weapon: this._weapon,
-            temporaryCards: this._temporaryCards,
-            hand: this._hand,
+            role: this.role,
+            character: this.character,
+            weapon: this.weapon,
+            temporaryCards: this.temporaryCards,
+            hand: this.hand,
         };
     }
 
@@ -114,10 +154,10 @@ class Player {
             lives: this._lives,
             // distance: this._distance,
             role: null, // TODO: Показывает только шерифа
-            character: this._character,
-            weapon: this._weapon,
-            temporaryCards: this._temporaryCards,
-            countHand: null,
+            character: this.character,
+            weapon: this.weapon,
+            temporaryCards: this.temporaryCards,
+            countHand: this.hand.countCards(),
         };
     }
 

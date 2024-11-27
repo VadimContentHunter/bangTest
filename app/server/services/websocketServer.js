@@ -70,6 +70,26 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 player.role = new StubCard(CardType.ROLE);
                 player.character = new StubCard(CardType.CHARACTER);
                 player.weapon = new StubCard(CardType.WEAPON);
+                player.temporaryCards.setCards([
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                ]);
+                player.hand.setCards([
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                ]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
                 myHooks.emit(
                     "requestAllUser",
