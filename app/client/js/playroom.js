@@ -159,7 +159,7 @@ function requestServer(request, data = {}, ws) {
                 data.playerHand.lives = request?.params?.lives ?? 0;
                 data.playerHand.tempCards = request?.params?.temporaryCards?.cards ?? [];
                 data.playerHand.handCards = request?.params?.hand?.cards ?? [];
-                 data.playerHand.quantityAllHandCards = request?.params?.hand?.countCards ?? 0;
+                data.playerHand.quantityAllHandCards = request?.params?.hand?.countCards ?? 0;
 
                 if (request?.params?.role != null) {
                     data.playerHand.role = request?.params?.role;
