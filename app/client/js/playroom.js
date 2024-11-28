@@ -156,7 +156,8 @@ function requestServer(request, data = {}, ws) {
         case "getMyPlayer":
             if (data.playerHand instanceof PlayerHand) {
                 data.playerHand.name = request?.params?.name;
-                data.playerHand.lives = request?.params?.lives ?? 0;
+                data.playerHand.lives = request?.params?.lives?.current ?? 0;
+                data.playerHand.maxLives = request?.params?.lives?.max ?? 0;
                 data.playerHand.tempCards = request?.params?.temporaryCards?.cards ?? [];
                 data.playerHand.handCards = request?.params?.hand?.cards ?? [];
                 data.playerHand.quantityAllHandCards = request?.params?.hand?.countCards ?? 0;
@@ -209,7 +210,8 @@ function requestServer(request, data = {}, ws) {
 
                     const gameBoard = new GameBoard();
                     gameBoard.name = player.name;
-                    gameBoard.lives = player?.lives ?? 0;
+                    gameBoard.lives = player?.lives?.current ?? 0;
+                    gameBoard.maxLives = player?.lives?.max ?? 0;
                     gameBoard.tempCards = player?.temporaryCards?.cards ?? [];
                     gameBoard.countHandCards = player?.countHand ?? 0;
 

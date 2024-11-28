@@ -1,20 +1,31 @@
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../interfaces/aCard");
-
 const CardsCollection = require("../handlers/CardsCollection");
-const CardError = require("../Errors/CardError");
+const LivesError = require("../Errors/LivesError");
+const Lives = require("../models/Lives");
 
 class Player {
     constructor(id, name, sessionId = null) {
         this.id = id; // Идентификатор теперь передается при создании игрока
         this.name = name;
         this.sessionId = sessionId;
-        this._lives = null;
+        this._lives = new Lives();
         this._role = null;
         this._character = null;
         this._weapon = null;
         this._temporaryCards = new CardsCollection();
         this._hand = new CardsCollection();
+    }
+
+    /**
+     * @param {Lives} card
+     */
+    set lives(value) {
+        if (!(value instanceof Lives)) {
+            throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives");
+        }
+
+        this._lives = value;
     }
 
     /**
@@ -80,6 +91,17 @@ class Player {
         }
 
         this._hand = collection;
+    }
+
+    /**
+     * @returns {Lives}
+     */
+    get lives() {
+        if (!(this._lives instanceof Lives)) {
+            throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives");
+        }
+
+        return this._lives;
     }
 
     /**

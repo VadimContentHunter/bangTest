@@ -13,7 +13,7 @@ class Lives {
      * @param {number} current - Текущее количество жизней.
      * @throws {LivesError} Если max или current невалидны.
      */
-    constructor(max, current) {
+    constructor(max = 0, current = 0) {
         this.max = max; // Используем сеттер
         this.current = current; // Используем сеттер
     }
@@ -102,6 +102,16 @@ class Lives {
      */
     removeOneLife() {
         this.removeLives(1);
+    }
+
+    /**
+     * @returns {Object} JSON-представление дистанции
+     */
+    toJSON() {
+        return {
+            max: this.max,
+            current: this.current,
+        };
     }
 }
 

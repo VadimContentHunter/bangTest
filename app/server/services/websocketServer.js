@@ -67,6 +67,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         try {
             const player = playroomHandler.connect(sessionId);
             if (player instanceof Player) {
+                player.lives.max = 5;
+                player.lives.current = 3;
                 player.role = new StubCard(CardType.ROLE);
                 player.character = new StubCard(CardType.CHARACTER);
                 player.weapon = new StubCard(CardType.WEAPON);
