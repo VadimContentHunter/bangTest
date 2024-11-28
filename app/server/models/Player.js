@@ -10,7 +10,6 @@ class Player {
         this.name = name;
         this.sessionId = sessionId;
         this._lives = null;
-        this._distance = null;
         this._role = null;
         this._character = null;
         this._weapon = null;
@@ -137,7 +136,6 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this._lives,
-            distance: this._distance,
             role: this.role,
             character: this.character,
             weapon: this.weapon,
@@ -152,7 +150,6 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this._lives,
-            // distance: this._distance,
             role: null, // TODO: Показывает только шерифа
             character: this.character,
             weapon: this.weapon,
