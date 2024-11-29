@@ -50,7 +50,7 @@ class GameBoard {
      */
     set role(value) {
         if (!(value instanceof CardModel)) {
-            value = CardModel.init(value?.id, value?.type, value?.image);
+            value = CardModel.init(value?.id, value?.type, value?.image, this.name);
         }
 
         if (!(value instanceof CardModel)) {
@@ -71,7 +71,7 @@ class GameBoard {
     set character(value) {
         // Если значение не является экземпляром CardModel, пытаемся инициализировать
         if (!(value instanceof CardModel)) {
-            value = CardModel.init(value?.id, value?.type, value?.image);
+            value = CardModel.init(value?.id, value?.type, value?.image, this.name);
         }
 
         // Если значение не является экземпляром CardModel даже после инициализации, выбрасываем ошибку
@@ -94,7 +94,7 @@ class GameBoard {
     set weapon(value) {
         // Если значение не является экземпляром CardModel, пытаемся инициализировать
         if (!(value instanceof CardModel)) {
-            value = CardModel.init(value?.id, value?.type, value?.image);
+            value = CardModel.init(value?.id, value?.type, value?.image, this.name);
         }
 
         // Если значение не является экземпляром CardModel даже после инициализации, выбрасываем ошибку
@@ -141,7 +141,7 @@ class GameBoard {
         this._tempCards = value
             .map((data) => {
                 try {
-                    return CardModel.init(data?.id, data?.type, data?.image);
+                    return CardModel.init(data?.id, data?.type, data?.image, this.name);
                 } catch (e) {
                     if (e instanceof CardModelError) {
                         console.error(e.message);

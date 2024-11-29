@@ -62,7 +62,7 @@ class PlayerHand {
      */
     set role(value) {
         if (!(value instanceof CardModel)) {
-            value = CardModel.init(value?.id, value?.type, value?.image);
+            value = CardModel.init(value?.id, value?.type, value?.image, this.name);
         }
 
         if (!(value instanceof CardModel)) {
@@ -83,7 +83,7 @@ class PlayerHand {
     set character(value) {
         // Если значение не является экземпляром CardModel, пытаемся инициализировать
         if (!(value instanceof CardModel)) {
-            value = CardModel.init(value?.id, value?.type, value?.image);
+            value = CardModel.init(value?.id, value?.type, value?.image, this.name);
         }
 
         // Если значение не является экземпляром CardModel даже после инициализации, выбрасываем ошибку
@@ -106,7 +106,7 @@ class PlayerHand {
     set weapon(value) {
         // Если значение не является экземпляром CardModel, пытаемся инициализировать
         if (!(value instanceof CardModel)) {
-            value = CardModel.init(value?.id, value?.type, value?.image);
+            value = CardModel.init(value?.id, value?.type, value?.image, this.name);
         }
 
         // Если значение не является экземпляром CardModel даже после инициализации, выбрасываем ошибку
@@ -153,7 +153,9 @@ class PlayerHand {
         this._handCards = value
             .map((data) => {
                 try {
-                    return CardModel.init(data?.id, data?.type, data?.image);
+                    // console.log(this.name);
+                    
+                    return CardModel.init(data?.id, data?.type, data?.image, this.name, this.name);
                 } catch (e) {
                     if (e instanceof CardModelError) {
                         console.error(e.message);
@@ -162,7 +164,7 @@ class PlayerHand {
                     throw e; // Пробрасываем другие ошибки
                 }
             })
-            .filter(Boolean); // Убираем null-значения из массива
+            .filter(Boolean)// Убираем null-значения из массива
     }
 
     set tempCards(value) {
@@ -174,7 +176,7 @@ class PlayerHand {
         this._tempCards = value
             .map((data) => {
                 try {
-                    return CardModel.init(data?.id, data?.type, data?.image);
+                    return CardModel.init(data?.id, data?.type, data?.image, this.name);
                 } catch (e) {
                     if (e instanceof CardModelError) {
                         console.error(e.message);
@@ -360,6 +362,7 @@ class PlayerHand {
             }
 
             const cardElem = tempCard.createHtmlShell()?.cardElement;
+            tempCard.enableDrag();
             if (cardElem instanceof HTMLElement) {
                 this.cardsTempElement.append(cardElem); // Добавляем элемент в контейнер
             } else {
@@ -380,6 +383,7 @@ class PlayerHand {
             }
 
             const cardElem = handCard.createHtmlShell()?.cardElement;
+            handCard.enableDrag();
             if (cardElem instanceof HTMLElement) {
                 this.cardsHandElement.append(cardElem); // Добавляем элемент в контейнер
             } else {

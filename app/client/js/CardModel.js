@@ -17,16 +17,17 @@ class CardModel {
 
     _cardId = null;
     _cardType = null;
-    // _ownerName = null;
+    _ownerName = "";
     _src = null;
     _timerDescription = {};
     _cardElement = null;
     _selectorDescriptionCart = null;
+    _isDragging = false;
 
-    constructor(cardId, cardType, src) {
+    constructor(cardId, cardType, src, ownerName = "") {
         this.cardId = cardId;
         this.cardType = cardType;
-        // this.ownerName = ownerName;
+        this.ownerName = ownerName;
         this._src = src;
         this.selectorDescriptionCart = ".card-description";
     }
@@ -47,12 +48,12 @@ class CardModel {
         this._cardType = value;
     }
 
-    // set ownerName(value) {
-    //     if (typeof value !== "string" || value.trim() === "") {
-    //         throw new CardModelError("ownerName must be a non-empty string.");
-    //     }
-    //     this._ownerName = value;
-    // }
+    set ownerName(value) {
+        if (typeof value !== "string") {
+            throw new CardModelError("ownerName must be a non-empty string.");
+        }
+        this._ownerName = value;
+    }
 
     set timerDescription(value) {
         this._timerDescription = value;
@@ -60,9 +61,19 @@ class CardModel {
 
     set selectorDescriptionCart(value) {
         if (typeof value !== "string" || value.trim() === "") {
-            throw new CardModelError("ownerName must be a non-empty string.");
+            throw new CardModelError("selector for Description Cart must be a non-empty string.");
         }
         this._selectorDescriptionCart = value;
+    }
+
+    /**
+     * @param {boolean} value
+     */
+    set isDragging(value) {
+        if (typeof value !== "boolean") {
+            throw new CardModelError("IsDragging must be a non-empty boolean.");
+        }
+        this._isDragging = value;
     }
 
     get cardId() {
@@ -73,9 +84,9 @@ class CardModel {
         return this._cardType;
     }
 
-    // get ownerName() {
-    //     return this._ownerName;
-    // }
+    get ownerName() {
+        return this._ownerName;
+    }
 
     get timerDescription() {
         return this._timerDescription;
@@ -97,6 +108,13 @@ class CardModel {
         return this._selectorDescriptionCart;
     }
 
+    get isDragging() {
+        if (typeof this._isDragging !== "boolean") {
+            throw new CardModelError("IsDragging must be a non-empty boolean.");
+        }
+        return this._isDragging;
+    }
+
     isCreatedCardElement() {
         return this._cardElement instanceof HTMLElement;
     }
@@ -105,7 +123,7 @@ class CardModel {
     enableDrag() {
         if (!this.cardElement) return;
 
-        let isDragging = false;
+        this.isDragging = false;
         let offsetX, offsetY;
         let clonedElement = null;
 
@@ -137,13 +155,13 @@ class CardModel {
                 clonedElement.style.zIndex = "1000";
             }
 
-            isDragging = true;
+            this.isDragging = true;
             document.body.style.userSelect = "none"; // Отключаем выделение текста во время перетаскивания
         });
 
         // Обработчик для перемещения блока
         document.addEventListener("mousemove", (e) => {
-            if (isDragging) {
+            if (this.isDragging) {
                 const x = e.clientX - offsetX;
                 const y = e.clientY - offsetY;
 
@@ -155,17 +173,16 @@ class CardModel {
 
         // Обработчик для завершения перетаскивания
         document.addEventListener("mouseup", () => {
-            if (isDragging) {
+            if (this.isDragging) {
                 // Сбрасываем стили, когда отпускана кнопка мыши
                 // clonedElement.style.position = "";
                 // clonedElement.style.zIndex = "";
                 clonedElement.remove();
                 // console.log(clonedElement.originalElement);
-                
-                this.cardElement.style.opacity = "";
-                
 
-                isDragging = false;
+                this.cardElement.style.opacity = "";
+
+                this.isDragging = false;
                 document.body.style.userSelect = ""; // Включаем выделение текста обратно
             }
         });
@@ -177,14 +194,18 @@ class CardModel {
         cardElement.innerHTML = `
             <img src="${this.src}" alt="${this.cardId} image">
         `;
-        cardElement.setAttribute("data-card-id", this._cardId);
-        cardElement.setAttribute("data-card-type", this._cardType);
+        cardElement.setAttribute("data-card-id", this.cardId);
+        cardElement.setAttribute("data-card-type", this.cardType);
+
+        if (this.ownerName.trim().length > 0) {
+            cardElement.setAttribute("data-card-owner-name", this.ownerName);
+        }
 
         // Инициализируем перетаскивание
         this._cardElement = cardElement;
 
         // Инициализируем перетаскивание
-        this.enableDrag();
+        // this.enableDrag();
 
         // Настроим остальные слушатели (например, для hover)
         CardModel.setupCardHoverListeners(this);
@@ -222,12 +243,11 @@ class CardModel {
             });
         } else {
             console.error("descriptionElement not found");
-            
         }
     }
 
-    static init(cardId, cardType, src) {
-        const cardModel = new CardModel(cardId, cardType, src);
+    static init(cardId, cardType, src, ownerName = "") {
+        const cardModel = new CardModel(cardId, cardType, src, ownerName);
         return cardModel.createHtmlShell();
     }
 
