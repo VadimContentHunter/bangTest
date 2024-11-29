@@ -12,7 +12,7 @@ class CardModel {
         CHARACTER: "character",
         WEAPON: "weapon",
         HAND: "hand",
-        DEFAULT:  "default",
+        DEFAULT: "default",
     };
 
     _cardId = null;
@@ -20,7 +20,7 @@ class CardModel {
     // _ownerName = null;
     _src = null;
     _timerDescription = {};
-    _cartElement = null;
+    _cardElement = null;
     _selectorDescriptionCart = null;
 
     constructor(cardId, cardType, src) {
@@ -85,8 +85,8 @@ class CardModel {
         return this._src;
     }
 
-    get cartElement() {
-        return this._cartElement;
+    get cardElement() {
+        return this._cardElement;
     }
 
     get delayDescription() {
@@ -97,8 +97,78 @@ class CardModel {
         return this._selectorDescriptionCart;
     }
 
-    isCreatedCartElement() {
-        return this._cartElement instanceof HTMLElement;
+    isCreatedCardElement() {
+        return this._cardElement instanceof HTMLElement;
+    }
+
+    // Метод для инициализации перетаскивания
+    enableDrag() {
+        if (!this.cardElement) return;
+
+        let isDragging = false;
+        let offsetX, offsetY;
+        let clonedElement = null;
+
+        // Обработчик для начала перетаскивания
+        this.cardElement.addEventListener("mousedown", (e) => {
+            e.preventDefault(); // Предотвратить выделение текста
+
+            const cardMovingBlockElement = document.querySelector("#card-moving-block");
+            if (!(cardMovingBlockElement instanceof HTMLElement)) {
+                throw new CardModelError("Не удалось найти блок перемещения карты.");
+            }
+            clonedElement = this.cardElement.cloneNode(true);
+            clonedElement.originalElement = this.cardElement;
+            cardMovingBlockElement.append(clonedElement);
+            this.cardElement.style.opacity = "0.6";
+
+            // Сохраняем начальные координаты относительно позиции блока
+            const rect = clonedElement.getBoundingClientRect();
+            offsetX = rect.left + 16;
+            offsetY = rect.top + 16;
+
+            clonedElement.style.left = `${e.clientX - offsetX}px`;
+            clonedElement.style.top = `${e.clientY - offsetY}px`;
+
+            // Применяем стили только когда нажата левая кнопка мыши
+            if (e.button === 0) {
+                // 0 — это левая кнопка мыши
+                clonedElement.style.position = "absolute";
+                clonedElement.style.zIndex = "1000";
+            }
+
+            isDragging = true;
+            document.body.style.userSelect = "none"; // Отключаем выделение текста во время перетаскивания
+        });
+
+        // Обработчик для перемещения блока
+        document.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+                const x = e.clientX - offsetX;
+                const y = e.clientY - offsetY;
+
+                // Устанавливаем новые координаты для блока
+                clonedElement.style.left = `${x}px`;
+                clonedElement.style.top = `${y}px`;
+            }
+        });
+
+        // Обработчик для завершения перетаскивания
+        document.addEventListener("mouseup", () => {
+            if (isDragging) {
+                // Сбрасываем стили, когда отпускана кнопка мыши
+                // clonedElement.style.position = "";
+                // clonedElement.style.zIndex = "";
+                clonedElement.remove();
+                // console.log(clonedElement.originalElement);
+                
+                this.cardElement.style.opacity = "";
+                
+
+                isDragging = false;
+                document.body.style.userSelect = ""; // Включаем выделение текста обратно
+            }
+        });
     }
 
     createHtmlShell() {
@@ -107,19 +177,25 @@ class CardModel {
         cardElement.innerHTML = `
             <img src="${this.src}" alt="${this.cardId} image">
         `;
-        // Установка атрибутов
         cardElement.setAttribute("data-card-id", this._cardId);
         cardElement.setAttribute("data-card-type", this._cardType);
 
+        // Инициализируем перетаскивание
+        this._cardElement = cardElement;
+
+        // Инициализируем перетаскивание
+        this.enableDrag();
+
+        // Настроим остальные слушатели (например, для hover)
         CardModel.setupCardHoverListeners(this);
-        this._cartElement = cardElement;
+
         return this;
     }
 
     removeHtml() {
-        if (this.cartElement) {
-            this.cartElement.remove();
-            this._cartElement = null;
+        if (this.cardElement) {
+            this.cardElement.remove();
+            this.cardElement = null;
         }
     }
 
@@ -144,6 +220,9 @@ class CardModel {
                 clearTimeout(cardModel.timerDescription);
                 CardModel.hideDescription(descriptionElement); // Убираем описание
             });
+        } else {
+            console.error("descriptionElement not found");
+            
         }
     }
 

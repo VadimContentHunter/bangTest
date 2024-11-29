@@ -369,13 +369,13 @@ class GameBoard {
         this.distanceNumElement.innerText = this.numDistance;
 
         if (this.role instanceof CardModel) {
-            this.roleElement.append(this.role.cartElement);
+            this.roleElement.append(this.role.cardElement);
         }
         if (this.character instanceof CardModel) {
-            this.characterElement.append(this.character.cartElement);
+            this.characterElement.append(this.character.cardElement);
         }
         if (this.weapon instanceof CardModel) {
-            this.weaponElement.append(this.weapon.cartElement);
+            this.weaponElement.append(this.weapon.cardElement);
         }
 
         this.renderUpdatedTempCards();
@@ -388,7 +388,7 @@ class GameBoard {
                 return;
             }
 
-            const cardElem = tempCard.createHtmlShell()?.cartElement;
+            const cardElem = tempCard.createHtmlShell()?.cardElement;
             if (cardElem instanceof HTMLElement) {
                 this.containerCardTempElement.append(cardElem); // Добавляем элемент в контейнер
             } else {

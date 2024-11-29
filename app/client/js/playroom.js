@@ -314,7 +314,7 @@ function main() {
     if (
         !checkClassAndMethods(
             CardModel,
-            ["isCreatedCartElement", "createHtmlShell"], // Обычные методы
+            ["isCreatedCardElement", "createHtmlShell"], // Обычные методы
             ["setupCardHoverListeners", "showDescription", "hideDescription"] // Статические методы
         )
     ) {
@@ -390,6 +390,9 @@ function main() {
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
 
+    // const tempCard = CardModel.init(1, "default", "../resources/imgs/cards/cardBacks/girl.png");
+    // const test123 = document.querySelector("#card-moving-block");
+    // test123.prepend(tempCard.cartElement);
     // const gameBoard = new GameBoard();
 
     const playersFieldElement = document.querySelector("main .players-field");

@@ -8,6 +8,7 @@
         {{cssLinks}} {{scriptHeadLinks}}
     </head>
     <body>
+        <div id="card-moving-block" style="position: absolute; width: 100%;"></div>
         <div class="container-main">
             <header>
                 <div class="container-inner">
@@ -73,54 +74,6 @@
                 </section>
 
                 <section class="players-field">
-                    <div class="grid-item">
-                        <section class="game-board">
-                            <div class="front-panel">
-                                <div class="player-name">Vadim</div>
-                                <div class="icon-control icon-all-cards">
-                                    <i class="icon-cards"></i>
-                                    <div class="item-value">14</div>
-                                </div>
-                                <div class="icon-control icon-range">
-                                    <i class="icon-target"></i>
-                                    <div class="item-value">3</div>
-                                </div>
-                            </div>
-
-                            <div class="lives">
-                                <div class="icon-live-bullet">
-                                    <i class="icon-bullet"></i>
-                                </div>
-                                <div class="icon-live-bullet">
-                                    <i class="icon-bullet"></i>
-                                </div>
-                                <div class="icon-live-bullet-not">
-                                    <i class="icon-bullet-full-fill"></i>
-                                </div>
-                                <div class="icon-live-bullet-not">
-                                    <i class="icon-bullet-full-fill"></i>
-                                </div>
-                                <div class="icon-live-bullet-not">
-                                    <i class="icon-bullet-full-fill"></i>
-                                </div>
-                            </div>
-                            <div class="info">
-                                <div class="role game-card">
-                                    <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                </div>
-                                <div class="character game-card">
-                                    <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                </div>
-                                <div class="weapon game-card">
-                                    <img src="../resources/imgs/cards/cardBacks/girl.png" />
-                                </div>
-                            </div>
-                        </section>
-                        <section class="card-temp-area">
-                            <div class="cards-container"></div>
-                        </section>
-                    </div>
-                    <div class="grid-item my-player">Мой персонаж</div>
                     <div class="grid-item battle-zone">
                         <div class="controls">
                             <div class="icon-control icon-deck-main">
@@ -159,7 +112,7 @@
                 <section class="player-hand">
                     <section class="front-panel">
                         <!-- <div class="info"></div> -->
-                        <div class="player-name">Vadim</div>
+                        <div class="player-name">-----</div>
                         <div class="player-lives">
                             <div class="icon-live-bullet">
                                 <i class="icon-bullet"></i>
@@ -180,12 +133,12 @@
                         <div class="player-controls">
                             <div class="icon-control icon-all-cards">
                                 <i class="icon-cards"></i>
-                                <div class="item-value">14</div>
+                                <div class="item-value">-</div>
                             </div>
 
                             <div class="icon-control icon-range">
                                 <i class="icon-target"></i>
-                                <div class="item-value">3</div>
+                                <div class="item-value">-</div>
                             </div>
 
                             <div class="icon-control icon-control-fold">
