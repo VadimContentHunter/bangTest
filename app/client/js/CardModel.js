@@ -120,7 +120,11 @@ class CardModel {
     }
 
     // Метод для инициализации перетаскивания
-    enableDrag() {
+    enableDrag({
+        mousedownCallBack = null,
+        mousemoveCallBack = null,
+        mouseupCallBack = null,
+    } = {}) {
         if (!this.cardElement) return;
 
         this.isDragging = false;
@@ -157,6 +161,9 @@ class CardModel {
 
             this.isDragging = true;
             document.body.style.userSelect = "none"; // Отключаем выделение текста во время перетаскивания
+            if (typeof mousedownCallBack === "function") {
+                mousedownCallBack(this, e, rect, 16);
+            }
         });
 
         // Обработчик для перемещения блока
@@ -168,11 +175,15 @@ class CardModel {
                 // Устанавливаем новые координаты для блока
                 clonedElement.style.left = `${x}px`;
                 clonedElement.style.top = `${y}px`;
+
+                if (typeof mousemoveCallBack === "function") {
+                    mousemoveCallBack(this, e);
+                }
             }
         });
 
         // Обработчик для завершения перетаскивания
-        document.addEventListener("mouseup", () => {
+        document.addEventListener("mouseup", (e) => {
             if (this.isDragging) {
                 // Сбрасываем стили, когда отпускана кнопка мыши
                 // clonedElement.style.position = "";
@@ -184,6 +195,10 @@ class CardModel {
 
                 this.isDragging = false;
                 document.body.style.userSelect = ""; // Включаем выделение текста обратно
+
+                if (typeof mouseupCallBack === "function") {
+                    mouseupCallBack(this, e);
+                }
             }
         });
     }
@@ -271,4 +286,6 @@ class CardModel {
             imageDescription.src = "";
         }
     }
+
+
 }

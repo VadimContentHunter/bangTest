@@ -8,6 +8,7 @@ class PlayerHand {
     _quantityAllHandCards = 0;
     _handCards = [];
     _tempCards = [];
+    _selectCard = null;
 
     constructor(selectorMainElement) {
         this.mainElement = document.querySelector(selectorMainElement);
@@ -154,7 +155,7 @@ class PlayerHand {
             .map((data) => {
                 try {
                     // console.log(this.name);
-                    
+
                     return CardModel.init(data?.id, data?.type, data?.image, this.name, this.name);
                 } catch (e) {
                     if (e instanceof CardModelError) {
@@ -164,7 +165,7 @@ class PlayerHand {
                     throw e; // Пробрасываем другие ошибки
                 }
             })
-            .filter(Boolean)// Убираем null-значения из массива
+            .filter(Boolean); // Убираем null-значения из массива
     }
 
     set tempCards(value) {
@@ -186,6 +187,18 @@ class PlayerHand {
                 }
             })
             .filter(Boolean); // Убираем null-значения из массива
+    }
+
+    /**
+     * @param {CardModel} value
+     */
+    set selectCard(value) {
+        if (!(value instanceof CardModel)) {
+            throw new Error(
+                "PlayerHand.selectCard(value): value must be an instance of CardModel."
+            );
+        }
+        this._selectCard = value;
     }
 
     get name() {
@@ -262,6 +275,14 @@ class PlayerHand {
         }
 
         return this._tempCards;
+    }
+
+    get selectCard() {
+        return this._selectCard;
+    }
+
+    resetSelectCard() {
+        this._selectCard = null;
     }
 
     checkElements() {
@@ -362,7 +383,19 @@ class PlayerHand {
             }
 
             const cardElem = tempCard.createHtmlShell()?.cardElement;
-            tempCard.enableDrag();
+            tempCard.enableDrag({
+                mousedownCallBack: (card, eventMouse) => {
+                    if (card instanceof CardModel && card.isDragging === true) {
+                        this.selectCard = card;
+                    }
+                },
+                mouseupCallBack: (card, eventMouse) => {
+                    if (card instanceof CardModel) {
+                        this.resetSelectCard();
+                    }
+                    
+                },
+            });
             if (cardElem instanceof HTMLElement) {
                 this.cardsTempElement.append(cardElem); // Добавляем элемент в контейнер
             } else {
@@ -383,7 +416,18 @@ class PlayerHand {
             }
 
             const cardElem = handCard.createHtmlShell()?.cardElement;
-            handCard.enableDrag();
+            handCard.enableDrag({
+                mousedownCallBack: (card, eventMouse) => {
+                    if (card instanceof CardModel && card.isDragging === true) {
+                        this.selectCard = card;
+                    }
+                },
+                mouseupCallBack: (card, eventMouse) => {
+                    if (card instanceof CardModel) {
+                        this.resetSelectCard();
+                    }
+                },
+            });
             if (cardElem instanceof HTMLElement) {
                 this.cardsHandElement.append(cardElem); // Добавляем элемент в контейнер
             } else {

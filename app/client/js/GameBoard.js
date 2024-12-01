@@ -334,6 +334,7 @@ class GameBoard {
         this.mainElement.append(this.infoElement);
 
         this.checkElements();
+        this.setupDragCardListener();
     }
 
     createCardTempArea() {
@@ -413,5 +414,31 @@ class GameBoard {
         this.weaponElement = null;
         this.cardTempAreaElement = null;
         this.containerCardTempElement = null;
+    }
+
+    setupDragCardListener(playerHand) {
+        requestAnimationFrame(() => {
+            if (playerHand instanceof PlayerHand) {
+                const rect = this.mainElement.getBoundingClientRect();
+                document.addEventListener("mousemove", (e) => {
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+                    // Проверяем, находится ли мышь внутри прямоугольника
+                    if (
+                        playerHand.selectCard instanceof CardModel &&
+                        mouseX >= rect.left &&
+                        mouseX <= rect.right &&
+                        mouseY >= rect.top &&
+                        mouseY <= rect.bottom
+                    ) {
+                        if (!this.mainElement.classList.contains("hover-card")) {
+                            this.mainElement.classList.add("hover-card");
+                        }
+                    } else {
+                        this.mainElement.classList.remove("hover-card");
+                    }
+                });
+            }
+        });
     }
 }

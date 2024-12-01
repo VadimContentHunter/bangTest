@@ -226,6 +226,9 @@ function requestServer(request, data = {}, ws) {
                     }
                     gameBoard.initAndCreateToContainer(gridItem);
                     gameBoard.renderUpdatedData();
+                    if (data.playerHand instanceof PlayerHand) {
+                        gameBoard.setupDragCardListener(data.playerHand);
+                    }
 
                     gridItem.gameBoardInstance = gameBoard;
                     data.playersFieldElement.append(gridItem);
