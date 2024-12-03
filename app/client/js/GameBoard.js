@@ -419,10 +419,20 @@ class GameBoard {
     setupDragCardListener(playerHand) {
         requestAnimationFrame(() => {
             if (playerHand instanceof PlayerHand) {
-                const rect = this.mainElement.getBoundingClientRect();
+                // Создаем переменную для хранения rect
+                let rect = this.mainElement.getBoundingClientRect();
+                let hasActivated = false;
+
+                // Обновляем rect при изменении размера окна
+                window.addEventListener("resize", () => {
+                    rect = this.mainElement.getBoundingClientRect();
+                });
+
+                // Обработчик мыши
                 document.addEventListener("mousemove", (e) => {
                     const mouseX = e.clientX;
                     const mouseY = e.clientY;
+
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (
                         playerHand.selectCard instanceof CardModel &&
@@ -434,7 +444,14 @@ class GameBoard {
                         if (!this.mainElement.classList.contains("hover-card")) {
                             this.mainElement.classList.add("hover-card");
                         }
+
+                        if (!hasActivated) {
+                            hasActivated = true;
+                            playerHand.selectCard.targetName = this.name;
+                            playerHand.selectCard.updateAttributesHtml();
+                        }
                     } else {
+                        hasActivated = false;
                         this.mainElement.classList.remove("hover-card");
                     }
                 });

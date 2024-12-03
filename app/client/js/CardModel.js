@@ -18,6 +18,7 @@ class CardModel {
     _cardId = null;
     _cardType = null;
     _ownerName = "";
+    _targetName = "";
     _src = null;
     _timerDescription = {};
     _cardElement = null;
@@ -55,6 +56,13 @@ class CardModel {
         this._ownerName = value;
     }
 
+    set targetName(value) {
+        if (typeof value !== "string") {
+            throw new CardModelError("targetName must be a non-empty string.");
+        }
+        this._targetName = value;
+    }
+
     set timerDescription(value) {
         this._timerDescription = value;
     }
@@ -86,6 +94,10 @@ class CardModel {
 
     get ownerName() {
         return this._ownerName;
+    }
+
+    get targetName() {
+        return this._targetName;
     }
 
     get timerDescription() {
@@ -209,23 +221,39 @@ class CardModel {
         cardElement.innerHTML = `
             <img src="${this.src}" alt="${this.cardId} image">
         `;
-        cardElement.setAttribute("data-card-id", this.cardId);
-        cardElement.setAttribute("data-card-type", this.cardType);
 
-        if (this.ownerName.trim().length > 0) {
-            cardElement.setAttribute("data-card-owner-name", this.ownerName);
-        }
-
-        // Инициализируем перетаскивание
         this._cardElement = cardElement;
 
-        // Инициализируем перетаскивание
+        // Инициализируем
+        this.updateAttributesHtml();
         // this.enableDrag();
 
         // Настроим остальные слушатели (например, для hover)
         CardModel.setupCardHoverListeners(this);
 
         return this;
+    }
+
+    updateAttributesHtml() {
+        if (this.cardElement instanceof HTMLElement) {
+            // Удаляем атрибуты перед их обновлением
+            this.cardElement.removeAttribute("data-card-id");
+            this.cardElement.removeAttribute("data-card-type");
+            this.cardElement.removeAttribute("data-card-owner-name");
+            this.cardElement.removeAttribute("data-card-target-name");
+
+            // Устанавливаем или обновляем остальные атрибуты
+            this.cardElement.setAttribute("data-card-id", this.cardId);
+            this.cardElement.setAttribute("data-card-type", this.cardType);
+
+            if (this.ownerName.trim().length > 0) {
+                this.cardElement.setAttribute("data-card-owner-name", this.ownerName);
+            }
+
+            if (this.targetName.trim().length > 0) {
+                this.cardElement.setAttribute("data-card-target-name", this.targetName);
+            }
+        }
     }
 
     removeHtml() {
@@ -286,6 +314,4 @@ class CardModel {
             imageDescription.src = "";
         }
     }
-
-
 }

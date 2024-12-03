@@ -156,7 +156,7 @@ class PlayerHand {
                 try {
                     // console.log(this.name);
 
-                    return CardModel.init(data?.id, data?.type, data?.image, this.name, this.name);
+                    return CardModel.init(data?.id, data?.type, data?.image, this.name);
                 } catch (e) {
                     if (e instanceof CardModelError) {
                         console.error(e.message);
@@ -383,19 +383,19 @@ class PlayerHand {
             }
 
             const cardElem = tempCard.createHtmlShell()?.cardElement;
-            tempCard.enableDrag({
-                mousedownCallBack: (card, eventMouse) => {
-                    if (card instanceof CardModel && card.isDragging === true) {
-                        this.selectCard = card;
-                    }
-                },
-                mouseupCallBack: (card, eventMouse) => {
-                    if (card instanceof CardModel) {
-                        this.resetSelectCard();
-                    }
+            // tempCard.enableDrag({
+            //     mousedownCallBack: (card, eventMouse) => {
+            //         if (card instanceof CardModel && card.isDragging === true) {
+            //             this.selectCard = card;
+            //         }
+            //     },
+            //     mouseupCallBack: (card, eventMouse) => {
+            //         if (card instanceof CardModel) {
+            //             this.resetSelectCard();
+            //         }
                     
-                },
-            });
+            //     },
+            // });
             if (cardElem instanceof HTMLElement) {
                 this.cardsTempElement.append(cardElem); // Добавляем элемент в контейнер
             } else {
@@ -424,6 +424,8 @@ class PlayerHand {
                 },
                 mouseupCallBack: (card, eventMouse) => {
                     if (card instanceof CardModel) {
+                        card.targetName = "";
+                        card.updateAttributesHtml();
                         this.resetSelectCard();
                     }
                 },
