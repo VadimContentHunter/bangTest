@@ -140,7 +140,7 @@ class CardModel {
     triggerCustomEvent(eventName, detail = {}) {
         if (this.cardElement instanceof HTMLElement) {
             const event = new CustomEvent(eventName, { detail });
-            this.cardElement.dispatchEvent(event);
+            document.dispatchEvent(event);
         }
     }
 

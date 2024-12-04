@@ -226,8 +226,8 @@ function requestServer(request, data = {}, ws) {
                     }
                     gameBoard.initAndCreateToContainer(gridItem);
                     gameBoard.renderUpdatedData();
-                    if (data.playerHand instanceof PlayerHand) {
-                        gameBoard.setupDragCardListener(data.playerHand);
+                    if (data.playerHand instanceof PlayerHand && data.battleZone instanceof BattleZone) {
+                        gameBoard.setupDragCardListener(data.playerHand, data.battleZone);
                     }
 
                     gridItem.gameBoardInstance = gameBoard;
@@ -441,6 +441,7 @@ function main() {
                             {
                                 cardSelection: cardSelection,
                                 playerHand: playerHand,
+                                battleZone: battleZone,
                                 playersFieldElement: playersFieldElement,
                             },
                             ws

@@ -416,12 +416,11 @@ class GameBoard {
         this.containerCardTempElement = null;
     }
 
-    setupDragCardListener(playerHand) {
+    setupDragCardListener(playerHand, battleZone) {
         requestAnimationFrame(() => {
-            if (playerHand instanceof PlayerHand) {
+            if (playerHand instanceof PlayerHand && battleZone instanceof BattleZone) {
                 // Создаем переменную для хранения rect
                 let rect = this.mainElement.getBoundingClientRect();
-                let hasActivated = false;
 
                 // Функция для обновления rect
                 const updateRect = () => {
@@ -433,13 +432,14 @@ class GameBoard {
                 window.addEventListener("scroll", updateRect);
 
                 // Обработчик мыши
-                document.addEventListener("mousemove", (e) => {
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
+                document.addEventListener("card-mousemove", (e) => {
+                    const { cardModel, event } = e.detail;
+                    const mouseX = event.clientX;
+                    const mouseY = event.clientY;
 
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (
-                        playerHand.selectCard instanceof CardModel &&
+                        cardModel instanceof CardModel &&
                         mouseX >= rect.left &&
                         mouseX <= rect.right &&
                         mouseY >= rect.top &&
@@ -448,15 +448,29 @@ class GameBoard {
                         if (!this.mainElement.classList.contains("hover-card")) {
                             this.mainElement.classList.add("hover-card");
                         }
-
-                        if (!hasActivated) {
-                            hasActivated = true;
-                            playerHand.selectCard.targetName = this.name;
-                            playerHand.selectCard.updateAttributesHtml();
-                        }
                     } else {
-                        hasActivated = false;
                         this.mainElement.classList.remove("hover-card");
+                    }
+                });
+
+                document.addEventListener("card-mouseup", (e) => {
+                    const { cardModel, event } = e.detail;
+                    const mouseX = event.clientX;
+                    const mouseY = event.clientY;
+
+                    // Проверяем, находится ли мышь внутри прямоугольника
+                    if (
+                        cardModel instanceof CardModel &&
+                        mouseX >= rect.left &&
+                        mouseX <= rect.right &&
+                        mouseY >= rect.top &&
+                        mouseY <= rect.bottom
+                    ) {
+                        this.mainElement.classList.remove("hover-card");
+                        cardModel.targetName = this.name;
+                        cardModel.updateAttributesHtml();
+                        battleZone.addCardToContainer(playerHand.pullCard(cardModel));
+                        battleZone.renderContainerCards();
                     }
                 });
             }

@@ -137,7 +137,6 @@ class BattleZone {
             if (playerHand instanceof PlayerHand) {
                 // Создаем переменную для хранения rect
                 let rect = this.mainElement.getBoundingClientRect();
-                let hasHoverActivated = false;
 
                 // Функция для обновления rect
                 const updateRect = () => {
@@ -149,13 +148,14 @@ class BattleZone {
                 window.addEventListener("scroll", updateRect);
 
                 // Обработчик мыши
-                document.addEventListener("mousemove", (e) => {
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
+                document.addEventListener("card-mousemove", (e) => {
+                    const { cardModel, event } = e.detail;
+                    const mouseX = event.clientX;
+                    const mouseY = event.clientY;
 
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (
-                        playerHand.selectCard instanceof CardModel &&
+                        cardModel instanceof CardModel &&
                         mouseX >= rect.left &&
                         mouseX <= rect.right &&
                         mouseY >= rect.top &&
@@ -164,36 +164,27 @@ class BattleZone {
                         if (!this.mainElement.classList.contains("hover-card")) {
                             this.mainElement.classList.add("hover-card");
                         }
-
-                        if (!hasHoverActivated) {
-                            hasHoverActivated = true;
-                            playerHand.selectCard.targetName = "";
-                            playerHand.selectCard.updateAttributesHtml();
-                        }
                     } else {
-                        hasHoverActivated = false;
                         this.mainElement.classList.remove("hover-card");
                     }
                 });
 
-                document.addEventListener("mouseup", (e) => {
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
+                document.addEventListener("card-mouseup", (e) => {
+                    const { cardModel, event } = e.detail;
+                    const mouseX = event.clientX;
+                    const mouseY = event.clientY;
 
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (
-                        playerHand.selectCard instanceof CardModel &&
+                        cardModel instanceof CardModel &&
                         mouseX >= rect.left &&
                         mouseX <= rect.right &&
                         mouseY >= rect.top &&
                         mouseY <= rect.bottom
                     ) {
-                        this.addCardToContainer(playerHand.pullCard(playerHand.selectCard));
-                        playerHand.resetSelectCard();
+                        this.mainElement.classList.remove("hover-card");
+                        this.addCardToContainer(playerHand.pullCard(cardModel));
                         this.renderContainerCards();
-
-                        console.log(playerHand.selectCard);
-                        
                     }
                 });
             }

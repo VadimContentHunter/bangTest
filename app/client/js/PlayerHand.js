@@ -427,13 +427,13 @@ class PlayerHand {
 
             const cardElem = handCard.createHtmlShell()?.cardElement;
             handCard.enableDrag();
-            handCard.cardElement.addEventListener("card-mousedown", (e) => {
+            document.addEventListener("card-mousedown", (e) => {
                 const { cardModel, mouseEvent } = e.detail;
                 if (cardModel instanceof CardModel && cardModel.isDragging === true) {
                     this.selectCard = cardModel;
                 }
             });
-            handCard.cardElement.addEventListener("card-mouseup", (e) => {
+            document.addEventListener("card-mouseup", (e) => {
                 const { cardModel, mouseEvent } = e.detail;
                 if (cardModel instanceof CardModel) {
                     cardModel.targetName = "";
