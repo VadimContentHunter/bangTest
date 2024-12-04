@@ -58,6 +58,7 @@
 main {
     width: 100%;
     min-height: calc(100vh - 72px);
+    user-select: none;
 
     display: flex;
     flex-direction: column;
@@ -71,6 +72,7 @@ main {
     min-width: var(--card-min-width);
     min-height: var(--card-min-height);
     border-radius: var(--card-radius);
+    user-select: none;
 }
 
 .game-card-none {
@@ -213,6 +215,41 @@ main {
     flex-direction: row;
     justify-content: space-around;
     gap: var(--game-board-gap);
+}
+
+.battle-zone.hover-card {
+    cursor: pointer;
+    box-shadow: 0px 0px 18px 0px #f90000;
+    border-radius: var(--game-board-radius);
+}
+
+.battle-zone .shell-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.battle-zone .shell-card .content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 8;
+}
+
+.battle-zone .shell-card .content-container p {
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: var(--card-radius);
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.battle-zone .shell-card .content-container .card-target {
+    background-color: #ffbfbf;
+}
+
+.battle-zone .shell-card .content-container .card-owner {
+    background-color: #d4ffdf;
 }
 
 /* .deck-main {

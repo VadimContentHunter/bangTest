@@ -281,6 +281,16 @@ class PlayerHand {
         return this._selectCard;
     }
 
+    pullCard(value) {
+        if (value instanceof CardModel) {
+            const index = this._handCards.findIndex((card) => card === value);
+            if (index !== -1) {
+                return this._handCards.splice(index, 1)[0]; // Удаляем и возвращаем карту
+            }
+        }
+        return null;
+    }
+
     resetSelectCard() {
         this._selectCard = null;
     }

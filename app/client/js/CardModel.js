@@ -186,21 +186,6 @@ class CardModel {
             this.triggerCustomEvent("card-mousedown", { event: e, cardModel: this });
         });
 
-        // window.addEventListener("scroll", (e) => {
-        //     if (clonedElement instanceof HTMLElement) {
-        //         const rect = clonedElement.getBoundingClientRect();
-        //         offsetX = rect.left + 16;
-        //         offsetY = rect.top + 16;
-
-        //         const x = e.clientX - offsetX;
-        //         const y = e.clientY - offsetY;
-
-        //         // Устанавливаем новые координаты для блока
-        //         clonedElement.style.left = `${x}px`;
-        //         clonedElement.style.top = `${y}px`;
-        //     }
-        // });
-
         // Обработчик для перемещения блока
         document.addEventListener("mousemove", (e) => {
             if (this.isDragging) {
@@ -225,7 +210,7 @@ class CardModel {
         // Обработчик для завершения перетаскивания
         document.addEventListener("mouseup", (e) => {
             if (this.isDragging) {
-                // Сбрасываем стили, когда отпускана кнопка мыши
+                // Сбрасываем стили, когда отпущена кнопка мыши
                 // clonedElement.style.position = "";
                 // clonedElement.style.zIndex = "";
                 clonedElement.remove();
@@ -239,6 +224,17 @@ class CardModel {
                 this.triggerCustomEvent("card-mouseup", { event: e, cardModel: this });
             }
         });
+    }
+
+    deactivateDrag() {
+        if (this.isCreatedCardElement) {
+            const parentElem = this.cardElement.parentElement;
+            this.cardElement.remove();
+            this._cardElement = null;
+
+            this.createHtmlShell();
+            parentElem?.append(this.cardElement);
+        }
     }
 
     createHtmlShell() {

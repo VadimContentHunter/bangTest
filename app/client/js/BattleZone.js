@@ -1,0 +1,202 @@
+class BattleZone {
+    _containerCards = [];
+    _timer = 0;
+    _countMainDeck = 0;
+    _countDiscardPile = 0;
+
+    constructor(selectorMainElement) {
+        this.mainElement = document.querySelector(selectorMainElement);
+        this.collectionCardsElement = this.mainElement?.querySelector(".cards-container");
+        this.valueMainDeckElement = this.mainElement?.querySelector(
+            ".controls .icon-deck-main .item-value"
+        );
+        this.valueDiscardPileElement = this.mainElement?.querySelector(
+            ".controls .icon-deck-discard .item-value"
+        );
+        this.valueTimerElement = this.mainElement?.querySelector(
+            ".controls .icon-round-timer .item-value"
+        );
+
+        this.checkElements();
+    }
+
+    set containerCards(value) {
+        if (!Array.isArray(value)) {
+            throw new Error("BattleZone.containerCards(value): value must be an array.");
+        }
+
+        // Преобразуем массив и фильтруем только корректные данные
+        this._containerCards = value
+            .map((data) => {
+                try {
+                    return CardModel.init(
+                        data?.id,
+                        data?.type,
+                        data?.image,
+                        data?.ownerName,
+                        data?.targetName
+                    );
+                } catch (e) {
+                    if (e instanceof CardModelError) {
+                        console.error(e.message);
+                        return null; // Пропускаем некорректный элемент
+                    }
+                    throw e; // Пробрасываем другие ошибки
+                }
+            })
+            .filter(Boolean); // Убираем null-значения из массива
+    }
+
+    get containerCards() {
+        if (!Array.isArray(this._containerCards)) {
+            throw new Error("BattleZone.containerCards(value): value must be an array.");
+        }
+
+        // Проверяем, что все элементы массива являются экземплярами CardModel
+        if (!this._containerCards.every((card) => card instanceof CardModel)) {
+            throw new Error(
+                "BattleZone.containerCards: all elements of _containerCards must be instances of CardModel."
+            );
+        }
+
+        return this._containerCards;
+    }
+
+    addCardToContainer(value) {
+        if (!(value instanceof CardModel)) {
+            try {
+                value = CardModel.init(
+                    value?.id,
+                    value?.type,
+                    value?.image,
+                    value?.ownerName,
+                    value?.targetName
+                );
+            } catch (e) {
+                if (e instanceof CardModelError) {
+                    console.error(e.message);
+                    return null; // Пропускаем некорректный элемент
+                }
+                throw e; // Пробрасываем другие ошибки
+            }
+        }
+
+        this.containerCards.push(value);
+    }
+
+    renderContainerCards() {
+        // Полностью очищаем содержимое контейнера
+        this.collectionCardsElement.innerHTML = "";
+
+        this.containerCards.forEach((card, index) => {
+            if (card instanceof CardModel) {
+                if (!card.isCreatedCardElement()) {
+                    card.createHtmlShell();
+                }
+
+                const divContainerTitle = document.createElement("div");
+                divContainerTitle.classList.add("shell-card");
+                divContainerTitle.innerHTML = `
+                    <div class="content-container">
+                        <p class="card-owner">${card.ownerName}</p>
+                        <p class="card-target">${card.targetName}</p>
+                    </div>
+                `;
+
+                card.deactivateDrag();
+                divContainerTitle.prepend(card.cardElement);
+                this.collectionCardsElement.append(divContainerTitle);
+            }
+        });
+    }
+
+    checkElements() {
+        if (!(this.mainElement instanceof HTMLElement)) {
+            throw new Error("BattleZone: Invalid main element selector");
+        }
+        if (!(this.collectionCardsElement instanceof HTMLElement)) {
+            throw new Error("BattleZone: Invalid collection cards element selector");
+        }
+        if (!(this.valueMainDeckElement instanceof HTMLElement)) {
+            throw new Error("BattleZone: Invalid value main deck element selector");
+        }
+        if (!(this.valueDiscardPileElement instanceof HTMLElement)) {
+            throw new Error("BattleZone: Invalid value discard pile element selector");
+        }
+        if (!(this.valueTimerElement instanceof HTMLElement)) {
+            throw new Error("BattleZone: Invalid value timer element selector");
+        }
+    }
+
+    init() {
+        // this.setupDragCardListener();
+    }
+
+    setupDragCardListener(playerHand) {
+        requestAnimationFrame(() => {
+            if (playerHand instanceof PlayerHand) {
+                // Создаем переменную для хранения rect
+                let rect = this.mainElement.getBoundingClientRect();
+                let hasHoverActivated = false;
+
+                // Функция для обновления rect
+                const updateRect = () => {
+                    rect = this.mainElement.getBoundingClientRect();
+                };
+
+                // Обновляем rect при изменении размера окна и прокрутке
+                window.addEventListener("resize", updateRect);
+                window.addEventListener("scroll", updateRect);
+
+                // Обработчик мыши
+                document.addEventListener("mousemove", (e) => {
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+
+                    // Проверяем, находится ли мышь внутри прямоугольника
+                    if (
+                        playerHand.selectCard instanceof CardModel &&
+                        mouseX >= rect.left &&
+                        mouseX <= rect.right &&
+                        mouseY >= rect.top &&
+                        mouseY <= rect.bottom
+                    ) {
+                        if (!this.mainElement.classList.contains("hover-card")) {
+                            this.mainElement.classList.add("hover-card");
+                        }
+
+                        if (!hasHoverActivated) {
+                            hasHoverActivated = true;
+                            playerHand.selectCard.targetName = "";
+                            playerHand.selectCard.updateAttributesHtml();
+                        }
+                    } else {
+                        hasHoverActivated = false;
+                        this.mainElement.classList.remove("hover-card");
+                    }
+                });
+
+                document.addEventListener("mouseup", (e) => {
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+
+                    // Проверяем, находится ли мышь внутри прямоугольника
+                    if (
+                        playerHand.selectCard instanceof CardModel &&
+                        mouseX >= rect.left &&
+                        mouseX <= rect.right &&
+                        mouseY >= rect.top &&
+                        mouseY <= rect.bottom
+                    ) {
+                        this.addCardToContainer(playerHand.pullCard(playerHand.selectCard));
+                        playerHand.resetSelectCard();
+                        this.renderContainerCards();
+
+                        console.log(playerHand.selectCard);
+                        
+                    }
+                });
+            }
+        });
+    }
+}

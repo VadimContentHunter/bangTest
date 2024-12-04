@@ -378,6 +378,21 @@ function main() {
         return console.log("Класс PlayerHand не существует или не все методы существуют в нем.");
     }
 
+    if (
+        !checkClassAndMethods(
+            BattleZone,
+            [
+                "checkElements",
+                "addCardToContainer",
+                "setupDragCardListener",
+                "init",
+            ], // Обычные методы
+            [] // Статические методы
+        )
+    ) {
+        return console.log("Класс PlayerHand не существует или не все методы существуют в нем.");
+    }
+
     if (typeof websocketClient !== "function") {
         return console.log("Функция websocketClient не существует");
     }
@@ -389,6 +404,11 @@ function main() {
     const playerHand = new PlayerHand("main .player-hand");
     playerHand.init();
     playerHand.renderUpdatedData();
+
+    const battleZone = new BattleZone("main .battle-zone");
+    battleZone.init();
+    battleZone.setupDragCardListener(playerHand);
+    
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
