@@ -423,10 +423,14 @@ class GameBoard {
                 let rect = this.mainElement.getBoundingClientRect();
                 let hasActivated = false;
 
-                // Обновляем rect при изменении размера окна
-                window.addEventListener("resize", () => {
+                // Функция для обновления rect
+                const updateRect = () => {
                     rect = this.mainElement.getBoundingClientRect();
-                });
+                };
+
+                // Обновляем rect при изменении размера окна и прокрутке
+                window.addEventListener("resize", updateRect);
+                window.addEventListener("scroll", updateRect);
 
                 // Обработчик мыши
                 document.addEventListener("mousemove", (e) => {

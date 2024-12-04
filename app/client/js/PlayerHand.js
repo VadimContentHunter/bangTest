@@ -393,7 +393,7 @@ class PlayerHand {
             //         if (card instanceof CardModel) {
             //             this.resetSelectCard();
             //         }
-                    
+
             //     },
             // });
             if (cardElem instanceof HTMLElement) {
@@ -416,19 +416,20 @@ class PlayerHand {
             }
 
             const cardElem = handCard.createHtmlShell()?.cardElement;
-            handCard.enableDrag({
-                mousedownCallBack: (card, eventMouse) => {
-                    if (card instanceof CardModel && card.isDragging === true) {
-                        this.selectCard = card;
-                    }
-                },
-                mouseupCallBack: (card, eventMouse) => {
-                    if (card instanceof CardModel) {
-                        card.targetName = "";
-                        card.updateAttributesHtml();
-                        this.resetSelectCard();
-                    }
-                },
+            handCard.enableDrag();
+            handCard.cardElement.addEventListener("card-mousedown", (e) => {
+                const { cardModel, mouseEvent } = e.detail;
+                if (cardModel instanceof CardModel && cardModel.isDragging === true) {
+                    this.selectCard = cardModel;
+                }
+            });
+            handCard.cardElement.addEventListener("card-mouseup", (e) => {
+                const { cardModel, mouseEvent } = e.detail;
+                if (cardModel instanceof CardModel) {
+                    cardModel.targetName = "";
+                    cardModel.updateAttributesHtml();
+                    this.resetSelectCard();
+                }
             });
             if (cardElem instanceof HTMLElement) {
                 this.cardsHandElement.append(cardElem); // Добавляем элемент в контейнер

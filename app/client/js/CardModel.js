@@ -25,10 +25,11 @@ class CardModel {
     _selectorDescriptionCart = null;
     _isDragging = false;
 
-    constructor(cardId, cardType, src, ownerName = "") {
+    constructor(cardId, cardType, src, ownerName = "", targetName = "") {
         this.cardId = cardId;
         this.cardType = cardType;
         this.ownerName = ownerName;
+        this.targetName = targetName;
         this._src = src;
         this.selectorDescriptionCart = ".card-description";
     }
@@ -131,12 +132,20 @@ class CardModel {
         return this._cardElement instanceof HTMLElement;
     }
 
+    /**
+     * Генерация пользовательского события
+     * @param {string} eventName
+     * @param {Object} detail - Дополнительные данные события
+     */
+    triggerCustomEvent(eventName, detail = {}) {
+        if (this.cardElement instanceof HTMLElement) {
+            const event = new CustomEvent(eventName, { detail });
+            this.cardElement.dispatchEvent(event);
+        }
+    }
+
     // Метод для инициализации перетаскивания
-    enableDrag({
-        mousedownCallBack = null,
-        mousemoveCallBack = null,
-        mouseupCallBack = null,
-    } = {}) {
+    enableDrag() {
         if (!this.cardElement) return;
 
         this.isDragging = false;
@@ -173,14 +182,35 @@ class CardModel {
 
             this.isDragging = true;
             document.body.style.userSelect = "none"; // Отключаем выделение текста во время перетаскивания
-            if (typeof mousedownCallBack === "function") {
-                mousedownCallBack(this, e, rect, 16);
-            }
+            document.body.style.overflow = "hidden";
+            this.triggerCustomEvent("card-mousedown", { event: e, cardModel: this });
         });
+
+        // window.addEventListener("scroll", (e) => {
+        //     if (clonedElement instanceof HTMLElement) {
+        //         const rect = clonedElement.getBoundingClientRect();
+        //         offsetX = rect.left + 16;
+        //         offsetY = rect.top + 16;
+
+        //         const x = e.clientX - offsetX;
+        //         const y = e.clientY - offsetY;
+
+        //         // Устанавливаем новые координаты для блока
+        //         clonedElement.style.left = `${x}px`;
+        //         clonedElement.style.top = `${y}px`;
+        //     }
+        // });
 
         // Обработчик для перемещения блока
         document.addEventListener("mousemove", (e) => {
             if (this.isDragging) {
+                // const updateRect = () => {
+                //     rect = this.mainElement.getBoundingClientRect();
+                //     offsetX = rect.left + 16;
+                //     offsetY = rect.top + 16;
+                // };
+                // window.addEventListener("resize", updateRect);
+
                 const x = e.clientX - offsetX;
                 const y = e.clientY - offsetY;
 
@@ -188,9 +218,7 @@ class CardModel {
                 clonedElement.style.left = `${x}px`;
                 clonedElement.style.top = `${y}px`;
 
-                if (typeof mousemoveCallBack === "function") {
-                    mousemoveCallBack(this, e);
-                }
+                this.triggerCustomEvent("card-mousemove", { event: e, cardModel: this });
             }
         });
 
@@ -207,10 +235,8 @@ class CardModel {
 
                 this.isDragging = false;
                 document.body.style.userSelect = ""; // Включаем выделение текста обратно
-
-                if (typeof mouseupCallBack === "function") {
-                    mouseupCallBack(this, e);
-                }
+                document.body.style.overflow = "";
+                this.triggerCustomEvent("card-mouseup", { event: e, cardModel: this });
             }
         });
     }
@@ -289,8 +315,8 @@ class CardModel {
         }
     }
 
-    static init(cardId, cardType, src, ownerName = "") {
-        const cardModel = new CardModel(cardId, cardType, src, ownerName);
+    static init(cardId, cardType, src, ownerName = "", targetName = "") {
+        const cardModel = new CardModel(cardId, cardType, src, ownerName, targetName);
         return cardModel.createHtmlShell();
     }
 
