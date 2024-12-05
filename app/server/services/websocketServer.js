@@ -98,6 +98,11 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     "createAllGameBoard",
                     playroomHandler.getAllPlayersSummaryInfo()
                 );
+                myHooks.emit("requestAllUser", "battleZoneUpdate", [
+                    new StubCard(CardType.DEFAULT, player.name),
+                    new StubCard(CardType.DEFAULT, player.name),
+                    new StubCard(CardType.WEAPON, player.name),
+                ]);
             }
         } catch (error) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));

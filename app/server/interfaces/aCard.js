@@ -14,12 +14,14 @@ class aCard {
     _name = null;
     _image = null;
     _type = CardType.DEFAULT;
+    _ownerName = "";
 
-    constructor(name, image, type = CardType.DEFAULT, id = 0) {
+    constructor({ name, image, type = CardType.DEFAULT, id = 0, ownerName = ""}) {
         this.id = id;
         this.name = name;
         this.image = image;
         this.type = type;
+        this.ownerName = ownerName;
     }
 
     set id(value) {
@@ -55,6 +57,14 @@ class aCard {
         this._type = value;
     }
 
+    set ownerName(value) {
+        if (typeof value !== "string") {
+            throw new ValidatePlayerError("Имя владельца должно быть строкой.");
+        }
+
+        this._ownerName = value;
+    }
+
     get id() {
         return this._id;
     }
@@ -71,12 +81,21 @@ class aCard {
         return this._type;
     }
 
+    get ownerName() {
+        if (typeof this._ownerName !== "string") {
+            throw new ValidatePlayerError("Имя владельца должно быть строкой.");
+        }
+
+        return this._ownerName;
+    }
+
     toJSON() {
         return {
             id: this.id,
             name: this.name,
             image: this.image,
             type: this.type,
+            ownerName: this.ownerName,
         };
     }
 }

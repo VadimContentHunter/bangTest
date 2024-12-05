@@ -153,6 +153,22 @@ function requestServer(request, data = {}, ws) {
         case "updateUserCount":
             updateUserCount(request?.params, "#user-count");
             break;
+        case "battleZoneUpdate":
+            if (data.battleZone instanceof BattleZone) {
+                const battleZone = data.battleZone;
+                const collectionCards = request?.params;
+                if (Array.isArray(collectionCards) && collectionCards.length > 0) {
+                    collectionCards.forEach((card) => {
+                        battleZone.addCardToContainer(card);
+                    });
+                    battleZone.renderContainerCards();
+                }
+            } else {
+                console.error(
+                    "requestServer ('battleZoneUpdate'): data.battleZone must be BattleZone"
+                );
+            }
+            break;
         case "getMyPlayer":
             if (data.playerHand instanceof PlayerHand) {
                 data.playerHand.name = request?.params?.name;
@@ -175,11 +191,6 @@ function requestServer(request, data = {}, ws) {
             } else {
                 console.error("requestServer ('getMyPlayer'): data.playerHand must be PlayerHand");
             }
-            // if (data.cardSelection instanceof CardSelection) {
-            //     data.cardSelection;
-            // } else {
-            //     console.error("requestServer: data.cardSelection must be CardSelection");
-            // }
             break;
         case "createAllGameBoard":
             if (!(data.playersFieldElement instanceof HTMLElement)) {
@@ -226,7 +237,10 @@ function requestServer(request, data = {}, ws) {
                     }
                     gameBoard.initAndCreateToContainer(gridItem);
                     gameBoard.renderUpdatedData();
-                    if (data.playerHand instanceof PlayerHand && data.battleZone instanceof BattleZone) {
+                    if (
+                        data.playerHand instanceof PlayerHand &&
+                        data.battleZone instanceof BattleZone
+                    ) {
                         gameBoard.setupDragCardListener(data.playerHand, data.battleZone);
                     }
 
@@ -381,12 +395,7 @@ function main() {
     if (
         !checkClassAndMethods(
             BattleZone,
-            [
-                "checkElements",
-                "addCardToContainer",
-                "setupDragCardListener",
-                "init",
-            ], // Обычные методы
+            ["checkElements", "addCardToContainer", "setupDragCardListener", "init"], // Обычные методы
             [] // Статические методы
         )
     ) {
@@ -408,7 +417,6 @@ function main() {
     const battleZone = new BattleZone("main .battle-zone");
     battleZone.init();
     battleZone.setupDragCardListener(playerHand);
-    
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
