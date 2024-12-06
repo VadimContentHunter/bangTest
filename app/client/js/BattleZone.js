@@ -233,8 +233,8 @@ class BattleZone {
                         mouseY <= rect.bottom
                     ) {
                         this.mainElement.classList.remove("hover-card");
-                        this.addCardToContainer(playerHand.pullCard(cardModel));
-                        this.renderContainerCards();
+                        // this.addCardToContainer(playerHand.pullCard(cardModel));
+                        // this.renderContainerCards();
                         document.dispatchEvent(
                             new CustomEvent("sendServer", {
                                 detail: {

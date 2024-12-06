@@ -469,8 +469,8 @@ class GameBoard {
                         this.mainElement.classList.remove("hover-card");
                         cardModel.targetName = this.name;
                         cardModel.updateAttributesHtml();
-                        battleZone.addCardToContainer(playerHand.pullCard(cardModel));
-                        battleZone.renderContainerCards();
+                        // battleZone.addCardToContainer(playerHand.pullCard(cardModel));
+                        // battleZone.renderContainerCards();
                         document.dispatchEvent(
                             new CustomEvent("sendServer", {
                                 detail: {

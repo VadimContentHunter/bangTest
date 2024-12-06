@@ -168,6 +168,7 @@ function requestServer(request, data = {}, ws) {
                     cardSelection.renderUpdatedData();
                 }
                 cardSelection.setupDragCardListener();
+                cardSelection.showMainController();
             } else {
                 console.error(
                     "requestServer ('battleZoneUpdate'): data.battleZone must be BattleZone"
@@ -444,7 +445,6 @@ function main() {
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
-    cardSelection.showMainController();
 
     // const tempCard = CardModel.init(1, "default", "../resources/imgs/cards/cardBacks/girl.png");
     // const test123 = document.querySelector("#card-moving-block");
