@@ -93,16 +93,36 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     new StubCard(CardType.CHARACTER),
                 ]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
+
                 myHooks.emit(
                     "requestAllUser",
                     "createAllGameBoard",
                     playroomHandler.getAllPlayersSummaryInfo()
                 );
-                myHooks.emit("requestAllUser", "battleZoneUpdate", [
-                    new StubCard(CardType.DEFAULT, player.name),
-                    new StubCard(CardType.DEFAULT, player.name),
-                    new StubCard(CardType.WEAPON, player.name),
-                ]);
+
+                myHooks.emit("requestAllUser", "battleZoneUpdate", {
+                    countDeckMain: 50,
+                    countDiscardPile: 30,
+                    timer: 20,
+                    collectionCards: [
+                        new StubCard(CardType.DEFAULT, player.name),
+                        new StubCard(CardType.DEFAULT, player.name),
+                        new StubCard(CardType.WEAPON, player.name),
+                    ],
+                });
+
+                myHooks.emit("requestAllUser", "selectionCardsMenu", {
+                    title: "Test Карта магазин",
+                    description: "Выберите карту из магазина:",
+                    textExtension: `Игрок <i>${player.name}</i> выбирает карту . . .`,
+                    // selectIdCard: 1,
+                    timer: 20,
+                    collectionCards: [
+                        new StubCard(CardType.DEFAULT, player.name),
+                        new StubCard(CardType.DEFAULT, player.name),
+                        new StubCard(CardType.WEAPON, player.name),
+                    ],
+                });
             }
         } catch (error) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));

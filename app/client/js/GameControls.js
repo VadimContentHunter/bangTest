@@ -26,17 +26,172 @@ class GameControls {
 }
 
 class CardSelection extends GameControls {
+    _containerCards = [];
+    _title = "";
+    _description = "";
+    _textExtension = "";
+    _timer = null;
+
     constructor(selectorMainElement, selectorCardsSelection) {
         super(selectorMainElement);
 
         this.cardsSelection = this.mainElement?.querySelector(selectorCardsSelection);
         this.collapseElement = this.cardsSelection?.querySelector(".icon-control-collapse");
         this.closeElement = this.cardsSelection?.querySelector(".icon-control-close");
+        this.timerValueElement = this.cardsSelection?.querySelector(
+            ".icon-round-timer .item-value"
+        );
         this.containerElement = this.cardsSelection?.querySelector(".cards-container");
         this.headerElement = this.cardsSelection?.querySelector(".header");
+        this.headerTitleElement = this.headerElement?.querySelector(":scope > h5");
+        this.headerDescriptionElement = this.headerElement?.querySelector(":scope > p");
         this.textElement = this.mainElement?.querySelector(selectorCardsSelection + " > p");
 
         this.checkElements();
+    }
+
+    set title(value) {
+        if (typeof value !== "string") {
+            throw new Error("CardSelection.title(value): value must be string.");
+        }
+        this._title = value;
+    }
+
+    set description(value) {
+        if (typeof value !== "string") {
+            throw new Error("CardSelection.description(value): value must be string.");
+        }
+        this._description = value;
+    }
+
+    set textExtension(value) {
+        if (typeof value !== "string") {
+            throw new Error("CardSelection.textExtension(value): value must be string.");
+        }
+        this._textExtension = value;
+    }
+
+    set timer(value) {
+        if (typeof value !== "number") {
+            return;
+        }
+        this._timer = value;
+    }
+
+    set containerCards(value) {
+        if (!Array.isArray(value)) {
+            throw new Error("BattleZone.containerCards(value): value must be an array.");
+        }
+
+        // Преобразуем массив и фильтруем только корректные данные
+        this._containerCards = value
+            .map((data) => {
+                try {
+                    return CardModel.init(
+                        data?.id,
+                        data?.type,
+                        data?.image,
+                        data?.ownerName,
+                        data?.targetName
+                    );
+                } catch (e) {
+                    if (e instanceof CardModelError) {
+                        console.error(e.message);
+                        return null; // Пропускаем некорректный элемент
+                    }
+                    throw e; // Пробрасываем другие ошибки
+                }
+            })
+            .filter(Boolean); // Убираем null-значения из массива
+    }
+
+    get title() {
+        if (typeof this._title !== "string") {
+            throw new Error("CardSelection.title(value): value must be string.");
+        }
+        return this._title;
+    }
+
+    get description() {
+        if (typeof this._description !== "string") {
+            throw new Error("CardSelection.description(value): value must be string.");
+        }
+        return this._description;
+    }
+
+    get textExtension() {
+        if (typeof this._textExtension !== "string") {
+            throw new Error("CardSelection.textExtension(value): value must be string.");
+        }
+        return this._textExtension;
+    }
+
+    get timer() {
+        return this._timer;
+    }
+
+    get containerCards() {
+        if (!Array.isArray(this._containerCards)) {
+            throw new Error("BattleZone.containerCards(value): value must be an array.");
+        }
+
+        // Проверяем, что все элементы массива являются экземплярами CardModel
+        if (!this._containerCards.every((card) => card instanceof CardModel)) {
+            throw new Error(
+                "BattleZone.containerCards: all elements of _containerCards must be instances of CardModel."
+            );
+        }
+
+        return this._containerCards;
+    }
+
+    addCardToContainer(value) {
+        if (!(value instanceof CardModel)) {
+            try {
+                value = CardModel.init(
+                    value?.id,
+                    value?.type,
+                    value?.image,
+                    value?.ownerName,
+                    value?.targetName
+                );
+            } catch (e) {
+                if (e instanceof CardModelError) {
+                    console.error(e.message);
+                    return null; // Пропускаем некорректный элемент
+                }
+                throw e; // Пробрасываем другие ошибки
+            }
+        }
+
+        this.containerCards.push(value);
+    }
+
+    renderUpdatedData() {
+        this.headerTitleElement.innerHTML = this.title;
+        this.headerDescriptionElement.innerHTML = this.description;
+        this.textElement.innerHTML = this.textExtension;
+        this.timerValueElement.innerHTML = this.timer ?? "--";
+
+        this.renderContainerCards();
+    }
+
+    renderContainerCards() {
+        // Полностью очищаем содержимое контейнера
+        this.containerElement.innerHTML = "";
+
+        this.containerCards.forEach((card, index) => {
+            if (card instanceof CardModel) {
+                if (!card.isCreatedCardElement()) {
+                    card.createHtmlShell();
+                }
+
+                card.deactivateDrag();
+                this.containerElement.append(card.cardElement);
+            }
+        });
+
+        window.dispatchEvent(new CustomEvent("updateSizeZone"));
     }
 
     checkElements() {
@@ -60,6 +215,15 @@ class CardSelection extends GameControls {
         }
         if (!(this.textElement instanceof HTMLElement)) {
             throw new Error("Invalid text card selection selector");
+        }
+        if (!(this.headerTitleElement instanceof HTMLElement)) {
+            throw new Error("Invalid header title card selection selector");
+        }
+        if (!(this.headerDescriptionElement instanceof HTMLElement)) {
+            throw new Error("Invalid header description card selection selector");
+        }
+        if (!(this.timerValueElement instanceof HTMLElement)) {
+            throw new Error("Invalid timer value card selection selector");
         }
     }
 
@@ -103,6 +267,24 @@ class CardSelection extends GameControls {
                         iElement.classList.add("icon-collapse");
                     }
                 }
+            }
+        });
+    }
+
+    setupDragCardListener() {
+        this.containerCards.forEach((card, index) => {
+            if (card instanceof CardModel && card.isCreatedCardElement()) {
+                card.cardElement.addEventListener("click", (e) => {
+                    this.hideMainController();
+                    document.dispatchEvent(
+                        new CustomEvent("sendServer", {
+                            detail: {
+                                data: card,
+                                action: "playerSelectCard",
+                            },
+                        })
+                    );
+                });
             }
         });
     }

@@ -20,6 +20,27 @@ class BattleZone {
         this.checkElements();
     }
 
+    set countMainDeck(value) {
+        if (typeof value !== "number") {
+            throw new Error("BattleZone.countMainDeck(value): value must be number.");
+        }
+        this._countMainDeck = value;
+    }
+
+    set countDiscardPile(value) {
+        if (typeof value !== "number") {
+            throw new Error("BattleZone.countDiscardPile(value): value must be number.");
+        }
+        this._countDiscardPile = value;
+    }
+
+    set timer(value) {
+        if (typeof value !== "number") {
+            return;
+        }
+        this._timer = value;
+    }
+
     set containerCards(value) {
         if (!Array.isArray(value)) {
             throw new Error("BattleZone.containerCards(value): value must be an array.");
@@ -45,6 +66,24 @@ class BattleZone {
                 }
             })
             .filter(Boolean); // Убираем null-значения из массива
+    }
+
+    get countMainDeck() {
+        if (typeof this._countMainDeck !== "number") {
+            throw new Error("BattleZone.countMainDeck(value): value must be number.");
+        }
+        return this._countMainDeck;
+    }
+
+    get countDiscardPile() {
+        if (typeof this._countDiscardPile !== "number") {
+            throw new Error("BattleZone.countDiscardPile(value): value must be number.");
+        }
+        return this._countDiscardPile;
+    }
+
+    get timer() {
+        return this._timer;
     }
 
     get containerCards() {
@@ -84,6 +123,14 @@ class BattleZone {
         this.containerCards.push(value);
     }
 
+    renderUpdatedData() {
+        this.valueMainDeckElement.innerHTML = this.countMainDeck;
+        this.valueDiscardPileElement.innerHTML = this.countDiscardPile;
+        this.valueTimerElement.innerHTML = this.timer ?? "--";
+
+        this.renderContainerCards();
+    }
+
     renderContainerCards() {
         // Полностью очищаем содержимое контейнера
         this.collectionCardsElement.innerHTML = "";
@@ -108,6 +155,8 @@ class BattleZone {
                 this.collectionCardsElement.append(divContainerTitle);
             }
         });
+
+        window.dispatchEvent(new CustomEvent("updateSizeZone"));
     }
 
     checkElements() {
@@ -146,6 +195,7 @@ class BattleZone {
                 // Обновляем rect при изменении размера окна и прокрутке
                 window.addEventListener("resize", updateRect);
                 window.addEventListener("scroll", updateRect);
+                window.addEventListener("updateSizeZone", updateRect);
 
                 // Обработчик мыши
                 document.addEventListener("card-mousemove", (e) => {
@@ -185,6 +235,14 @@ class BattleZone {
                         this.mainElement.classList.remove("hover-card");
                         this.addCardToContainer(playerHand.pullCard(cardModel));
                         this.renderContainerCards();
+                        document.dispatchEvent(
+                            new CustomEvent("sendServer", {
+                                detail: {
+                                    data: cardModel,
+                                    action: "playCard",
+                                },
+                            })
+                        );
                     }
                 });
             }

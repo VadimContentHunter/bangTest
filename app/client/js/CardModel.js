@@ -285,6 +285,16 @@ class CardModel {
         }
     }
 
+    toJSON() {
+        return {
+            id: this._cardId,
+            type: this._cardType,
+            ownerName: this._ownerName,
+            targetName: this._targetName,
+            image: this._src,
+        };
+    }
+
     static setupCardHoverListeners(cardModel) {
         if (!(cardModel instanceof CardModel)) {
             console.error(

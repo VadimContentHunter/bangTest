@@ -153,15 +153,39 @@ function requestServer(request, data = {}, ws) {
         case "updateUserCount":
             updateUserCount(request?.params, "#user-count");
             break;
+        case "selectionCardsMenu":
+            if (data.cardSelection instanceof CardSelection) {
+                const cardSelection = data.cardSelection;
+                cardSelection.title = request?.params?.title;
+                cardSelection.description = request?.params?.description;
+                cardSelection.textExtension = request?.params?.textExtension;
+                cardSelection.timer = request?.params?.timer;
+                const collectionCards = request?.params?.collectionCards;
+                if (Array.isArray(collectionCards) && collectionCards.length > 0) {
+                    collectionCards.forEach((card) => {
+                        cardSelection.addCardToContainer(card);
+                    });
+                    cardSelection.renderUpdatedData();
+                }
+                cardSelection.setupDragCardListener();
+            } else {
+                console.error(
+                    "requestServer ('battleZoneUpdate'): data.battleZone must be BattleZone"
+                );
+            }
+            break;
         case "battleZoneUpdate":
             if (data.battleZone instanceof BattleZone) {
                 const battleZone = data.battleZone;
-                const collectionCards = request?.params;
+                battleZone.countMainDeck = request?.params?.countDeckMain ?? 0;
+                battleZone.countDiscardPile = request?.params?.countDiscardPile ?? 0;
+                battleZone.timer = request?.params?.timer;
+                const collectionCards = request?.params?.collectionCards;
                 if (Array.isArray(collectionCards) && collectionCards.length > 0) {
                     collectionCards.forEach((card) => {
                         battleZone.addCardToContainer(card);
                     });
-                    battleZone.renderContainerCards();
+                    battleZone.renderUpdatedData();
                 }
             } else {
                 console.error(
@@ -420,6 +444,7 @@ function main() {
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
+    cardSelection.showMainController();
 
     // const tempCard = CardModel.init(1, "default", "../resources/imgs/cards/cardBacks/girl.png");
     // const test123 = document.querySelector("#card-moving-block");

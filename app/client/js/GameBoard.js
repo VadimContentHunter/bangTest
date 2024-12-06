@@ -471,6 +471,14 @@ class GameBoard {
                         cardModel.updateAttributesHtml();
                         battleZone.addCardToContainer(playerHand.pullCard(cardModel));
                         battleZone.renderContainerCards();
+                        document.dispatchEvent(
+                            new CustomEvent("sendServer", {
+                                detail: {
+                                    data: cardModel,
+                                    action: "playCard",
+                                },
+                            })
+                        );
                     }
                 });
             }
