@@ -1,6 +1,6 @@
 class BattleZone {
     _containerCards = [];
-    _timer = 0;
+    _timer = null;
     _countMainDeck = 0;
     _countDiscardPile = 0;
 

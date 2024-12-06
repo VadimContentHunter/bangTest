@@ -16,6 +16,8 @@ const EventEmitter = require("events");
 const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
 const Player = require("../models/Player");
+const GameTableError = require("../Errors/GameTableError");
+const GameTable = require("../models/GameTable");
 class MyHookEmitter extends EventEmitter {}
 const myHooks = new MyHookEmitter();
 
@@ -100,23 +102,44 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     playroomHandler.getAllPlayersSummaryInfo()
                 );
 
-                myHooks.emit("requestAllUser", "battleZoneUpdate", {
-                    countDeckMain: 50,
-                    countDiscardPile: 30,
-                    timer: 20,
-                    collectionCards: [
-                        new StubCard(CardType.DEFAULT, player.name),
-                        new StubCard(CardType.DEFAULT, player.name),
-                        new StubCard(CardType.WEAPON, player.name),
-                    ],
-                });
+                // myHooks.emit("requestAllUser", "battleZoneUpdate", {
+                //     countDeckMain: 50,
+                //     countDiscardPile: 30,
+                //     timer: null,
+                //     collectionCards: [
+                //         new StubCard(CardType.DEFAULT, player.name),
+                //         new StubCard(CardType.DEFAULT, player.name),
+                //         new StubCard(CardType.WEAPON, player.name),
+                //     ],
+                // });
+                const gameTable = new GameTable();
+                gameTable.deckMain.setCards([
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                ]);
+                gameTable.discardPile.setCards([
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                    new StubCard(CardType.DEFAULT),
+                ]);
+                gameTable.addPlayerCards(player, [
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                ]);
+                myHooks.emit("requestAllUser", "battleZoneUpdate", gameTable);
 
                 myHooks.emit("requestAllUser", "selectionCardsMenu", {
                     title: "Test Карта магазин",
                     description: "Выберите карту из магазина:",
                     textExtension: `Игрок <i>${player.name}</i> выбирает карту . . .`,
                     // selectIdCard: 1,
-                    timer: 20,
+                    timer: null,
                     collectionCards: [
                         new StubCard(CardType.DEFAULT, player.name),
                         new StubCard(CardType.DEFAULT, player.name),
