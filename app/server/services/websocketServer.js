@@ -18,6 +18,8 @@ const StubCard = require("../models/cards/StubCard");
 const Player = require("../models/Player");
 const GameTableError = require("../Errors/GameTableError");
 const GameTable = require("../models/GameTable");
+const SelectionCardsError = require("../Errors/GameTableError");
+const SelectionCardsHandler = require("../handlers/SelectionCardsHandler");
 class MyHookEmitter extends EventEmitter {}
 const myHooks = new MyHookEmitter();
 
@@ -102,16 +104,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     playroomHandler.getAllPlayersSummaryInfo()
                 );
 
-                // myHooks.emit("requestAllUser", "battleZoneUpdate", {
-                //     countDeckMain: 50,
-                //     countDiscardPile: 30,
-                //     timer: null,
-                //     collectionCards: [
-                //         new StubCard(CardType.DEFAULT, player.name),
-                //         new StubCard(CardType.DEFAULT, player.name),
-                //         new StubCard(CardType.WEAPON, player.name),
-                //     ],
-                // });
                 const gameTable = new GameTable();
                 gameTable.deckMain.setCards([
                     new StubCard(CardType.DEFAULT),
@@ -134,18 +126,24 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 ]);
                 myHooks.emit("requestAllUser", "battleZoneUpdate", gameTable);
 
-                myHooks.emit("requestAllUser", "selectionCardsMenu", {
-                    title: "Test Карта магазин",
-                    description: "Выберите карту из магазина:",
-                    textExtension: `Игрок <i>${player.name}</i> выбирает карту . . .`,
-                    // selectIdCard: 1,
-                    timer: null,
-                    collectionCards: [
-                        new StubCard(CardType.DEFAULT, player.name),
-                        new StubCard(CardType.DEFAULT, player.name),
-                        new StubCard(CardType.WEAPON, player.name),
-                    ],
-                });
+                myHooks.emit(
+                    "requestAllUser",
+                    "selectionCardsMenu",
+                    new SelectionCardsHandler({
+                        title: "Выбор карты для роли",
+                        description: "Выберите карту для роли:",
+                        textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
+                        collectionCards: [
+                            new StubCard(CardType.DEFAULT),
+                            new StubCard(CardType.WEAPON),
+                            new StubCard(CardType.CHARACTER),
+                            new StubCard(CardType.DEFAULT),
+                            new StubCard(CardType.DEFAULT),
+                        ],
+                        // selectIdCard: 1,
+                        // timer: null,
+                    })
+                );
             }
         } catch (error) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
