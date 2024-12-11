@@ -3,11 +3,14 @@ const path = require("path");
 const ServerError = require("../Errors/ServerError");
 const PlayerCollection = require("../handlers/PlayerCollection");
 const Player = require("../models/Player");
+const DistanceError = require("../Errors/DistanceError");
+const DistanceHandler = require("../handlers/DistanceHandler");
+const GameSessionHead = require("../models/GameSessionHead");
 
 class GameSessionHandler {
     constructor() {
         this.filePath = null;
-        this.head = { statusGame: false }; // Добавляем статус игры по умолчанию false
+        this.head = new GameSessionHead();
         this.players = new PlayerCollection(); // Заменяем массив на коллекцию PlayerCollection
         this.history = [];
     }
@@ -50,7 +53,7 @@ class GameSessionHandler {
     }
 
     _validateHead() {
-        return typeof this.head === "object" && Object.keys(this.head).length > 0;
+        return this.head instanceof GameSessionHead;
     }
 
     _validatePlayers() {
@@ -60,6 +63,81 @@ class GameSessionHandler {
 
     _validateHistory() {
         return Array.isArray(this.history);
+    }
+
+    createGameSession() {
+        if (this.getStatusGame() === true) {
+            throw new ServerError(
+                "GameSessionHandler: Cannot create game session while one already exists."
+            );
+        }
+        this._generatePathToFile();
+        this.setStatusGame(true);
+        this.saveData();
+        console.log(`GameSessionHandler: Game session created. File path: ${this.filePath}`);
+    }
+
+    saveData() {
+        this._validateSessionData();
+        fs.writeFileSync(
+            this.filePath,
+            JSON.stringify(
+                {
+                    head: this.head,
+                    players: this.players.getPlayers(), // Получаем массив игроков из коллекции
+                    history: this.history,
+                },
+                null,
+                2
+            ),
+            "utf8"
+        );
+        console.log(`GameSessionHandler: Data saved to ${this.filePath}`);
+    }
+
+    loadData() {
+        if (fs.existsSync(this.filePath)) {
+            const fileContent = fs.readFileSync(this.filePath, "utf8");
+            const { head, players, history } = JSON.parse(fileContent);
+
+            if (head && players && history) {
+                this.head = GameSessionHead.initFromJSON(head);
+                this.players.removeAllPlayers();
+                players.forEach((player) => {
+                    this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
+                });
+                // console.log(`loadData ${this.players}`);
+
+                this.history = history;
+                console.log("GameSessionHandler: Data loaded successfully.");
+            } else {
+                throw new ServerError("GameSessionHandler: Invalid file format.");
+            }
+        } else {
+            console.log("GameSessionHandler: No session file found, starting with empty data.");
+        }
+    }
+
+    /*----------------------------------------------------------------*/
+    /* Дополнительные методы
+    /*----------------------------------------------------------------*/
+
+    addDistance(player1, player2, distance) {
+        this.loadData();
+        this.head.playersDistances.addDistance(player1, player2, distance);
+        this.saveData();
+        console.log(
+            `GameSessionHandler: Distance added (Player1: ${player1?.name ?? "null"}, Player2: ${
+                player2?.name ?? "null"
+            }, Distance: ${distance ?? "null"}). Data saved.`
+        );
+    }
+
+    setDistancesForPlayers(players) {
+        this.loadData();
+        this.head.playersDistances.setDistancesForPlayers(players);
+        this.saveData();
+        console.log(`GameSessionHandler: Set distances for players`);
     }
 
     // Добавление игрока через PlayerCollection
@@ -145,59 +223,6 @@ class GameSessionHandler {
     getStatusGame() {
         this.loadData();
         return this.head.statusGame;
-    }
-
-    createGameSession() {
-        if (this.getStatusGame() === true) {
-            throw new ServerError(
-                "GameSessionHandler: Cannot create game session while one already exists."
-            );
-        }
-        this._generatePathToFile();
-        this.setStatusGame(true);
-        this.saveData();
-        console.log(`GameSessionHandler: Game session created. File path: ${this.filePath}`);
-    }
-
-    saveData() {
-        this._validateSessionData();
-        fs.writeFileSync(
-            this.filePath,
-            JSON.stringify(
-                {
-                    head: this.head,
-                    players: this.players.getPlayers(), // Получаем массив игроков из коллекции
-                    history: this.history,
-                },
-                null,
-                2
-            ),
-            "utf8"
-        );
-        console.log(`GameSessionHandler: Data saved to ${this.filePath}`);
-    }
-
-    loadData() {
-        if (fs.existsSync(this.filePath)) {
-            const fileContent = fs.readFileSync(this.filePath, "utf8");
-            const { head, players, history } = JSON.parse(fileContent);
-
-            if (head && players && history) {
-                this.head = head;
-                this.players.removeAllPlayers();
-                players.forEach((player) => {
-                    this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
-                });
-                // console.log(`loadData ${this.players}`);
-
-                this.history = history;
-                console.log("GameSessionHandler: Data loaded successfully.");
-            } else {
-                throw new ServerError("GameSessionHandler: Invalid file format.");
-            }
-        } else {
-            console.log("GameSessionHandler: No session file found, starting with empty data.");
-        }
     }
 }
 

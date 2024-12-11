@@ -20,6 +20,11 @@ const GameTableError = require("../Errors/GameTableError");
 const GameTable = require("../models/GameTable");
 const SelectionCardsError = require("../Errors/GameTableError");
 const SelectionCardsHandler = require("../handlers/SelectionCardsHandler");
+const GameHandlerError = require("../Errors/GameHandlerError");
+const GameHandler = require("../handlers/GameHandler");
+const DistanceError = require("../Errors/DistanceError");
+const DistanceHandler = require("../handlers/DistanceHandler");
+
 class MyHookEmitter extends EventEmitter {}
 const myHooks = new MyHookEmitter();
 
@@ -30,6 +35,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     AuthHandler.playroomHandler = playroomHandler;
     const wss = new WebSocket.Server({ server });
+    const gameHandler = new GameHandler(playroomHandler);
 
     // Подписка на хуки
     myHooks.on("updateUserCount", () => {
@@ -166,7 +172,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 const requestRpc = JsonRpcFormatter.deserializeRequest(message);
                 requestRpc.params.sessionId = sessionId;
 
-                const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc);
+                const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc, gameHandler);
                 if (
                     jsonRpcMethodHandler.instance instanceof aResponseHandler &&
                     typeof requestRpc.id === "number"

@@ -1,9 +1,11 @@
 const aResponseHandler = require("../interfaces/aResponseHandler");
+const GameHandler = require("../handlers/GameHandler");
 
 // Реестр классов
 const classRegistry = {
     Login: require("../controllers/Login"),
     GetAdminMenu: require("../controllers/GetAdminMenu"),
+    StartGame: require("../controllers/StartGame"),
     // другие классы
 };
 
@@ -21,7 +23,7 @@ class JsonRpcMethodHandler {
      * @param {Object} [jsonRpcRequest.params] - Параметры запроса.
      * @throws {Error} Если jsonRpcRequest невалиден или не удается найти класс.
      */
-    constructor(jsonRpcRequest) {
+    constructor(jsonRpcRequest, gameHandler = null) {
         // Проверка на валидность jsonRpcRequest
         if (
             typeof jsonRpcRequest !== "object" ||
@@ -38,7 +40,7 @@ class JsonRpcMethodHandler {
         }
 
         // Проверка на наследование от aResponseHandler
-        this.instance = new className(jsonRpcRequest.params ?? {});
+        this.instance = new className(jsonRpcRequest.params ?? {}, gameHandler);
         if (!(this.instance instanceof aResponseHandler)) {
             this.instance = null;
             throw new Error(

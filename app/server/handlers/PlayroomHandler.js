@@ -5,26 +5,28 @@ const Player = require("../models/Player");
 const PlayerCollection = require("./PlayerCollection");
 const SessionHandler = require("./SessionHandler");
 const GameSessionHandler = require("./GameSessionHandler");
+// const GameHandler = require("./GameHandler");
 
 class PlayroomHandler {
+    #maxPlayers = null;
+
     constructor(maxPlayers = 7) {
-        this._maxPlayers = null;
-        this.maxPlayers = maxPlayers;
+        this.#maxPlayers = maxPlayers;
         this.playerOnline = new PlayerCollection(false);
     }
 
     get maxPlayers() {
-        if (typeof this._maxPlayers !== "number") {
+        if (typeof this.#maxPlayers !== "number") {
             throw new PlayroomHandlerError("PlayroomHandler: maxPlayers must be a number");
         }
-        return this._maxPlayers;
+        return this.#maxPlayers;
     }
 
     set maxPlayers(maxPlayers) {
         if (typeof maxPlayers !== "number") {
             throw new PlayroomHandlerError("PlayroomHandler: maxPlayers must be a number");
         }
-        this._maxPlayers = maxPlayers;
+        this.#maxPlayers = maxPlayers;
     }
 
     /**

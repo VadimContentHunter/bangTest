@@ -5,6 +5,37 @@ const DistanceError = require("../Errors/DistanceError");
 class DistanceHandler {
     #distances = [];
 
+    constructor() {}
+
+    /**
+     * Установить дистанции для массива игроков по заданным правилам.
+     * @param {Player[]} players - Массив игроков.
+     * @throws {DistanceError} Если массив игроков недействителен.
+     */
+    setDistancesForPlayers(players) {
+        if (!Array.isArray(players) || players.some((player) => !(player instanceof Player))) {
+            throw new DistanceError("Все элементы массива должны быть экземплярами Player.");
+        }
+
+        for (let i = 0; i < players.length; i++) {
+            for (let j = i + 1, currentDistance = 0; j < players.length; j++) {
+                const currentPlayer = players[i];
+                const player = players[j];
+                currentDistance++;
+
+                if (this.findDistance(currentPlayer, player) === null) {
+                    this.addDistance(currentPlayer, player, currentDistance);
+                } else if (this.isDistanceLessThan(currentPlayer, player, currentDistance)) {
+                    this.updateDistance(currentPlayer, player, currentDistance);
+                }
+            }
+
+            for (let j = 0, currentDistance = 0; j < players.length; j++) {
+                
+            }
+        }
+    }
+
     /**
      * Добавить новую дистанцию между двумя игроками.
      * @param {Player} player1 - Первый игрок.
@@ -118,6 +149,18 @@ class DistanceHandler {
         this.#distances.splice(index, 1);
     }
 
+    addOrUpdateDistance(player1, player2, newDistance) {
+        try {
+            this.updateDistance(player1, player2, newDistance);
+        } catch (error) {
+            if (error instanceof DistanceError) {
+                this.addDistance(player1, player2, newDistance);
+            } else {
+                throw error;
+            }
+        }
+    }
+
     /**
      * Получить все дистанции, связанные с определенным игроком.
      * @param {Player} player - Игрок.
@@ -143,6 +186,16 @@ class DistanceHandler {
      */
     clearDistances() {
         this.#distances = [];
+    }
+
+    toJSON() {
+        return this.#distances;
+    }
+
+    static initFromJSON(json) {
+        const distances = new DistanceHandler();
+        console.log(json);
+        return distances;
     }
 }
 
