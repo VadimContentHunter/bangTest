@@ -9,6 +9,8 @@ class GameBoard {
     _countHandCards = 0;
     _tempCards = [];
 
+    _listeners = {}; // Хранилище для обработчиков
+
     constructor() {
         this.mainElement = null;
         this.frontPanelElement = null;
@@ -334,7 +336,7 @@ class GameBoard {
         this.mainElement.append(this.infoElement);
 
         this.checkElements();
-        this.setupDragCardListener();
+        // this.setupDragCardListener();
     }
 
     createCardTempArea() {
@@ -414,6 +416,19 @@ class GameBoard {
         this.weaponElement = null;
         this.cardTempAreaElement = null;
         this.containerCardTempElement = null;
+
+        if (typeof this._listeners.updateRect === "function") {
+            window.removeEventListener("resize", this._listeners.updateRect);
+            window.removeEventListener("scroll", this._listeners.updateRect);
+        }
+
+        if (typeof this._listeners.cardMouseMove === "function") {
+            document.removeEventListener("card-mousemove", this._listeners.cardMouseMove);
+        }
+
+        if (typeof this._listeners.cardMouseUp === "function") {
+            document.removeEventListener("card-mouseup", this._listeners.cardMouseUp);
+        }
     }
 
     setupDragCardListener(playerHand, battleZone) {
@@ -423,16 +438,10 @@ class GameBoard {
                 let rect = this.mainElement.getBoundingClientRect();
 
                 // Функция для обновления rect
-                const updateRect = () => {
+                this._listeners.updateRect = () => {
                     rect = this.mainElement.getBoundingClientRect();
                 };
-
-                // Обновляем rect при изменении размера окна и прокрутке
-                window.addEventListener("resize", updateRect);
-                window.addEventListener("scroll", updateRect);
-
-                // Обработчик мыши
-                document.addEventListener("card-mousemove", (e) => {
+                this._listeners.cardMouseMove = (e) => {
                     const { cardModel, event } = e.detail;
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
@@ -451,9 +460,8 @@ class GameBoard {
                     } else {
                         this.mainElement.classList.remove("hover-card");
                     }
-                });
-
-                document.addEventListener("card-mouseup", (e) => {
+                };
+                this._listeners.cardMouseUp = (e) => {
                     const { cardModel, event } = e.detail;
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
@@ -480,7 +488,15 @@ class GameBoard {
                             })
                         );
                     }
-                });
+                };
+
+                // Обновляем rect при изменении размера окна и прокрутке
+                window.addEventListener("resize", this._listeners.updateRect);
+                window.addEventListener("scroll", this._listeners.updateRect);
+
+                // Обработчик мыши
+                document.addEventListener("card-mousemove", this._listeners.cardMouseMove);
+                document.addEventListener("card-mouseup", this._listeners.cardMouseUp);
             }
         });
     }

@@ -161,7 +161,7 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.textExtension = request?.params?.textExtension;
                 cardSelection.timer = request?.params?.timer;
                 cardSelection.setCardToContainer(request?.params?.collectionCards ?? []);
-    
+
                 cardSelection.renderUpdatedData();
                 cardSelection.setupDragCardListener();
                 cardSelection.showMainController();
@@ -227,6 +227,7 @@ function requestServer(request, data = {}, ws) {
                 }
                 element.remove();
             });
+            // elementsToRemove.remove();
 
             const collectionPlayers = request?.params;
             if (Array.isArray(collectionPlayers) && collectionPlayers.length > 0) {
