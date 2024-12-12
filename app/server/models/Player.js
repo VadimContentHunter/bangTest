@@ -157,7 +157,7 @@ class Player {
             id: this.id,
             name: this.name,
             sessionId: this.sessionId,
-            lives: this._lives,
+            lives: this.lives,
             role: this.role,
             character: this.character,
             weapon: this.weapon,
@@ -171,7 +171,7 @@ class Player {
             id: this.id,
             name: this.name,
             sessionId: this.sessionId,
-            lives: this._lives,
+            lives: this.lives,
             role: null, // TODO: Показывает только шерифа
             character: this.character,
             weapon: this.weapon,
@@ -187,6 +187,23 @@ class Player {
 
     remove() {
         console.log(`Игрок ${this.name} удалён.`);
+    }
+
+    /**
+     * @returns {Object} JSON-представление дистанции
+     */
+    toJSON() {
+        return {
+            id: this.id,
+            name: this.name,
+            sessionId: this.sessionId,
+            lives: this._lives,
+            role: this.role,
+            character: this.character,
+            weapon: this.weapon,
+            temporaryCards: this.temporaryCards,
+            hand: this.hand,
+        };
     }
 }
 

@@ -9,12 +9,6 @@ class StartGame extends aResponseHandler {
         super();
         this.gameHandler = gameHandler;
         this.gameHandler.startGame();
-        // this.adminMenuHandler = new AdminMenuHandler(params?.sessionId);
-
-        // this.playroomHandler = params?.playroomHandler;
-        // this.playroomHandler.connect(this.sessionId);
-
-        // params.myHooks.emit("updateUserCount");
     }
 
     // Геттер для gameHandler

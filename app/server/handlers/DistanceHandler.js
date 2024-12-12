@@ -17,23 +17,25 @@ class DistanceHandler {
             throw new DistanceError("Все элементы массива должны быть экземплярами Player.");
         }
 
-        for (let i = 0; i < players.length; i++) {
-            for (let j = i + 1, currentDistance = 0; j < players.length; j++) {
-                const currentPlayer = players[i];
-                const player = players[j];
-                currentDistance++;
+        players.forEach((currentPlayer, currentIndex) => {
+            players.map((player, index) => {
+                if (currentIndex !== index) {
+                    // Вычисляем расстояние вправо и влево
+                    const distanceRight = Math.abs(index - currentIndex);
+                    const distanceLeft = players.length - distanceRight;
+                    // Берем минимальное расстояние
+                    const currentDistance = Math.min(distanceRight, distanceLeft);
 
-                if (this.findDistance(currentPlayer, player) === null) {
-                    this.addDistance(currentPlayer, player, currentDistance);
-                } else if (this.isDistanceLessThan(currentPlayer, player, currentDistance)) {
-                    this.updateDistance(currentPlayer, player, currentDistance);
+                    // Если расстояние между игроками еще не было добавлено, добавляем его
+                    if (this.findDistance(currentPlayer, player) === null) {
+                        this.addDistance(currentPlayer, player, currentDistance);
+                    } else if (this.isDistanceLessThan(currentPlayer, player, currentDistance)) {
+                        // Если текущее расстояние меньше, чем уже есть, обновляем его
+                        this.updateDistance(currentPlayer, player, currentDistance);
+                    }
                 }
-            }
-
-            for (let j = 0, currentDistance = 0; j < players.length; j++) {
-                
-            }
-        }
+            });
+        });
     }
 
     /**
