@@ -160,13 +160,9 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.description = request?.params?.description;
                 cardSelection.textExtension = request?.params?.textExtension;
                 cardSelection.timer = request?.params?.timer;
-                const collectionCards = request?.params?.collectionCards;
-                if (Array.isArray(collectionCards) && collectionCards.length > 0) {
-                    collectionCards.forEach((card) => {
-                        cardSelection.addCardToContainer(card);
-                    });
-                    cardSelection.renderUpdatedData();
-                }
+                cardSelection.setCardToContainer(request?.params?.collectionCards ?? []);
+    
+                cardSelection.renderUpdatedData();
                 cardSelection.setupDragCardListener();
                 cardSelection.showMainController();
             } else {
