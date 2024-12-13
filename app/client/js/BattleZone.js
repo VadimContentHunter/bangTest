@@ -123,6 +123,23 @@ class BattleZone {
         this.containerCards.push(value);
     }
 
+    setCardToContainer(cards) {
+        if (!Array.isArray(cards)) {
+            throw new Error("CardSelection.setCardToContainer(cards): cards must be an array.");
+        }
+
+        // Очищаем текущий массив
+        this._containerCards = [];
+
+        // Используем addCardToContainer для добавления каждой карты
+        cards.forEach((card) => {
+            this.addCardToContainer(card);
+        });
+
+        // Обновляем UI
+        // this.renderUpdatedData();
+    }
+
     renderUpdatedData() {
         this.valueMainDeckElement.innerHTML = this.countMainDeck;
         this.valueDiscardPileElement.innerHTML = this.countDiscardPile;

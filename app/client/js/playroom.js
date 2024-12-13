@@ -177,13 +177,8 @@ function requestServer(request, data = {}, ws) {
                 battleZone.countMainDeck = request?.params?.countDeckMain ?? 0;
                 battleZone.countDiscardPile = request?.params?.countDiscardPile ?? 0;
                 battleZone.timer = request?.params?.timer;
-                const collectionCards = request?.params?.collectionCards;
-                if (Array.isArray(collectionCards) && collectionCards.length > 0) {
-                    collectionCards.forEach((card) => {
-                        battleZone.addCardToContainer(card);
-                    });
-                    battleZone.renderUpdatedData();
-                }
+                battleZone.setCardToContainer(request?.params?.collectionCards ?? []);
+                battleZone.renderUpdatedData();
             } else {
                 console.error(
                     "requestServer ('battleZoneUpdate'): data.battleZone must be BattleZone"
