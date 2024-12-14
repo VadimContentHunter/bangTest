@@ -108,6 +108,48 @@ class aCard {
         };
     }
 
+    static initCard(data, classCards) {
+        const nameCard = data?.name; // Извлекаем имя карты из данных
+
+        if (!nameCard) {
+            throw new CardError("Имя карты не указано в данных.");
+        }
+
+        if (!Array.isArray(classCards)) {
+            throw new CardError("Переданное значение не является массивом.");
+        }
+
+        // Проверка, что все элементы массива являются экземплярами aCard
+        for (const card of classCards) {
+            if (typeof card !== "function" || !(card.prototype instanceof aCard)) {
+                throw new CardError(
+                    `Один из элементов массива не является экземпляром aCard. Проверьте объект ${
+                        card.constructor.name || "неизвестный объект"
+                    }.`
+                );
+            }
+        }
+
+        // Найти нужный объект карты по имени его конструктора
+        const cardTemplate = classCards.find(
+            (card) => card.name === nameCard
+        );
+
+        if (!cardTemplate) {
+            throw new CardError(`Карта с именем '${nameCard}' не найдена.`);
+        }
+
+        // Проверяем, что класс реализует метод initFromJSON
+        if (!(cardTemplate.prototype instanceof aCard)) {
+            throw new CardError(
+                `Класс '${cardTemplate.name}' не является наследником класса 'aCard'`
+            );
+        }
+
+        // Создаем и возвращаем экземпляр карты
+        return cardTemplate.initFromJSON(data);
+    }
+
     /**
      * Инициализирует экземпляр из JSON-данных.
      * @param {Object} data - Данные в формате JSON.
