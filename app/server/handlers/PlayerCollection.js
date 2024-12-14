@@ -106,9 +106,10 @@ class PlayerCollection {
     /**
      * Устанавливает коллекцию игроков, присваивая каждому игроку новый уникальный ID.
      * @param {Array<Player>} players - Массив игроков, который будет установлен.
+     * @param {boolean} generateNewId - Флаг, указывающий, нужно ли генерировать новый ID для игрока.
      * @throws {ValidatePlayerError} Если элементы массива не являются экземплярами класса Player.
      */
-    setPlayersWithNewIds(players) {
+    setPlayers(players, generateNewId = false) {
         if (!Array.isArray(players)) {
             throw new ValidatePlayerError("players должен быть массивом.");
         }
@@ -127,9 +128,7 @@ class PlayerCollection {
 
         // Добавляем игроков в коллекцию и присваиваем каждому новый ID
         players.forEach((player) => {
-            const newId = this.generateId(); // Генерация нового уникального ID для игрока
-            player.id = newId; // Устанавливаем новый ID для игрока
-            this.players[newId] = player; // Добавляем игрока в коллекцию по новому ID
+            this.addPlayerFromInstance(player, generateNewId);
         });
 
         console.log(`Коллекция игроков обновлена. Всего игроков: ${players.length}`);

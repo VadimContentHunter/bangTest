@@ -12,7 +12,7 @@ const AuthHandler = require("../handlers/AuthHandler");
 const PlayroomHandlerError = require("../Errors/PlayroomHandlerError");
 const PlayroomHandler = require("../handlers/PlayroomHandler");
 const aResponseHandler = require("../interfaces/aResponseHandler");
-const EventEmitter = require("events");
+const ServerHook = require("../hooks/ServerHook");
 const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
 const Player = require("../models/Player");
@@ -25,20 +25,27 @@ const GameHandler = require("../handlers/GameHandler");
 const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");
 
-class MyHookEmitter extends EventEmitter {}
-const myHooks = new MyHookEmitter();
-
 module.exports = function setupWebSocketServer(server, playroomHandler) {
     if (!(playroomHandler instanceof PlayroomHandler)) {
         throw new Error("playroomHandler must be an instance of PlayroomHandler");
     }
 
     AuthHandler.playroomHandler = playroomHandler;
+    const serverHook = new ServerHook();
     const wss = new WebSocket.Server({ server });
     const gameHandler = new GameHandler(playroomHandler);
+    // const stubCard = aCard.initCard(
+    //     {
+    //         name: "StubCard",
+    //         image: "../resources/imgs/cards/cardBacks/girl.png",
+    //         type: CardType.DEFAULT,
+    //         ownerName: "",
+    //     },
+    //     [StubCard]
+    // );
 
     // Подписка на хуки
-    myHooks.on("updateUserCount", () => {
+    serverHook.on("updateUserCount", () => {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(
@@ -50,7 +57,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         });
     });
 
-    myHooks.on("requestAllUser", (requestMethodName, requestData) => {
+    serverHook.on("requestAllUser", (requestMethodName, requestData) => {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JsonRpcFormatter.serializeRequest(requestMethodName, requestData));
@@ -58,7 +65,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         });
     });
 
-    myHooks.on("responseAllUser", (result, id = null) => {
+    serverHook.on("responseAllUser", (result, id = null) => {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 cws.send(JsonRpcFormatter.serializeResponse(result, id));
@@ -104,7 +111,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 ]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
 
-                myHooks.emit(
+                serverHook.emit(
                     "requestAllUser",
                     "createAllGameBoard",
                     playroomHandler.getAllPlayersSummaryInfo()
@@ -130,9 +137,9 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     new StubCard(CardType.DEFAULT),
                     new StubCard(CardType.WEAPON),
                 ]);
-                myHooks.emit("requestAllUser", "battleZoneUpdate", gameTable);
+                serverHook.emit("requestAllUser", "battleZoneUpdate", gameTable);
 
-                myHooks.emit(
+                serverHook.emit(
                     "requestAllUser",
                     "selectionCardsMenu",
                     new SelectionCardsHandler({
@@ -155,7 +162,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
             console.log(error);
         }
-        myHooks.emit("updateUserCount");
+        serverHook.emit("updateUserCount");
 
         // Слушаем сообщения от клиента
         ws.on("message", (message) => {
@@ -187,7 +194,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                         result !== null &&
                         jsonRpcMethodHandler.instance.hasResultForAllClients() === true
                     ) {
-                        myHooks.emit("responseAllUser", result, requestRpc?.id);
+                        serverHook.emit("responseAllUser", result, requestRpc?.id);
                     }
                 }
 
@@ -221,7 +228,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 playroomHandler.removePlayerOnlineBySession(sessionId);
                 // console.log(playroomHandler.countPlayersOnline());
 
-                myHooks.emit("updateUserCount");
+                serverHook.emit("updateUserCount");
             } catch (error) {
                 if (error instanceof PlayroomHandlerError) {
                     console.log(error.message);
