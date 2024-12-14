@@ -73,6 +73,38 @@ class PlayerCollection {
     }
 
     /**
+     * Устанавливает коллекцию игроков, присваивая каждому игроку новый уникальный ID.
+     * @param {Array<Player>} players - Массив игроков, который будет установлен.
+     * @throws {ValidatePlayerError} Если элементы массива не являются экземплярами класса Player.
+     */
+    setPlayersWithNewIds(players) {
+        if (!Array.isArray(players)) {
+            throw new ValidatePlayerError("players должен быть массивом.");
+        }
+
+        // Проверяем, что все элементы массива являются экземплярами Player
+        players.forEach((player) => {
+            if (!(player instanceof Player)) {
+                throw new ValidatePlayerError(
+                    "Все элементы массива должны быть экземплярами Player."
+                );
+            }
+        });
+
+        // Очищаем текущую коллекцию игроков
+        this.players = {};
+
+        // Добавляем игроков в коллекцию и присваиваем каждому новый ID
+        players.forEach((player) => {
+            const newId = this.generateId(); // Генерация нового уникального ID для игрока
+            player.id = newId; // Устанавливаем новый ID для игрока
+            this.players[newId] = player; // Добавляем игрока в коллекцию по новому ID
+        });
+
+        console.log(`Коллекция игроков обновлена. Всего игроков: ${players.length}`);
+    }
+
+    /**
      * Получает игрока по его ID.
      * @param {number} id - ID игрока.
      * @returns {Player|null} Игрок, если найден; null, если не найден.
@@ -237,6 +269,13 @@ class PlayerCollection {
         return Object.values(this.players).filter(
             (player) => player instanceof Player && player.sessionId !== null
         ).length;
+    }
+
+    /**
+     * @returns {Object} JSON-представление
+     */
+    toJSON() {
+        return this.players;
     }
 }
 

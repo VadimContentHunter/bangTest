@@ -116,6 +116,20 @@ class Move {
 
         return `${hours}.${minutes}.${seconds}; day: ${day}`;
     }
+
+    /**
+     * @returns {Object} JSON-представление
+     */
+    toJSON() {
+        return {
+            moveNumber: this.moveNumber,
+            description: this.description,
+            dateTime: this.dateTime.toISOString(),
+            formattedDateTime: this.getFormattedDateTime(),
+            playersBeforeMove: this.playersBeforeMove,
+            playersAfterMove: this.playersAfterMove,
+        };
+    }
 }
 
 module.exports = Move;

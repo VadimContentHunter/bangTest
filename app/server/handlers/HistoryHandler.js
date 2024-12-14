@@ -112,6 +112,13 @@ class HistoryHandler {
     clearHistory() {
         this._moves = [];
     }
+
+    /**
+     * @returns {Object} JSON-представление
+     */
+    toJSON() {
+        return this._moves;
+    }
 }
 
 module.exports = HistoryHandler;
