@@ -119,6 +119,15 @@ class HistoryHandler {
     toJSON() {
         return this._moves;
     }
+
+    static initFromJSON(json) {
+        const gameSessionHeadHandler = new GameSessionHead();
+        gameSessionHeadHandler.statusGame = json.statusGame;
+        gameSessionHeadHandler.playersDistances = DistanceHandler.initFromJSON(
+            json.playersDistances
+        );
+        return gameSessionHeadHandler;
+    }
 }
 
 module.exports = HistoryHandler;

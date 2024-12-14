@@ -113,6 +113,16 @@ class Lives {
             current: this.current,
         };
     }
+
+    /**
+     * Инициализирует экземпляр Player из JSON-данных.
+     * @param {Object} data - Данные игрока в формате JSON.
+     * @returns {Player} Новый экземпляр Player.
+     * @throws {ValidatePlayerError} Если данные игрока некорректны.
+     */
+    static initFromJSON(data) {
+        return new Lives(data?.max ?? 0, data?.current ?? 0);
+    }
 }
 
 module.exports = Lives;

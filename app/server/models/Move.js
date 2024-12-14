@@ -130,6 +130,46 @@ class Move {
             playersAfterMove: this.playersAfterMove,
         };
     }
+
+    /**
+     * Статический метод для инициализации объекта Move из строки JSON.
+     * @param {string} jsonString - Строка JSON, содержащая данные для хода.
+     * @returns {Move} Новый объект Move.
+     */
+    static initFromJSON(jsonString) {
+        try {
+            // Парсим JSON строку
+            const data = JSON.parse(jsonString);
+
+            // Проверяем, что в JSON есть все необходимые поля
+            if (
+                typeof data.moveNumber !== "number" ||
+                !(data.playersBeforeMove instanceof Array) ||
+                !(data.playersAfterMove instanceof Array) ||
+                !(data.dateTime instanceof String) ||
+                typeof data.description !== "string"
+            ) {
+                throw new Error("Некорректный формат данных в JSON.");
+            }
+
+            // Создаем объект PlayerCollection для игроков до и после хода
+            const playersBeforeMove = new PlayerCollection(data.playersBeforeMove);
+            const playersAfterMove = new PlayerCollection(data.playersAfterMove);
+
+            // Создаем объект Move и инициализируем его данными из JSON
+            const move = new Move(
+                data.moveNumber,
+                data.description,
+                playersBeforeMove,
+                playersAfterMove,
+                new Date(data.dateTime)
+            );
+
+            return move;
+        } catch (error) {
+            throw new Error("Ошибка при инициализации Move из JSON: " + error.message);
+        }
+    }
 }
 
 module.exports = Move;

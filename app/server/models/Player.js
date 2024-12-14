@@ -205,6 +205,45 @@ class Player {
             hand: this.hand,
         };
     }
+
+    /**
+     * Инициализирует экземпляр Player из JSON-данных.
+     * @param {Object} data - Данные игрока в формате JSON.
+     * @returns {Player} Новый экземпляр Player.
+     * @throws {ValidatePlayerError} Если данные игрока некорректны.
+     */
+    static initFromJSON(data) {
+        if (typeof data.id !== "number") {
+            throw new ValidatePlayerError("ID должен быть числом.");
+        }
+        if (typeof data.name !== "string" || data.name.length === 0) {
+            throw new ValidatePlayerError("Имя игрока должно быть строкой и не может быть пустым.");
+        }
+        if (
+            typeof data.sessionId !== "undefined" &&
+            data.sessionId !== null &&
+            typeof data.sessionId !== "string"
+        ) {
+            throw new ValidatePlayerError("sessionId должен быть строкой или null.");
+        }
+
+        const player = new Player(data.id, data.name, data?.sessionId);
+
+        if (data?.lives !== null) {
+            player.lives = Lives.initFromJSON(data?.lives);
+        }
+
+        // if (data?.role !== null) {
+        //     player.role = Lives.initFromJSON(data?.lives);
+        // }
+
+        // if (data?.lives !== null) {
+        //     player.lives = Lives.initFromJSON(data?.lives);
+        // }
+
+        // Создаем и возвращаем новый экземпляр Player
+        return new Player(data.id, data.name, data?.sessionId);
+    }
 }
 
 module.exports = Player;

@@ -73,6 +73,37 @@ class PlayerCollection {
     }
 
     /**
+     * Добавляет игрока в коллекцию.
+     * Если у игрока нет id Он будет сгенерирован.
+     * @param {Player} player - Экземпляр класса Player.
+     * @param {boolean} generateNewId - Флаг, указывающий, нужно ли генерировать новый ID для игрока.
+     * @throws {ValidatePlayerError} Если переданный объект не является экземпляром Player.
+     * @throws {ValidatePlayerError} Если игрок с таким ID уже существует в коллекции.
+     */
+    addPlayerFromInstance(player, generateNewId = false) {
+        if (!(player instanceof Player)) {
+            throw new ValidatePlayerError("Переданный объект должен быть экземпляром Player.");
+        }
+
+        if (generateNewId === true) {
+            player.id = this.generateId(); // Генерация нового ID для игрока
+        }
+
+        if (!player.id) {
+            player.id = this.generateId(); // Генерация нового ID для игрока
+        }
+
+        // Проверяем, что игрок с таким ID ещё не существует в коллекции
+        if (this.getPlayerById(player.id) instanceof Player) {
+            throw new ValidatePlayerError(`Игрок с ID ${player.id} уже существует в коллекции.`);
+        }
+
+        // Добавляем игрока в коллекцию
+        this.players[player.id] = player;
+        console.log(`Игрок с ID ${player.id} добавлен в коллекцию.`);
+    }
+
+    /**
      * Устанавливает коллекцию игроков, присваивая каждому игроку новый уникальный ID.
      * @param {Array<Player>} players - Массив игроков, который будет установлен.
      * @throws {ValidatePlayerError} Если элементы массива не являются экземплярами класса Player.
@@ -276,6 +307,30 @@ class PlayerCollection {
      */
     toJSON() {
         return this.players;
+    }
+
+    /**
+     * Статический метод для инициализации коллекции игроков из JSON.
+     * @param {string} jsonString - Строка JSON, содержащая массив данных игроков.
+     * @param {boolean} generateId - Флаг для генерации ID для игроков.
+     * @returns {PlayerCollection} - Экземпляр коллекции игроков.
+     */
+    static initFromJSON(jsonString, generateId = false) {
+        const collection = new PlayerCollection(); // Создаем новый экземпляр коллекции
+
+        try {
+            const playersData = JSON.parse(jsonString); // Парсим строку JSON
+            playersData.forEach((playerData) => {
+                collection.addPlayerFromInstance(
+                    Player.initFromJSON(playerData, generateId),
+                    generateId
+                );
+            });
+        } catch (error) {
+            console.error("Ошибка при инициализации игроков из JSON:", error);
+        }
+
+        return collection; // Возвращаем заполненную коллекцию
     }
 }
 
