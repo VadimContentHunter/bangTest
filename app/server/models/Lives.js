@@ -115,10 +115,9 @@ class Lives {
     }
 
     /**
-     * Инициализирует экземпляр Player из JSON-данных.
-     * @param {Object} data - Данные игрока в формате JSON.
-     * @returns {Player} Новый экземпляр Player.
-     * @throws {ValidatePlayerError} Если данные игрока некорректны.
+     * Инициализирует экземпляр Lives из JSON-данных.
+     * @param {Object} data - Данные Lives в формате JSON.
+     * @returns {Lives} Новый экземпляр Lives.
      */
     static initFromJSON(data) {
         return new Lives(data?.max ?? 0, data?.current ?? 0);

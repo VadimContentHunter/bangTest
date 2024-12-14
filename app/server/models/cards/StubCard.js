@@ -9,6 +9,10 @@ class StubCard extends aCard {
             ownerName: ownerName,
         });
     }
+
+    static initFromJSON(data) {
+        return new StubCard(data.type, data.ownerName);
+    }
 }
 
 module.exports = StubCard;

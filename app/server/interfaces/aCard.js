@@ -1,6 +1,4 @@
 const CardError = require("../Errors/CardError");
-const fs = require("fs");
-const path = require("path");
 
 class CardType {
     static ROLE = "role";
@@ -16,17 +14,28 @@ class aCard {
     _type = CardType.DEFAULT;
     _ownerName = "";
 
-    constructor({ name, image, type = CardType.DEFAULT, id = 0, ownerName = ""}) {
+    constructor({ name, image, type = CardType.DEFAULT, id = 0, ownerName = "" }) {
         this.id = id;
         this.name = name;
         this.image = image;
         this.type = type;
         this.ownerName = ownerName;
+
+        if (new.target === aCard) {
+            throw new TypeError("Нельзя создать экземпляр абстрактного класса");
+        }
+
+        // Проверка: если статический метод initFromJSON не переопределен, выбрасываем ошибку
+        if (this.constructor.initFromJSON === aCard.initFromJSON) {
+            throw new TypeError(
+                `Класс-наследник ${this.constructor.name} должен реализовывать метод 'static initFromJSON(data)'`
+            );
+        }
     }
 
     set id(value) {
         if (typeof value !== "number" && value < 0) {
-            throw new ValidatePlayerError("Имя должно быть строкой.");
+            throw new CardError("Имя должно быть строкой.");
         }
 
         this._id = value;
@@ -34,7 +43,7 @@ class aCard {
 
     set name(value) {
         if (typeof value !== "string") {
-            throw new ValidatePlayerError("Имя должно быть строкой.");
+            throw new CardError("Имя должно быть строкой.");
         }
 
         this._name = value;
@@ -59,7 +68,7 @@ class aCard {
 
     set ownerName(value) {
         if (typeof value !== "string") {
-            throw new ValidatePlayerError("Имя владельца должно быть строкой.");
+            throw new CardError("Имя владельца должно быть строкой.");
         }
 
         this._ownerName = value;
@@ -83,7 +92,7 @@ class aCard {
 
     get ownerName() {
         if (typeof this._ownerName !== "string") {
-            throw new ValidatePlayerError("Имя владельца должно быть строкой.");
+            throw new CardError("Имя владельца должно быть строкой.");
         }
 
         return this._ownerName;
@@ -97,6 +106,15 @@ class aCard {
             type: this.type,
             ownerName: this.ownerName,
         };
+    }
+
+    /**
+     * Инициализирует экземпляр из JSON-данных.
+     * @param {Object} data - Данные в формате JSON.
+     * @returns {aCard} Новый экземпляр.
+     */
+    static initFromJSON(data) {
+        throw new CardError("Метод 'static initFromJSON(data)' должен быть реализован");
     }
 }
 
