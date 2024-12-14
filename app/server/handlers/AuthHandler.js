@@ -7,8 +7,6 @@ const SessionHandler = require("../handlers/SessionHandler");
  * Класс AuthHandler обрабатывает аутентификацию и авторизацию пользователей.
  */
 class AuthHandler {
-    static _playroomHandler = null;
-
     /**
      * Создает экземпляр AuthHandler.
      * @param {string|null} name - Имя пользователя.
@@ -18,17 +16,6 @@ class AuthHandler {
         this.name = name;
         this.code = code;
         this.sessionId = sessionId;
-    }
-
-    static set playroomHandler(value) {
-        if (!(value instanceof PlayroomHandler)) {
-            throw new ValidateLoginError("Игра не инициализирована.");
-        }
-        AuthHandler._playroomHandler = value;
-    }
-
-    static get playroomHandler() {
-        return AuthHandler._playroomHandler;
     }
 
     /**
@@ -47,16 +34,16 @@ class AuthHandler {
      * @returns {boolean} Возвращает true, если авторизация прошла успешно.
      * @throws {ValidateLoginError} Если игра не инициализирована.
      */
-    Authorization() {
-        if (!AuthHandler.playroomHandler) {
+    Authorization(playroomHandler) {
+        if (!(playroomHandler instanceof PlayroomHandler)) {
             throw new ServerError("Игра не инициализирована.");
         }
-        
+
         SessionHandler.addParametersToSession(this.sessionId, {
             lastName: this.name,
             lastCode: this.code,
         });
-        AuthHandler.playroomHandler.connect(this.sessionId);
+        playroomHandler.connect(this.sessionId);
 
         return true;
     }

@@ -5,13 +5,13 @@ const GameHandler = require("../handlers/GameHandler");
 
 class StartGame extends aResponseHandler {
     #gameHandler = null;
+
     constructor(params, gameHandler) {
         super();
         this.gameHandler = gameHandler;
         this.gameHandler.startGame();
     }
 
-    // Геттер для gameHandler
     get gameHandler() {
         if (!(this.#gameHandler instanceof GameHandler)) {
             throw new StartGameError("gameHandler must be a GameHandler for a StartGame");
@@ -28,9 +28,11 @@ class StartGame extends aResponseHandler {
     }
 
     getResult() {
-        return this.#gameHandler.getDistanceHandler();
-        // let result = this.adminMenuHandler.getAdminMenuTemplate();
-        // return result === "" ? null : result;
+        return this.gameHandler.getDistanceHandler();
+    }
+
+    hasResultForAllClients() {
+        return true;
     }
 }
 

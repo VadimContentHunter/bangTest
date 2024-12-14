@@ -24,13 +24,14 @@ const GameHandlerError = require("../Errors/GameHandlerError");
 const GameHandler = require("../handlers/GameHandler");
 const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");
+const AdminMenuError = require("../Errors/AdminMenuError");
+const AdminMenuHandler = require("../handlers/AdminMenuHandler");
 
 module.exports = function setupWebSocketServer(server, playroomHandler) {
     if (!(playroomHandler instanceof PlayroomHandler)) {
         throw new Error("playroomHandler must be an instance of PlayroomHandler");
     }
 
-    AuthHandler.playroomHandler = playroomHandler;
     const serverHook = new ServerHook();
     const wss = new WebSocket.Server({ server });
     const gameHandler = new GameHandler(playroomHandler);
@@ -71,6 +72,30 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 cws.send(JsonRpcFormatter.serializeResponse(result, id));
             }
         });
+    });
+
+    serverHook.on("Login", (ws, params, id = null) => {
+        const authHandler = new AuthHandler(params?.user_name, params?.code, params?.sessionId);
+        const isStatusLogin =
+            authHandler.Authentication() && authHandler.Authorization(playroomHandler);
+        ws.send(
+            JsonRpcFormatter.serializeResponse(
+                {
+                    isStatusLogin: isStatusLogin,
+                },
+                id
+            )
+        );
+    });
+
+    serverHook.on("GetAdminMenu", (ws, params, id = null) => {
+        const adminMenuHandler = new AdminMenuHandler(params?.sessionId);
+        ws.send(JsonRpcFormatter.serializeResponse(adminMenuHandler.getAdminMenuTemplate(), id));
+    });
+
+    serverHook.on("StartGame", (ws, params, id = null) => {
+        gameHandler.startGame();
+        // ws.send(JsonRpcFormatter.serializeResponse(adminMenuHandler.getAdminMenuTemplate(), id));
     });
 
     // Событие при установлении нового соединения
@@ -179,46 +204,14 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 const requestRpc = JsonRpcFormatter.deserializeRequest(message);
                 requestRpc.params.sessionId = sessionId;
 
-                const jsonRpcMethodHandler = new JsonRpcMethodHandler(requestRpc, gameHandler);
-                if (
-                    jsonRpcMethodHandler.instance instanceof aResponseHandler &&
-                    typeof requestRpc.id === "number"
-                ) {
-                    const result = jsonRpcMethodHandler.instance.getResult();
-                    if (
-                        result !== null &&
-                        jsonRpcMethodHandler.instance.hasResultForAllClients() === false
-                    ) {
-                        ws.send(JsonRpcFormatter.serializeResponse(result, requestRpc?.id));
-                    } else if (
-                        result !== null &&
-                        jsonRpcMethodHandler.instance.hasResultForAllClients() === true
-                    ) {
-                        serverHook.emit("responseAllUser", result, requestRpc?.id);
-                    }
+                if (serverHook.listenerCount(requestRpc.method) === 0) {
+                    throw new Error(`No listeners found for event: ${requestRpc.method}`);
                 }
-
-                // const currentUserUrl = SessionHandler.getSessionData(sessionId);
-                // if (currentUserUrl === "/playroom") {
-                //     jsonRpcMethodHandler.setAdditionalParams(playroomHandler);
-                // }
+                serverHook.emit(requestRpc.method, ws, requestRpc.params, requestRpc?.id);
             } catch (error) {
                 ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
                 console.log(error);
-
-                // serverInfo(
-                //     sessionId,
-                //     ip,
-                //     "Error Message: " + error.message + "; Code: " + error.code ?? -32000
-                // );
             }
-
-            // Отправляем полученное сообщение обратно всем клиентам
-            // wss.clients.forEach((client) => {
-            //     if (client.readyState === WebSocket.OPEN) {
-            //         client.send(`Эхо: ${message}`);
-            //     }
-            // });
         });
 
         // Обрабатываем отключение клиента

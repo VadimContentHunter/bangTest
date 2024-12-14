@@ -6,13 +6,15 @@ const Player = require("../models/Player");
 const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");
 const GameSessionHead = require("../models/GameSessionHead");
+const HistoryHandlerError = require("../Errors/HistoryHandlerError");
+const HistoryHandler = require("../handlers/HistoryHandler");
 
 class GameSessionHandler {
     constructor() {
         this.filePath = null;
         this.head = new GameSessionHead();
         this.players = new PlayerCollection(); // Заменяем массив на коллекцию PlayerCollection
-        this.history = [];
+        this.history = new HistoryHandler();
     }
 
     // Генерация пути до файла сессий
@@ -118,111 +120,13 @@ class GameSessionHandler {
         }
     }
 
-    /*----------------------------------------------------------------*/
-    /* Дополнительные методы
-    /*----------------------------------------------------------------*/
-
-    addDistance(player1, player2, distance) {
-        this.loadData();
-        this.head.playersDistances.addDistance(player1, player2, distance);
-        this.saveData();
-        console.log(
-            `GameSessionHandler: Distance added (Player1: ${player1?.name ?? "null"}, Player2: ${
-                player2?.name ?? "null"
-            }, Distance: ${distance ?? "null"}). Data saved.`
-        );
-    }
-
-    setDistancesForPlayers(players) {
-        this.loadData();
-        this.head.playersDistances.setDistancesForPlayers(players);
-        this.saveData();
-        console.log(`GameSessionHandler: Set distances for players`);
-    }
-
-    // Добавление игрока через PlayerCollection
-    addPlayer(name, sessionId) {
-        this.loadData();
-        this.players.addPlayer(name, sessionId);
-        this.saveData(); // Сохранение данных после добавления игрока
-        console.log(`GameSessionHandler: Player added (Name: ${name}). Data saved.`);
-    }
-
-    updatePlayerByName(name, sessionId) {
-        this.loadData();
-        this.players.updatePlayerByName(name, {
-            sessionId: sessionId,
-        });
-        this.saveData(); // Сохранение данных после добавления игрока
-        console.log(`GameSessionHandler: Player added (Name: ${name}). Data saved.`);
-    }
-
-    /**
-     * Добавляет игрока или обновляет сессию существующего игрока по имени.
-     * @param {string} name - Имя игрока.
-     * @param {string} sessionId - ID сессии игрока.
-     */
-    addOrUpdatePlayer(name, sessionId) {
-        if (this.getPlayerByName(name) instanceof Player) {
-            // Если игрок существует, обновляем его sessionId
-            this.updatePlayerByName(name, sessionId);
-            console.log(`GameSessionHandler: Updated session ID for player (Name: ${name}).`);
-        } else {
-            // Если игрока нет, добавляем нового
-            this.addPlayer(name, sessionId);
-            console.log(`GameSessionHandler: Added new player (Name: ${name}).`);
+    addMoveData({playersDistances, players, history }) {
+        if(!this.head.statusGame) {
+            throw new ServerError("GameSessionHandler: Cannot add move data while game is not started.");
         }
-    }
+        this.head.playersDistances = playersDistances;
+        this.players.setPlayersWithNewIds(players);
 
-    getPlayerByName(name) {
-        this.loadData(); // Загрузка данных перед поиском игрока
-        const player = this.players.getPlayerByName(name);
-        if (!(player instanceof Player)) {
-            return null;
-        }
-        return player;
-    }
-
-    getPlayerBySessionId(sessionId) {
-        this.loadData(); // Загрузка данных перед поиском игрока
-        const player = this.players.getPlayerBySessionId(sessionId);
-        if (!(player instanceof Player)) {
-            return null;
-        }
-        return player;
-    }
-
-    // Удаление игрока через PlayerCollection
-    removePlayer(playerId) {
-        this.loadData();
-        this.players.removePlayerById(playerId);
-        this.saveData();
-        console.log(`GameSessionHandler: Player removed (ID: ${playerId}).`);
-    }
-
-    // Добавление объекта в историю
-    addToHistory(event) {
-        if (typeof event !== "object" || Object.keys(event).length === 0) {
-            throw new ServerError("Invalid history event data.");
-        }
-        this.history.push(event);
-        console.log("GameSessionHandler: Event added to history.");
-    }
-
-    // Метод для установки статуса игры
-    setStatusGame(status) {
-        if (typeof status !== "boolean") {
-            throw new ServerError("statusGame must be a boolean value.");
-        }
-        this.head.statusGame = status;
-        this.saveData();
-        console.log(`GameSessionHandler: Game status set to ${status}.`);
-    }
-
-    // Метод для получения статуса игры
-    getStatusGame() {
-        this.loadData();
-        return this.head.statusGame;
     }
 }
 
