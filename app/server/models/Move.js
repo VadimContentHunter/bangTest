@@ -1,5 +1,6 @@
 const MoveError = require("../Errors/MoveError");
 const PlayerCollection = require("../handlers/PlayerCollection");
+const CardsCollection = require("../handlers/CardsCollection");
 
 class Move {
     _moveNumber = null;
@@ -7,6 +8,8 @@ class Move {
     _playersAfterMove = null;
     _dateTime = null;
     _description = null;
+    _mainDeck = null; // Главная колода
+    _discardDeck = null; // Колода сброса
 
     /**
      * Конструктор для модели "Ход".
@@ -15,19 +18,25 @@ class Move {
      * @param {PlayerCollection} playersAfterMove - Коллекция игроков после хода.
      * @param {Date} dateTime - Дата и время хода.
      * @param {string} description - Описание хода.
+     * @param {CardsCollection} mainDeck - Главная колода.
+     * @param {CardsCollection} discardDeck - Колода сброса.
      */
     constructor(
         moveNumber,
         description = "",
         playersBeforeMove = null,
         playersAfterMove = null,
-        dateTime = null
+        dateTime = null,
+        mainDeck = null,
+        discardDeck = null
     ) {
         this.moveNumber = moveNumber;
         this.playersBeforeMove = playersBeforeMove ?? new PlayerCollection();
         this.playersAfterMove = playersAfterMove ?? new PlayerCollection();
         this.dateTime = dateTime ?? new Date();
         this.description = description;
+        this.mainDeck = mainDeck ?? new CardsCollection();
+        this.discardDeck = discardDeck ?? new CardsCollection();
     }
 
     // Геттер и сеттер для номера хода
@@ -105,6 +114,36 @@ class Move {
         this._description = value;
     }
 
+    // Геттер и сеттер для главной колоды
+    get mainDeck() {
+        if (!(this._mainDeck instanceof CardsCollection)) {
+            throw new MoveError("mainDeck должен быть экземпляром CardsCollection.");
+        }
+        return this._mainDeck;
+    }
+
+    set mainDeck(value) {
+        if (!(value instanceof CardsCollection)) {
+            throw new MoveError("mainDeck должен быть экземпляром CardsCollection.");
+        }
+        this._mainDeck = value;
+    }
+
+    // Геттер и сеттер для колоды сброса
+    get discardDeck() {
+        if (!(this._discardDeck instanceof CardsCollection)) {
+            throw new MoveError("discardDeck должен быть экземпляром CardsCollection.");
+        }
+        return this._discardDeck;
+    }
+
+    set discardDeck(value) {
+        if (!(value instanceof CardsCollection)) {
+            throw new MoveError("discardDeck должен быть экземпляром CardsCollection.");
+        }
+        this._discardDeck = value;
+    }
+
     getFormattedDateTime() {
         const date = this._dateTime;
         const day = String(date.getDate()).padStart(2, "0");
@@ -128,6 +167,8 @@ class Move {
             formattedDateTime: this.getFormattedDateTime(),
             playersBeforeMove: this.playersBeforeMove,
             playersAfterMove: this.playersAfterMove,
+            mainDeck: this.mainDeck,
+            discardDeck: this.discardDeck,
         };
     }
 
@@ -155,6 +196,8 @@ class Move {
             // Создаем объект PlayerCollection для игроков до и после хода
             const playersBeforeMove = new PlayerCollection(data.playersBeforeMove);
             const playersAfterMove = new PlayerCollection(data.playersAfterMove);
+            const mainDeck = new CardsCollection(data.mainDeck);
+            const discardDeck = new CardsCollection(data.discardDeck);
 
             // Создаем объект Move и инициализируем его данными из JSON
             const move = new Move(
@@ -162,7 +205,9 @@ class Move {
                 data.description,
                 playersBeforeMove,
                 playersAfterMove,
-                new Date(data.dateTime)
+                new Date(data.dateTime),
+                mainDeck,
+                discardDeck
             );
 
             return move;

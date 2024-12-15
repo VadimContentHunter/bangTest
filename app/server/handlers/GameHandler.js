@@ -16,6 +16,7 @@ const HistoryHandlerError = require("../Errors/HistoryHandlerError");
 const HistoryHandler = require("../handlers/HistoryHandler");
 const MoveError = require("../Errors/MoveError");
 const Move = require("../models/Move");
+const CardsCollection = require("../handlers/CardsCollection");
 
 class GameHandler extends EventEmitter {
     constructor(playroomHandler) {
@@ -26,6 +27,8 @@ class GameHandler extends EventEmitter {
         this.playroomHandler = playroomHandler;
         this.gameSessionHandler = new GameSessionHandler();
         this.gameTable = new GameTable();
+        this.mainDeck = new CardsCollection();
+        this.discardDeck = new CardsCollection();
         this.distanceHandler = new DistanceHandler();
         this.historyHandler = new HistoryHandler();
     }
