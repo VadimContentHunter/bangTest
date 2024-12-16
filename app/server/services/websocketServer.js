@@ -19,7 +19,7 @@ const Player = require("../models/Player");
 const GameTableError = require("../Errors/GameTableError");
 const GameTable = require("../models/GameTable");
 const SelectionCardsError = require("../Errors/GameTableError");
-const SelectionCardsHandler = require("../handlers/SelectionCardsHandler");
+const SelectionCards = require("../models/SelectionCards");
 const GameHandlerError = require("../Errors/GameHandlerError");
 const GameHandler = require("../handlers/GameHandler");
 const DistanceError = require("../Errors/DistanceError");
@@ -32,8 +32,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         throw new Error("playroomHandler must be an instance of PlayroomHandler");
     }
 
-    const serverHook = new ServerHook();
     const wss = new WebSocket.Server({ server });
+    const serverHook = new ServerHook();
     const gameHandler = new GameHandler(playroomHandler);
     // const stubCard = aCard.initCard(
     //     {
@@ -45,7 +45,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     //     [StubCard]
     // );
 
-    // Подписка на хуки
+    // Подписка на серверные хуки
     serverHook.on("updateUserCount", () => {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
@@ -95,7 +95,44 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     serverHook.on("StartGame", (ws, params, id = null) => {
         gameHandler.startGame();
-        // ws.send(JsonRpcFormatter.serializeResponse(adminMenuHandler.getAdminMenuTemplate(), id));
+    });
+
+    // Подписка на Игровые хуки
+    gameHandler.on("afterGameStart", () => {
+        gameHandler.selectCharacterForPlayer();
+        // serverHook.emit(
+        //     "requestAllUser",
+        //     "selectionCardsMenu",
+        //     new SelectionCards({
+        //         title: "Выбор карты для роли",
+        //         description: "Выберите карту для роли:",
+        //         textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
+        //         collectionCards: [
+        //             new StubCard(CardType.DEFAULT),
+        //             new StubCard(CardType.WEAPON),
+        //             new StubCard(CardType.CHARACTER),
+        //             new StubCard(CardType.DEFAULT),
+        //             new StubCard(CardType.DEFAULT),
+        //         ],
+        //         // selectIdCard: 1,
+        //         // timer: null,
+        //     })
+        // );
+    });
+
+    gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
+        if (player instanceof Player && selectionCards instanceof SelectionCards) {
+            wss.clients.forEach((client) => {
+                if (
+                    client.readyState === WebSocket.OPEN &&
+                    client?.sessionId === player.sessionId
+                ) {
+                    client.send(
+                        JsonRpcFormatter.serializeRequest("selectionCardsMenu", selectionCards)
+                    );
+                }
+            });
+        }
     });
 
     // Событие при установлении нового соединения
@@ -103,11 +140,11 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         const queryParams = url.parse(req.url, true).query;
         const clientIp = req.socket.remoteAddress; // Получаем IP-адрес клиента
         const ip = clientIp.startsWith("::ffff:") ? clientIp.slice(7) : clientIp;
-        let sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
+        ws.sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
         console.log(`WebSocket: Новое соединение установлено с IP: ${ip}`);
 
         try {
-            const player = playroomHandler.connect(sessionId);
+            const player = playroomHandler.connect(ws.sessionId);
             if (player instanceof Player) {
                 player.lives.max = 5;
                 player.lives.current = 3;
@@ -163,25 +200,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     new StubCard(CardType.WEAPON),
                 ]);
                 serverHook.emit("requestAllUser", "battleZoneUpdate", gameTable);
-
-                serverHook.emit(
-                    "requestAllUser",
-                    "selectionCardsMenu",
-                    new SelectionCardsHandler({
-                        title: "Выбор карты для роли",
-                        description: "Выберите карту для роли:",
-                        textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
-                        collectionCards: [
-                            new StubCard(CardType.DEFAULT),
-                            new StubCard(CardType.WEAPON),
-                            new StubCard(CardType.CHARACTER),
-                            new StubCard(CardType.DEFAULT),
-                            new StubCard(CardType.DEFAULT),
-                        ],
-                        // selectIdCard: 1,
-                        // timer: null,
-                    })
-                );
             }
         } catch (error) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
@@ -191,23 +209,26 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
         // Слушаем сообщения от клиента
         ws.on("message", (message) => {
-            // sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
             try {
-                // ws.send(
-                //     JsonRpcFormatter.serializeRequest("updateSessionId", {
-                //         sessionId: sessionId,
-                //         maxAge: SessionHandler.sessionLifetime * 1000,
-                //         path: "/",
-                //     })
-                // );
+                ws.sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
+                ws.send(
+                    JsonRpcFormatter.serializeRequest("updateSessionId", {
+                        sessionId: ws.sessionId,
+                        maxAge: SessionHandler.sessionLifetime * 1000,
+                        path: "/",
+                    })
+                );
 
                 const requestRpc = JsonRpcFormatter.deserializeRequest(message);
-                requestRpc.params.sessionId = sessionId;
+                requestRpc.params.sessionId = ws.sessionId;
 
-                if (serverHook.listenerCount(requestRpc.method) === 0) {
+                if (serverHook.listenerCount(requestRpc.method) !== 0) {
+                    serverHook.emit(requestRpc.method, ws, requestRpc.params, requestRpc?.id);
+                } else if (gameHandler.listenerCount(requestRpc.method) !== 0) {
+                    gameHandler.emit(requestRpc.method, ws, requestRpc.params, requestRpc?.id);
+                } else {
                     throw new Error(`No listeners found for event: ${requestRpc.method}`);
                 }
-                serverHook.emit(requestRpc.method, ws, requestRpc.params, requestRpc?.id);
             } catch (error) {
                 ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));
                 console.log(error);
@@ -218,7 +239,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         ws.on("close", () => {
             try {
                 // sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
-                playroomHandler.removePlayerOnlineBySession(sessionId);
+                playroomHandler.removePlayerOnlineBySession(ws.sessionId);
                 // console.log(playroomHandler.countPlayersOnline());
 
                 serverHook.emit("updateUserCount");

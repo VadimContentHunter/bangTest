@@ -1,5 +1,5 @@
 const EventEmitter = require("events");
 
-class MyHookEmitter extends EventEmitter {}
+class ServerHook extends EventEmitter {}
 
-module.exports = MyHookEmitter;
+module.exports = ServerHook;

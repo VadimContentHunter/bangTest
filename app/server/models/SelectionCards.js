@@ -1,9 +1,9 @@
-const Player = require("../models/Player"); // Подключение модели Player
+const Player = require("./Player"); // Подключение модели Player
 const SelectionCardsError = require("../Errors/SelectionCardsError"); // Подключение ошибки
 const CardsCollection = require("../handlers/CardsCollection");
 const { aCard } = require("../interfaces/aCard");
 
-class SelectionCardsHandler {
+class SelectionCards {
     /** @type {string} */
     #title = "";
 
@@ -143,6 +143,45 @@ class SelectionCardsHandler {
         return this.#collectionCards;
     }
 
+    // === Методы для управления выбором карт ===
+
+    /**
+     * Ожидает выбор карты игроком.
+     * @param {Object} player - Игрок, который выбирает карту.
+     * @returns {Promise<Object>} Возвращает выбранную карту.
+     */
+    async waitForPlayerCardSelection(player) {
+        return new Promise((resolve, reject) => {
+            // Генерируем событие, чтобы уведомить о старте выбора карты
+            // this.emit("cardSelectionStart", { player, cards: this.collectionCards.getAllCards() });
+
+            // Ожидаем событие, что карта была выбрана
+            this.once("playerSelectCard", (data) => {
+                const { selectedCard } = data;
+
+                if (!selectedCard) {
+                    reject(new SelectionCardsError("Карта не была выбрана."));
+                    return;
+                }
+
+                // Проверка на валидность выбранной карты
+                if (!this.collectionCards.hasCard(selectedCard)) {
+                    reject(new SelectionCardsError("Выбранная карта недоступна."));
+                    return;
+                }
+
+                resolve(selectedCard);
+            });
+
+            // Добавляем тайм-аут, если время истекает
+            if (this.timer) {
+                setTimeout(() => {
+                    reject(new SelectionCardsError("Время на выбор карты истекло."));
+                }, this.timer);
+            }
+        });
+    }
+
     // ======== Другие методы ========
 
     /**
@@ -160,4 +199,4 @@ class SelectionCardsHandler {
     }
 }
 
-module.exports = SelectionCardsHandler;
+module.exports = SelectionCards;

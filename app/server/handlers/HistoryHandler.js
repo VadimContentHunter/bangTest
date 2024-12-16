@@ -4,6 +4,8 @@ const Move = require("../models/Move"); // Предполагается, что 
 class HistoryHandler {
     _moves = []; // Приватный массив для хранения ходов
 
+    constructor() {}
+
     /**
      * Добавляет новый ход в историю.
      * @param {Move} move - Объект хода.
@@ -121,12 +123,7 @@ class HistoryHandler {
     }
 
     static initFromJSON(json) {
-        const gameSessionHeadHandler = new GameSessionHead();
-        gameSessionHeadHandler.statusGame = json.statusGame;
-        gameSessionHeadHandler.playersDistances = DistanceHandler.initFromJSON(
-            json.playersDistances
-        );
-        return gameSessionHeadHandler;
+        return new HistoryHandler();
     }
 }
 

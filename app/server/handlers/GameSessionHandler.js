@@ -64,17 +64,17 @@ class GameSessionHandler {
     }
 
     _validateHistory() {
-        return Array.isArray(this.history);
+        return this.history instanceof HistoryHandler;
     }
 
     createGameSession() {
-        if (this.getStatusGame() === true) {
+        if (this.head.statusGame === true) {
             throw new ServerError(
                 "GameSessionHandler: Cannot create game session while one already exists."
             );
         }
         this._generatePathToFile();
-        this.setStatusGame(true);
+        this.head.statusGame = true;
         this.saveData();
         console.log(`GameSessionHandler: Game session created. File path: ${this.filePath}`);
     }
@@ -109,8 +109,7 @@ class GameSessionHandler {
                     this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
                 });
                 // console.log(`loadData ${this.players}`);
-
-                this.history = history;
+                this.history = HistoryHandler.initFromJSON(history);
                 console.log("GameSessionHandler: Data loaded successfully.");
             } else {
                 throw new ServerError("GameSessionHandler: Invalid file format.");
@@ -120,12 +119,12 @@ class GameSessionHandler {
         }
     }
 
-    addMoveData({playersDistances, players, history }) {
+    setData({playersDistances, players, history }) {
         if(!this.head.statusGame) {
             throw new ServerError("GameSessionHandler: Cannot add move data while game is not started.");
         }
         this.head.playersDistances = playersDistances;
-        this.players.setPlayersWithNewIds(players);
+        this.players.setPlayers(players, true);
 
     }
 }

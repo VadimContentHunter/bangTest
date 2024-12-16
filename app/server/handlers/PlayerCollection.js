@@ -1,4 +1,5 @@
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
+const { aCard, CardType } = require("../interfaces/aCard");
 const Player = require("../models/Player");
 
 class PlayerCollection {
@@ -145,6 +146,40 @@ class PlayerCollection {
             throw new ValidatePlayerError("ID должен быть числом.");
         }
         return this.players[id] || null;
+    }
+
+    /**
+     * Возвращает первого игрока без роли или с картой, указанной в параметре `cardTypes`.
+     * @param {Array<Card>} cardTypes - Массив классов карт, которые будут считаться как отсутствие роли.
+     * @returns {Player|null} Первый игрок без роли или с картой из `cardTypes`, или `null`, если таких игроков нет.
+     */
+    getFirstPlayerWithoutRole(cardTypes = []) {
+        return (
+            Object.values(this.players).find((player) => {
+                // Если у игрока нет роли или у него есть карта, которая входит в список `cardTypes`, считаем его игроком без роли
+                return !(
+                    player.role instanceof aCard ||
+                    player.role.type !== CardType.ROLE ||
+                    cardTypes.some((type) => player.role.name === type.name)
+                );
+            }) || null
+        );
+    }
+
+    /**
+     * Возвращает всех игроков без роли или с картой, указанной в параметре `cardTypes`.
+     * @param {Array<Card>} cardTypes - Массив классов карт, которые будут считаться как отсутствие роли.
+     * @returns {Player[]} Массив игроков без роли или с картой из `cardTypes`.
+     */
+    getPlayersWithoutRole(cardTypes = []) {
+        return Object.values(this.players).filter((player) => {
+            // Если у игрока нет роли или у него есть карта, которая входит в список `cardTypes`, считаем его игроком без роли
+            return !(
+                player.role instanceof aCard ||
+                player.role.type !== CardType.ROLE ||
+                cardTypes.some((type) => player.role.name === type.name)
+            );
+        });
     }
 
     /**

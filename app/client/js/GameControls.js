@@ -297,7 +297,7 @@ class CardSelection extends GameControls {
                         new CustomEvent("sendServer", {
                             detail: {
                                 data: card,
-                                action: "playerSelectCard",
+                                action: "playerCardSelected",
                             },
                         })
                     );
