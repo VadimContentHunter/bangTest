@@ -164,23 +164,6 @@ class PlayerCollection {
         return Object.values(this.players).sort((a, b) => b.id - a.id); // Сортировка по ID от большего к меньшему
     }
 
-    // Метод для перемешивания ID игроков
-    shufflePlayerIds() {
-        const playerIds = Object.keys(this.players); // Получаем все ID игроков
-        for (let i = playerIds.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * playerIds.length); // Случайный индекс
-            [playerIds[i], playerIds[j]] = [playerIds[j], playerIds[i]]; // Меняем местами
-        }
-
-        // Теперь можно использовать перемешанные ID для изменения порядка игроков в коллекции
-        const shuffledPlayers = {};
-        playerIds.forEach((id) => {
-            shuffledPlayers[id] = this.players[id]; // Добавляем игроков в новый порядок
-        });
-
-        this.players = shuffledPlayers; // Обновляем коллекцию игроков
-    }
-
     /**
      * Находит игрока с минимальным id, исключая указанные id.
      *
@@ -341,6 +324,17 @@ class PlayerCollection {
         return Object.values(this.players).filter((player) => player instanceof Player);
     }
 
+    /**
+     * Собирает данные всех игроков с помощью их метода getSummaryInfo.
+     * @returns {Array<Object>} Массив данных всех игроков, полученных из getSummaryInfo.
+     * @throws {Error} Если у игрока отсутствует метод getSummaryInfo.
+     */
+    getDataSummaryAllPlayers() {
+        return Object.values(this.players)
+            .filter((player) => typeof player.getSummaryInfo === "function") // Проверяем наличие метода getSummaryInfo
+            .map((player) => player.getSummaryInfo()); // Вызываем метод getSummaryInfo и собираем данные в массив
+    }
+
     // Обновляет информацию об игроке по ID
     updatePlayerById(id, updates) {
         if (typeof id !== "number") {
@@ -433,17 +427,6 @@ class PlayerCollection {
     }
 
     /**
-     * Собирает данные всех игроков с помощью их метода getSummaryInfo.
-     * @returns {Array<Object>} Массив данных всех игроков, полученных из getSummaryInfo.
-     * @throws {Error} Если у игрока отсутствует метод getSummaryInfo.
-     */
-    getDataSummaryAllPlayers() {
-        return Object.values(this.players)
-            .filter((player) => typeof player.getSummaryInfo === "function") // Проверяем наличие метода getSummaryInfo
-            .map((player) => player.getSummaryInfo()); // Вызываем метод getSummaryInfo и собираем данные в массив
-    }
-
-    /**
      * Подсчитывает общее количество игроков, которые являются экземплярами Player.
      * @returns {number} Количество игроков.
      */
@@ -459,6 +442,23 @@ class PlayerCollection {
         return Object.values(this.players).filter(
             (player) => player instanceof Player && player.sessionId !== null
         ).length;
+    }
+
+    // Метод для перемешивания ID игроков
+    shufflePlayerIds() {
+        const playerIds = Object.keys(this.players); // Получаем все ID игроков
+        for (let i = playerIds.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * playerIds.length); // Случайный индекс
+            [playerIds[i], playerIds[j]] = [playerIds[j], playerIds[i]]; // Меняем местами
+        }
+
+        // Теперь можно использовать перемешанные ID для изменения порядка игроков в коллекции
+        const shuffledPlayers = {};
+        playerIds.forEach((id) => {
+            shuffledPlayers[id] = this.players[id]; // Добавляем игроков в новый порядок
+        });
+
+        this.players = shuffledPlayers; // Обновляем коллекцию игроков
     }
 
     /**
