@@ -52,6 +52,20 @@ const StubCard = require("../models/cards/StubCard");
  */
 
 /**
+ * @event GameHandler#playerStartedMove
+ * @type {Object}
+ * @description Событие испускается, когда игрок начинает выполнять ход.
+ * @param {Object} player - Игрок, который начинает ход.
+ */
+
+/**
+ * @event GameHandler#playerMoveFinished
+ * @type {Object}
+ * @description Событие испускается, когда игрок завершает свой ход.
+ * @param {Object} player - Игрок, который завершил ход.
+ */
+
+/**
  * Класс GameHandler управляет игровой логикой и испускает события для уведомления об изменениях.
  * @extends EventEmitter
  * @fires GameHandler#beforeGameStart - Событие, испускаемое перед началом игры.
@@ -59,6 +73,8 @@ const StubCard = require("../models/cards/StubCard");
  * @fires GameHandler#afterSelectCharacterForPlayer - Событие, испускаемое после завершения выбора персонажа для всех игроков.
  * @fires GameHandler#selectionStarted - Событие, испускаемое при начале выбора карты.
  * @listens GameHandler#playerCardSelected - Слушает событие выбора карты игроком и обрабатывает его.
+ * @fires GameHandler#playerStartedMove - Событие, испускаемое при начале выбора карты.
+ * @listens GameHandler#playerMoveFinished - Слушает событие когда игрок завершает свой ход.
  */
 class GameHandler extends EventEmitter {
     constructor(playroomHandler) {
@@ -168,8 +184,55 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    playerMove() {
+    /**
+     * Выполняет раунд ходов игроков.
+     * @fires GameHandler#playerStartedMove - Событие, испускаемое, когда игрок начинает ход.
+     * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
+     */
+    executeMovesRound() {
+        const playersRound = this.playroomHandler.playerOnline.getPlayersSortedAsc();
+        playersRound.forEach(async (player) => {
+            console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
+            this.emit("playerStartedMove ", { player });
 
+            try {
+                // Ожидаем завершения хода игрока с таймером
+                await this.waitForPlayerMove(player, 30000); // Таймаут на 30 секунд
+                console.log(`GameHandler: Игрок ${player.name} завершил ход.`);
+            } catch (error) {
+                console.error(
+                    `GameHandler: Ошибка выполнения хода игроком ${player.name}: ${error.message}`
+                );
+            }
+        });
+        this.emit("afterMovesRound");
+    }
+
+    /**
+     * Ожидает завершения хода игроком с таймером.
+     * @param {Object} player - Игрок, который должен завершить ход.
+     * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
+     * @returns {Promise} Возвращает промис, который выполняется, когда игрок завершает ход.
+     * @throws {MoveError} В случае ошибки или истечения времени.
+     * @listens GameHandler#playerMoveFinished
+     */
+    async waitForPlayerMove(player, timer = 30000) {
+        console.log(`GameHandler: Ожидание завершения хода от игрока: ${player.name}`);
+
+        return new Promise((resolve, reject) => {
+            // const timeout = setTimeout(() => {
+            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
+            // }, timer);
+
+            this.once("playerMoveFinished", (card) => {
+                // if (data.player === player) {
+                //     clearTimeout(timeout);
+                //     resolve();
+                // }
+                console.log(card);
+                resolve();
+            });
+        });
     }
 
     saveForGameSession() {

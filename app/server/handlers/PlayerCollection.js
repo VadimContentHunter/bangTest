@@ -174,7 +174,7 @@ class PlayerCollection {
      * @returns {Object|null} Игрок с минимальным id, или null, если подходящий игрок не найден.
      */
     getPlayerWithMinId(ignoredIds = []) {
-        return this.players.reduce((minPlayer, currentPlayer) => {
+        return Object.values(this.players).reduce((minPlayer, currentPlayer) => {
             // Проверяем, не нужно ли игнорировать текущего игрока
             if (ignoredIds.includes(currentPlayer.id)) {
                 return minPlayer; // Пропускаем этого игрока
@@ -266,7 +266,7 @@ class PlayerCollection {
         const playersWithoutRole = this.getPlayersWithoutRole(cardsClass);
 
         // Теперь используем метод getPlayerWithMinId для поиска игрока с минимальным id среди игроков без роли
-        return this.getPlayerWithMinId(ignoredIds, playersWithoutRole);
+        return PlayerCollection.findPlayerWithMinIdExcludingIgnored(ignoredIds, playersWithoutRole);
     }
 
     /**
@@ -287,7 +287,7 @@ class PlayerCollection {
         const playersWithoutCharacter = this.getPlayersWithoutCharacter(cardsClass);
 
         // Используем getPlayerWithMinId для поиска игрока с минимальным id среди отфильтрованных игроков
-        return this.getPlayerWithMinId(ignoredIds, playersWithoutCharacter);
+        return PlayerCollection.findPlayerWithMinIdExcludingIgnored(ignoredIds, playersWithoutCharacter);
     }
 
     /**
@@ -490,6 +490,32 @@ class PlayerCollection {
         }
 
         return collection; // Возвращаем заполненную коллекцию
+    }
+
+    /**
+     * Статистический метод для нахождения игрока с минимальным id, исключая указанные id.
+     *
+     * Этот метод принимает массив игроков и находит среди них игрока с минимальным id,
+     * исключая тех игроков, чьи id указаны в массиве ignoredIds.
+     *
+     * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
+     * @param {Array<Player>} players - Массив объектов игроков, в котором нужно искать минимальный id.
+     * @returns {Player|null} Игрок с минимальным id, исключая указанные id, или null, если подходящий игрок не найден.
+     */
+    static findPlayerWithMinIdExcludingIgnored(ignoredIds = [], players = []) {
+        if (!Array.isArray(players) || players.length === 0) {
+            return null; // Возвращаем null, если массив игроков пуст
+        }
+
+        return players.reduce((minPlayer, currentPlayer) => {
+            // Проверяем, не нужно ли игнорировать текущего игрока
+            if (ignoredIds.includes(currentPlayer.id)) {
+                return minPlayer; // Пропускаем этого игрока
+            }
+
+            // Если текущий игрок имеет меньший id, чем текущий минимальный
+            return currentPlayer.id < minPlayer.id ? currentPlayer : minPlayer;
+        }, players[0] || null); // В случае пустого массива возвращаем null
     }
 }
 

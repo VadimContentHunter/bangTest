@@ -118,7 +118,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     });
 
     gameHandler.on("afterSelectCharactersForPlayers", () => {
-        
+        gameHandler.executeMovesRound();
     });
 
     // Событие при установлении нового соединения
