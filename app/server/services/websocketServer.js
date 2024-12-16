@@ -100,24 +100,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     // Подписка на Игровые хуки
     gameHandler.on("afterGameStart", () => {
         gameHandler.selectCharactersForPlayers();
-        // serverHook.emit(
-        //     "requestAllUser",
-        //     "selectionCardsMenu",
-        //     new SelectionCards({
-        //         title: "Выбор карты для роли",
-        //         description: "Выберите карту для роли:",
-        //         textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
-        //         collectionCards: [
-        //             new StubCard(CardType.DEFAULT),
-        //             new StubCard(CardType.WEAPON),
-        //             new StubCard(CardType.CHARACTER),
-        //             new StubCard(CardType.DEFAULT),
-        //             new StubCard(CardType.DEFAULT),
-        //         ],
-        //         // selectIdCard: 1,
-        //         // timer: null,
-        //     })
-        // );
     });
 
     gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
@@ -135,6 +117,10 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         }
     });
 
+    gameHandler.on("afterSelectCharactersForPlayers", () => {
+        
+    });
+
     // Событие при установлении нового соединения
     wss.on("connection", (ws, req) => {
         const queryParams = url.parse(req.url, true).query;
@@ -149,7 +135,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 player.lives.max = 5;
                 player.lives.current = 3;
                 player.role = new StubCard(CardType.ROLE);
-                player.character = new StubCard(CardType.CHARACTER);
+                // player.character = new StubCard(CardType.CHARACTER);
                 player.weapon = new StubCard(CardType.WEAPON);
                 player.temporaryCards.setCards([
                     new StubCard(CardType.DEFAULT),

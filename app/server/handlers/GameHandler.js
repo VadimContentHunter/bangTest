@@ -64,7 +64,7 @@ class GameHandler extends EventEmitter {
     constructor(playroomHandler) {
         super();
         if (!(playroomHandler instanceof PlayroomHandler)) {
-            throw new Error("playroomHandler must be an instance of PlayroomHandler");
+            throw new Error("GameHandler: playroomHandler must be an instance of PlayroomHandler");
         }
         this.playroomHandler = playroomHandler;
         this.gameSessionHandler = new GameSessionHandler();
@@ -100,7 +100,7 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
-        const player = this.playroomHandler.playerOnline.getFirstPlayerWithoutRole([StubCard]);
+        const player = this.playroomHandler.playerOnline.getFirstPlayerWithoutCharacter();
 
         if (player instanceof Player) {
             try {
@@ -120,15 +120,19 @@ class GameHandler extends EventEmitter {
 
                 // Ожидаем выбора карты игроком
                 const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
+                console.log(`GameHandler: Игрок ${player.name} выбрал карту: ${selectedCard.name}`);
+                player.character = selectedCard;
 
-                console.log(`Игрок ${player.name} выбрал карту: ${selectedCard.type}`);
-                this.selectCharacterForPlayer(); // Рекурсивный вызов для следующего игрока
+                this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
             } catch (error) {
-                console.error(`Ошибка выбора карты для игрока ${player.name}:`, error.message);
+                console.error(
+                    `GameHandler: Ошибка выбора карты для игрока ${player.name}:`,
+                    error.message
+                );
             }
         } else {
-            console.log("Все игроки выбрали персонажей.");
-            this.emit("afterSelectCharacterForPlayer");
+            console.log("GameHandler: Все игроки выбрали персонажей.");
+            this.emit("afterSelectCharactersForPlayers");
         }
     }
 
@@ -142,14 +146,14 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async waitForPlayerCardSelection(player, selectionCards, timer = 30000) {
-        console.log(`Ожидание выбора карты от игрока: ${player.name}`);
+        console.log(`GameHandler: Ожидание выбора карты от игрока: ${player.name}`);
 
         return new Promise((resolve, reject) => {
             // const timeout = setTimeout(() => {
             //     reject(new SelectionCardsError("Время на выбор карты истекло."));
             // }, timer);
 
-            this.once("playerCardSelected", (ws, params, id = null) => {
+            this.once("playerCardSelected", (ws, card, id = null) => {
                 // clearTimeout(timeout); // Очищаем таймаут
 
                 // Здесь можно добавить проверку выбранной карты
@@ -159,7 +163,7 @@ class GameHandler extends EventEmitter {
                 //     reject(new SelectionCardsError("Выбрана неверная карта."));
                 // }
                 // Здесь можно добавить проверку выбранной карты
-                resolve({ type: "selection stub object" });
+                resolve(new StubCard(CardType.CHARACTER));
             });
         });
     }
