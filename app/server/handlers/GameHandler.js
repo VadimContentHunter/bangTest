@@ -100,7 +100,7 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
-        const player = this.playroomHandler.playerOnline.getFirstPlayerWithoutCharacter();
+        const player = this.playroomHandler.playerOnline.getPlayerWithMinIdWithoutCharacter();
 
         if (player instanceof Player) {
             try {
@@ -166,6 +166,10 @@ class GameHandler extends EventEmitter {
                 resolve(new StubCard(CardType.CHARACTER));
             });
         });
+    }
+
+    playerMove() {
+
     }
 
     saveForGameSession() {
