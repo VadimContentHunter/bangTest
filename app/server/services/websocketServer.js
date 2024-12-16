@@ -99,7 +99,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     // Подписка на Игровые хуки
     gameHandler.on("afterGameStart", () => {
-        gameHandler.selectCharacterForPlayer();
+        gameHandler.selectCharactersForPlayers();
         // serverHook.emit(
         //     "requestAllUser",
         //     "selectionCardsMenu",

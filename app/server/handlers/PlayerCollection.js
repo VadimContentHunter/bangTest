@@ -153,14 +153,14 @@ class PlayerCollection {
      * @param {Array<Card>} cardTypes - Массив классов карт, которые будут считаться как отсутствие роли.
      * @returns {Player|null} Первый игрок без роли или с картой из `cardTypes`, или `null`, если таких игроков нет.
      */
-    getFirstPlayerWithoutRole(cardTypes = []) {
+    getFirstLivePlayerWithoutRole(cardTypes = []) {
         return (
             Object.values(this.players).find((player) => {
                 // Если у игрока нет роли или у него есть карта, которая входит в список `cardTypes`, считаем его игроком без роли
-                return !(
-                    player.role instanceof aCard ||
+                return (
+                    !(player.role instanceof aCard) ||
                     player.role.type !== CardType.ROLE ||
-                    cardTypes.some((type) => player.role.name === type.name)
+                    cardTypes.some((type) => player.role.constructor.name === type.name)
                 );
             }) || null
         );
@@ -174,10 +174,10 @@ class PlayerCollection {
     getPlayersWithoutRole(cardTypes = []) {
         return Object.values(this.players).filter((player) => {
             // Если у игрока нет роли или у него есть карта, которая входит в список `cardTypes`, считаем его игроком без роли
-            return !(
-                player.role instanceof aCard ||
+            return (
+                !(player.role instanceof aCard) ||
                 player.role.type !== CardType.ROLE ||
-                cardTypes.some((type) => player.role.name === type.name)
+                cardTypes.some((type) => player.role.constructor.name === type.name)
             );
         });
     }

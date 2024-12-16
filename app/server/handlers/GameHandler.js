@@ -95,14 +95,12 @@ class GameHandler extends EventEmitter {
     }
 
     /**
-     * Ожидает выбора персонажа от игроков.
+     * Ожидает выбора персонажей от игроков.
      * @fires GameHandler#selectionStarted
      * @listens GameHandler#playerCardSelected
      */
-    async selectCharacterForPlayer() {
-        const player = this.playroomHandler.playerOnline.getFirstPlayerWithoutRole([
-            new StubCard(CardType.ROLE),
-        ]);
+    async selectCharactersForPlayers() {
+        const player = this.playroomHandler.playerOnline.getFirstPlayerWithoutRole([StubCard]);
 
         if (player instanceof Player) {
             try {
@@ -141,7 +139,6 @@ class GameHandler extends EventEmitter {
      * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
      * @returns {Promise<Object>} Возвращает выбранную карту.
      * @throws {SelectionCardsError} В случае ошибки выбора или истечения времени.
-     * @fires GameHandler#selectionStarted
      * @listens GameHandler#playerCardSelected
      */
     async waitForPlayerCardSelection(player, selectionCards, timer = 30000) {
