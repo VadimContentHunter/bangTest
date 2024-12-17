@@ -209,7 +209,7 @@ class BattleZone {
                 new CustomEvent("sendServer", {
                     detail: {
                         data: {},
-                        action: "TEST_TEST",
+                        action: "playerMoveFinished",
                     },
                 })
             );

@@ -1,5 +1,6 @@
 // websocketServer.js
 const WebSocket = require("ws");
+const ServerError = require("../Errors/ServerError");
 const {
     JsonRpcFormatter,
     JsonRpcFormatterError,
@@ -95,6 +96,24 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     serverHook.on("StartGame", (ws, params, id = null) => {
         gameHandler.startGame();
+    });
+
+    gameHandler.on("playerStartedMove", ({ player }) => {
+        wss.clients.forEach((client) => {
+            if (
+                client.readyState === WebSocket.OPEN &&
+                player instanceof Player &&
+                player.sessionId === client.sessionId
+            ) {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: true })
+                );
+            } else {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: false })
+                );
+            }
+        });
     });
 
     // Подписка на Игровые хуки

@@ -66,6 +66,13 @@ const StubCard = require("../models/cards/StubCard");
  */
 
 /**
+ * @event GameHandler#lockPlayersMoves
+ * @type {Object}
+ * @description Событие испускается, чтобы заблокировать ход всем игрокам.
+ * @property {PlayerCollection} players - Коллекция игроков, ходы которых будут заблокированы.
+ */
+
+/**
  * Класс GameHandler управляет игровой логикой и испускает события для уведомления об изменениях.
  * @extends EventEmitter
  * @fires GameHandler#beforeGameStart - Событие, испускаемое перед началом игры.
@@ -75,6 +82,7 @@ const StubCard = require("../models/cards/StubCard");
  * @listens GameHandler#playerCardSelected - Слушает событие выбора карты игроком и обрабатывает его.
  * @fires GameHandler#playerStartedMove - Событие, испускаемое при начале выбора карты.
  * @listens GameHandler#playerMoveFinished - Слушает событие когда игрок завершает свой ход.
+ * @fires GameHandler#lockPlayersMoves - Событие испускается, чтобы заблокировать ход всем игрокам.
  */
 class GameHandler extends EventEmitter {
     constructor(playroomHandler) {
@@ -187,14 +195,14 @@ class GameHandler extends EventEmitter {
     /**
      * Выполняет раунд ходов игроков.
      * @fires GameHandler#playerStartedMove - Событие, испускаемое, когда игрок начинает ход.
+     * @fires GameHandler#lockPlayersMoves - Событие испускается, чтобы заблокировать ход всем игрокам.
      * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
      */
-    executeMovesRound() {
+    async executeMovesRound() {
         const playersRound = this.playroomHandler.playerOnline.getPlayersSortedAsc();
-        playersRound.forEach(async (player) => {
+        for (const player of playersRound) {
+            this.emit("playerStartedMove", { player });
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
-            this.emit("playerStartedMove ", { player });
-
             try {
                 // Ожидаем завершения хода игрока с таймером
                 await this.waitForPlayerMove(player, 30000); // Таймаут на 30 секунд
@@ -204,7 +212,7 @@ class GameHandler extends EventEmitter {
                     `GameHandler: Ошибка выполнения хода игроком ${player.name}: ${error.message}`
                 );
             }
-        });
+        }
         this.emit("afterMovesRound");
     }
 
@@ -224,14 +232,33 @@ class GameHandler extends EventEmitter {
             //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
             // }, timer);
 
-            this.once("playerMoveFinished", (card) => {
-                // if (data.player === player) {
-                //     clearTimeout(timeout);
-                //     resolve();
-                // }
-                console.log(card);
-                resolve();
-            });
+            const moveFinishedHandler = (ws, params, id = null) => {
+                // Проверяем, что sessionId из события совпадает с ожидаемым
+                if (ws.sessionId === player.sessionId) {
+                    // Игрок завершил ход, раз разрешение на событие только для этого игрока
+                    // clearTimeout(timeout); // Очищаем таймер, если используем его
+                    console.log("Игрок походил --Карта--");
+                    resolve();
+                    // После того как нужный игрок завершил ход, убираем обработчик
+                    this.removeListener("playerMoveFinished", moveFinishedHandler);
+                } else {
+                    console.log(
+                        `Игрок с sessionId ${ws.sessionId} не может завершить ход для ${player.name}`
+                    );
+                }
+            };
+
+            // Подписываемся на событие
+            this.on("playerMoveFinished", moveFinishedHandler);
+
+            // В случае истечения времени или ошибки, обработчик должен быть удалён
+            // setTimeout(() => {
+            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
+            //     this.removeListener("playerMoveFinished", moveFinishedHandler); // Убираем обработчик при истечении таймаута
+            // }, timer);
+
+            // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
+            // Убедитесь, что он удаляется в любом случае.
         });
     }
 
