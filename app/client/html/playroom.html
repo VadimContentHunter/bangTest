@@ -1,160 +1,164 @@
 <!DOCTYPE html>
 <html lang="ru">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{{pageTitle}}</title>
 
-        {{cssLinks}} {{scriptHeadLinks}}
-    </head>
-    <body>
-        <div id="card-moving-block" style="position: absolute; width: 100%"></div>
-        <div class="container-main">
-            <header>
-                <div class="container-inner">
-                    <h1>{{pageTitle}}</h1>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{pageTitle}}</title>
 
-                    <section class="menu-line-mini">
-                        <article class="notifications">
-                            <div class="base-icon-medium">
-                                <i class="icon-notification-fill"></i>
-                            </div>
-                            <ul></ul>
-                        </article>
-                    </section>
-                </div>
-            </header>
+    {{cssLinks}} {{scriptHeadLinks}}
+</head>
 
-            <main>
-                <section class="card-description">
-                    <img src="" />
+<body>
+    <div id="card-moving-block" style="position: absolute; width: 100%"></div>
+    <div class="container-main">
+        <header>
+            <div class="container-inner">
+                <h1>{{pageTitle}}</h1>
+
+                <section class="menu-line-mini">
+                    <article class="notifications">
+                        <div class="base-icon-medium">
+                            <i class="icon-notification-fill"></i>
+                        </div>
+                        <ul></ul>
+                    </article>
                 </section>
-                <section class="game-controls">
-                    <!-- Контролы игры здесь -->
-                    <div class="content">{{content}}</div>
-                    <div class="cards-selection">
-                        <div class="controls">
-                            <div class="icon-control icon-round-timer">
-                                <i class="icon-timer"></i>
-                                <div class="item-value">--</div>
-                            </div>
-                            <div class="icon-control icon-control-collapse">
-                                <i class="icon-collapse"></i>
-                            </div>
-                            <div class="icon-control icon-control-close">
-                                <i class="icon-close"></i>
-                            </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="card-description">
+                <img src="" />
+            </section>
+            <section class="game-controls">
+                <!-- Контролы игры здесь -->
+                <div class="content">{{content}}</div>
+                <div class="cards-selection">
+                    <div class="controls">
+                        <div class="icon-control icon-round-timer">
+                            <i class="icon-timer"></i>
+                            <div class="item-value">--</div>
                         </div>
-                        <div class="header">
-                            <h5></h5>
-                            <p>Выберите карту:</p>
+                        <div class="icon-control icon-control-collapse">
+                            <i class="icon-collapse"></i>
                         </div>
-                        <div class="cards-container">
-                            
+                        <div class="icon-control icon-control-close">
+                            <i class="icon-close"></i>
                         </div>
-                        <p></p>
                     </div>
-                </section>
+                    <div class="header">
+                        <h5></h5>
+                        <p>Выберите карту:</p>
+                    </div>
+                    <div class="cards-container">
 
-                <section class="players-field">
-                    <div class="grid-item battle-zone">
-                        <div class="controls">
-                            <div class="icon-control icon-deck-main">
-                                <p>Колода</p>
-                                <i class="icon-cards"></i>
-                                <div class="item-value">14</div>
-                            </div>
-                            <div class="icon-control icon-deck-discard">
-                                <p>Отбой</p>
-                                <i class="icon-cards"></i>
-                                <div class="item-value">14</div>
-                            </div>
-                            <div class="icon-control icon-round-timer">
-                                <i class="icon-timer"></i>
-                                <div class="item-value">14</div>
-                            </div>
+                    </div>
+                    <p></p>
+                </div>
+            </section>
+
+            <section class="players-field">
+                <div class="grid-item battle-zone">
+                    <div class="controls">
+                        <div class="icon-control icon-deck-main">
+                            <p>Колода</p>
+                            <i class="icon-cards"></i>
+                            <div class="item-value">14</div>
                         </div>
-                        <!-- <div class="cards-decks">
+                        <div class="icon-control icon-deck-discard">
+                            <p>Отбой</p>
+                            <i class="icon-cards"></i>
+                            <div class="item-value">14</div>
+                        </div>
+                        <div class="icon-control icon-round-timer">
+                            <i class="icon-timer"></i>
+                            <div class="item-value">14</div>
+                        </div>
+                        <button type="button" class="icon-control button-end-move">Завершить ход</button>
+                    </div>
+                    <!-- <div class="cards-decks">
                             <div class="deck-main">
                                 <img src="../resources/imgs/background/card_back.png" />
                             </div>
                         </div> -->
-                        <div class="cards-container">
+                    <div class="cards-container">
+                    </div>
+                </div>
+            </section>
+            <section class="player-hand">
+                <section class="front-panel">
+                    <!-- <div class="info"></div> -->
+                    <div class="player-name">-----</div>
+                    <div class="player-lives">
+                        <div class="icon-live-bullet">
+                            <i class="icon-bullet"></i>
+                        </div>
+                        <div class="icon-live-bullet">
+                            <i class="icon-bullet"></i>
+                        </div>
+                        <div class="icon-live-bullet-not">
+                            <i class="icon-bullet-full-fill"></i>
+                        </div>
+                        <div class="icon-live-bullet-not">
+                            <i class="icon-bullet-full-fill"></i>
+                        </div>
+                        <div class="icon-live-bullet-not">
+                            <i class="icon-bullet-full-fill"></i>
+                        </div>
+                    </div>
+                    <div class="player-controls">
+                        <div class="icon-control icon-all-cards">
+                            <i class="icon-cards"></i>
+                            <div class="item-value">-</div>
+                        </div>
+
+                        <div class="icon-control icon-range">
+                            <i class="icon-target"></i>
+                            <div class="item-value">-</div>
+                        </div>
+
+                        <div class="icon-control icon-control-fold">
+                            <i class="icon-fold"></i>
+                        </div>
+
+                        <div class="icon-control icon-control-collapse">
+                            <i class="icon-collapse"></i>
+                        </div>
+                        <div class="icon-control icon-control-fullscreen">
+                            <i class="icon-fullscreen"></i>
                         </div>
                     </div>
                 </section>
-                <section class="player-hand">
-                    <section class="front-panel">
-                        <!-- <div class="info"></div> -->
-                        <div class="player-name">-----</div>
-                        <div class="player-lives">
-                            <div class="icon-live-bullet">
-                                <i class="icon-bullet"></i>
-                            </div>
-                            <div class="icon-live-bullet">
-                                <i class="icon-bullet"></i>
-                            </div>
-                            <div class="icon-live-bullet-not">
-                                <i class="icon-bullet-full-fill"></i>
-                            </div>
-                            <div class="icon-live-bullet-not">
-                                <i class="icon-bullet-full-fill"></i>
-                            </div>
-                            <div class="icon-live-bullet-not">
-                                <i class="icon-bullet-full-fill"></i>
-                            </div>
-                        </div>
-                        <div class="player-controls">
-                            <div class="icon-control icon-all-cards">
-                                <i class="icon-cards"></i>
-                                <div class="item-value">-</div>
-                            </div>
-
-                            <div class="icon-control icon-range">
-                                <i class="icon-target"></i>
-                                <div class="item-value">-</div>
-                            </div>
-
-                            <div class="icon-control icon-control-fold">
-                                <i class="icon-fold"></i>
-                            </div>
-
-                            <div class="icon-control icon-control-collapse">
-                                <i class="icon-collapse"></i>
-                            </div>
-                            <div class="icon-control icon-control-fullscreen">
-                                <i class="icon-fullscreen"></i>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="main-panel">
-                        <div class="cards-container cards-info">
-                            <div class="role"></div>
-                            <div class="character"></div>
-                            <div class="weapon"></div>
-                        </div>
-                        <div class="cards-container cards-temp"></div>
-                        <div class="cards-container cards-hand">
-                            <!-- <div class="game-card">
+                <section class="main-panel">
+                    <div class="cards-container cards-info">
+                        <div class="role"></div>
+                        <div class="character"></div>
+                        <div class="weapon"></div>
+                    </div>
+                    <div class="cards-container cards-temp"></div>
+                    <div class="cards-container cards-hand">
+                        <!-- <div class="game-card">
                                 <img src="../resources/imgs/cards/cardBacks/girl.png" />
                             </div> -->
-                        </div>
-                    </section>
+                    </div>
                 </section>
-            </main>
+            </section>
+        </main>
 
-            <footer>
-                <section class="developer-info">
-                    <h2>Информация о разработчике</h2>
-                    <p><strong>Имя:</strong> Иван Иванов</p>
-                    <p><strong>Email:</strong> ivan.ivanov@example.com</p>
-                    <p>
-                        <strong>Описание:</strong> Разработчик веб-приложений с опытом работы более
-                        5 лет. Увлекается JavaScript и современными фреймворками.
-                    </p>
-                </section>
-            </footer>
-        </div>
-    </body>
-    {{scriptEndLinks}}
+        <footer>
+            <section class="developer-info">
+                <h2>Информация о разработчике</h2>
+                <p><strong>Имя:</strong> Иван Иванов</p>
+                <p><strong>Email:</strong> ivan.ivanov@example.com</p>
+                <p>
+                    <strong>Описание:</strong> Разработчик веб-приложений с опытом работы более
+                    5 лет. Увлекается JavaScript и современными фреймворками.
+                </p>
+            </section>
+        </footer>
+    </div>
+</body>
+{{scriptEndLinks}}
+
 </html>

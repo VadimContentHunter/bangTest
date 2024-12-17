@@ -16,6 +16,7 @@ class BattleZone {
         this.valueTimerElement = this.mainElement?.querySelector(
             ".controls .icon-round-timer .item-value"
         );
+        this.valueButtonEndMoveElement = this.mainElement?.querySelector(".controls button");
 
         this.checkElements();
     }
@@ -192,13 +193,37 @@ class BattleZone {
         if (!(this.valueTimerElement instanceof HTMLElement)) {
             throw new Error("BattleZone: Invalid value timer element selector");
         }
+        if (!(this.valueButtonEndMoveElement instanceof HTMLElement)) {
+            throw new Error("BattleZone: Invalid value button end move element selector");
+        }
     }
 
     init() {
         // this.setupDragCardListener();
     }
 
-    setupDragCardListener(playerHand) {
+    setupButtonEndMove(playerHand) {
+        this.valueButtonEndMoveElement.style.display = "none";
+        this.valueButtonEndMoveElement.addEventListener("click", () => {
+            document.dispatchEvent(
+                new CustomEvent("sendServer", {
+                    detail: {
+                        data: {},
+                        action: "TEST_TEST",
+                    },
+                })
+            );
+        });
+        if (playerHand instanceof PlayerHand) {
+            if (playerHand.isMyMove) {
+                this.valueButtonEndMoveElement.style.display = "block";
+            } else {
+                this.valueButtonEndMoveElement.style.display = "none";
+            }
+        }
+    }
+
+    setupDragCardListener(playerHand, notificationsHtml) {
         requestAnimationFrame(() => {
             if (playerHand instanceof PlayerHand) {
                 // Создаем переменную для хранения rect
@@ -220,6 +245,11 @@ class BattleZone {
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
 
+                    // Проверка на то Может ли игрок выполнить ход
+                    if (!playerHand.isMyMove) {
+                        return;
+                    }
+
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (
                         cardModel instanceof CardModel &&
@@ -240,6 +270,14 @@ class BattleZone {
                     const { cardModel, event } = e.detail;
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
+
+                    // Проверка на то Может ли игрок выполнить ход
+                    if (!playerHand.isMyMove) {
+                        notificationsHtml.addNotification(
+                            "Сейчас не ваш ход. Дождитесь своего хода!"
+                        );
+                        return;
+                    }
 
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (

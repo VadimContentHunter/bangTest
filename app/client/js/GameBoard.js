@@ -446,6 +446,10 @@ class GameBoard {
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
 
+                    if (!playerHand.isMyMove) {
+                        return;
+                    }
+
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (
                         cardModel instanceof CardModel &&
@@ -465,6 +469,14 @@ class GameBoard {
                     const { cardModel, event } = e.detail;
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
+
+                    // Проверка на то Может ли игрок выполнить ход
+                    if (!playerHand.isMyMove) {
+                        // notificationsHtml.addNotification(
+                        //     "Сейчас не ваш ход. Дождитесь своего хода!"
+                        // );
+                        return;
+                    }
 
                     // Проверяем, находится ли мышь внутри прямоугольника
                     if (

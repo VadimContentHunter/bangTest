@@ -433,7 +433,8 @@ function main() {
 
     const battleZone = new BattleZone("main .battle-zone");
     battleZone.init();
-    battleZone.setupDragCardListener(playerHand);
+    battleZone.setupDragCardListener(playerHand, notificationsHtml);
+    battleZone.setupButtonEndMove(playerHand);
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();

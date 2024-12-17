@@ -21,6 +21,14 @@ class RequestManager {
         this.requests.push(request);
         this.currentId++;
 
+        // Удалить запрос через 1 минуту (60000 мс)
+        setTimeout(() => {
+            this.removeRequestById(request.id);
+            console.log(
+                `RequestManager: Запрос с "id: ${request.id}; method: ${request.nameMethod}" удален, после истечении 1 минуты.`
+            );
+        }, 60000);
+
         return JsonRpcFormatter.serializeRequest(method, data, request.id);
     }
 

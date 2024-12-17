@@ -9,6 +9,7 @@ class PlayerHand {
     _handCards = [];
     _tempCards = [];
     _selectCard = null;
+    _isMyMove = true;
 
     constructor(selectorMainElement) {
         this.mainElement = document.querySelector(selectorMainElement);
@@ -201,6 +202,16 @@ class PlayerHand {
         this._selectCard = value;
     }
 
+    /**
+     * @param {boolean} value
+     */
+    set isMyMove(value) {
+        if (typeof value !== "boolean") {
+            throw new Error("PlayerHand.isMyMove(value): value must be a boolean.");
+        }
+        this._isMyMove = value;
+    }
+
     get name() {
         if (typeof this._name !== "string" || this._name.trim() === "") {
             throw new Error("PlayerHand.name(value): value must be a non-empty string.");
@@ -279,6 +290,16 @@ class PlayerHand {
 
     get selectCard() {
         return this._selectCard;
+    }
+
+    /**
+     * @return {boolean}
+     */
+    get isMyMove() {
+        if (typeof this._isMyMove !== "boolean") {
+            throw new Error("PlayerHand.isMyMove(): value must be a boolean.");
+        }
+        return this._isMyMove;
     }
 
     pullCard(value) {
