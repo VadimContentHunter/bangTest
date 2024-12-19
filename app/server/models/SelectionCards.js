@@ -19,6 +19,8 @@ class SelectionCards {
     /** @type {CardsCollection | null} */
     #collectionCards = null;
 
+    #selectionCount = 0;
+
     /**
      * Конструктор класса SelectionCardsHandler.
      */
@@ -27,11 +29,13 @@ class SelectionCards {
         description = "",
         textExtension = "",
         collectionCards = [],
+        selectionCount = 0,
         timer = null,
     }) {
         this.title = title;
         this.description = description;
         this.textExtension = textExtension;
+        this.selectionCount = selectionCount;
         this.timer = timer;
         this.collectionCards = new CardsCollection();
         this.collectionCards.setCards(collectionCards);
@@ -73,6 +77,20 @@ class SelectionCards {
             throw new SelectionCardsError("Текст расширения (textExtension) должен быть строкой.");
         }
         this.#textExtension = value;
+    }
+
+    /**
+     * Устанавливает количество выборов (selectionCount).
+     * @param {number} value - Целое число, представляющее количество выборов.
+     * @throws {SelectionCardsError} Если значение не является целым числом или меньше нуля.
+     */
+    set selectionCount(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new SelectionCardsError(
+                "Количество выборов (selectionCount) должно быть неотрицательным целым числом."
+            );
+        }
+        this.#selectionCount = value;
     }
 
     /**
@@ -128,6 +146,14 @@ class SelectionCards {
     }
 
     /**
+     * Возвращает количество выборов (selectionCount).
+     * @returns {number} Количество выборов.
+     */
+    get selectionCount() {
+        return this.#selectionCount;
+    }
+
+    /**
      * Возвращает значение таймера.
      * @returns {number | null} Таймер.
      */
@@ -143,45 +169,6 @@ class SelectionCards {
         return this.#collectionCards;
     }
 
-    // === Методы для управления выбором карт ===
-
-    /**
-     * Ожидает выбор карты игроком.
-     * @param {Object} player - Игрок, который выбирает карту.
-     * @returns {Promise<Object>} Возвращает выбранную карту.
-     */
-    async waitForPlayerCardSelection(player) {
-        return new Promise((resolve, reject) => {
-            // Генерируем событие, чтобы уведомить о старте выбора карты
-            // this.emit("cardSelectionStart", { player, cards: this.collectionCards.getAllCards() });
-
-            // Ожидаем событие, что карта была выбрана
-            this.once("playerSelectCard", (data) => {
-                const { selectedCard } = data;
-
-                if (!selectedCard) {
-                    reject(new SelectionCardsError("Карта не была выбрана."));
-                    return;
-                }
-
-                // Проверка на валидность выбранной карты
-                if (!this.collectionCards.hasCard(selectedCard)) {
-                    reject(new SelectionCardsError("Выбранная карта недоступна."));
-                    return;
-                }
-
-                resolve(selectedCard);
-            });
-
-            // Добавляем тайм-аут, если время истекает
-            if (this.timer) {
-                setTimeout(() => {
-                    reject(new SelectionCardsError("Время на выбор карты истекло."));
-                }, this.timer);
-            }
-        });
-    }
-
     // ======== Другие методы ========
 
     /**
@@ -193,6 +180,7 @@ class SelectionCards {
             title: this.#title,
             description: this.#description,
             textExtension: this.#textExtension,
+            selectionCount: this.#selectionCount,
             timer: this.#timer,
             collectionCards: this.#collectionCards?.getAllCards(),
         };

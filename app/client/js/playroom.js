@@ -159,11 +159,12 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.title = request?.params?.title;
                 cardSelection.description = request?.params?.description;
                 cardSelection.textExtension = request?.params?.textExtension;
+                cardSelection.selectionCount = request?.params?.selectionCount;
                 cardSelection.timer = request?.params?.timer;
                 cardSelection.setCardToContainer(request?.params?.collectionCards ?? []);
 
                 cardSelection.renderUpdatedData();
-                cardSelection.setupDragCardListener();
+                cardSelection.setupCardListener();
                 cardSelection.showMainController();
             } else {
                 console.error(

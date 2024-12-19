@@ -237,6 +237,45 @@ class CardModel {
         }
     }
 
+    isSelection() {
+        if (
+            this.isCreatedCardElement &&
+            this.cardElement.classList.contains("game-card-activate")
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    enablesSelection() {
+        if (
+            this.isCreatedCardElement &&
+            !this.cardElement.classList.contains("game-card-activate")
+        ) {
+            this.cardElement.classList.add("game-card-activate");
+        }
+    }
+
+    deactivateSelection() {
+        if (
+            this.isCreatedCardElement &&
+            this.cardElement.classList.contains("game-card-activate")
+        ) {
+            this.cardElement.classList.remove("game-card-activate");
+        }
+    }
+
+    toggleSelection() {
+        if (this.isCreatedCardElement) {
+            if (this.cardElement.classList.contains("game-card-activate")) {
+                this.deactivateSelection(); // Выключаем, если включено
+            } else {
+                this.enablesSelection(); // Включаем, если выключено
+            }
+        }
+    }
+
     createHtmlShell() {
         const cardElement = document.createElement("div");
         cardElement.classList.add("game-card");

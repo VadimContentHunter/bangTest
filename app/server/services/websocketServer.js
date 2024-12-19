@@ -140,6 +140,10 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         gameHandler.executeMovesRound();
     });
 
+    gameHandler.on("afterMovesRound", () => {
+        // gameHandler.executeMovesRound();
+    });
+
     // Событие при установлении нового соединения
     wss.on("connection", (ws, req) => {
         const queryParams = url.parse(req.url, true).query;

@@ -31,13 +31,15 @@ class CardSelection extends GameControls {
     _description = "";
     _textExtension = "";
     _timer = null;
+    _selectionCount = 0;
 
     constructor(selectorMainElement, selectorCardsSelection) {
         super(selectorMainElement);
 
         this.cardsSelection = this.mainElement?.querySelector(selectorCardsSelection);
+        this.buttonSelectCards = this.cardsSelection?.querySelector(".button-end-move");
         this.collapseElement = this.cardsSelection?.querySelector(".icon-control-collapse");
-        this.closeElement = this.cardsSelection?.querySelector(".icon-control-close");
+        // this.closeElement = this.cardsSelection?.querySelector(".icon-control-close");
         this.timerValueElement = this.cardsSelection?.querySelector(
             ".icon-round-timer .item-value"
         );
@@ -105,6 +107,16 @@ class CardSelection extends GameControls {
             .filter(Boolean); // Убираем null-значения из массива
     }
 
+    /**
+     * @param {number} value
+     */
+    set selectionCount(value) {
+        if (typeof value !== "number") {
+            return;
+        }
+        this._selectionCount = value;
+    }
+
     get title() {
         if (typeof this._title !== "string") {
             throw new Error("CardSelection.title(value): value must be string.");
@@ -143,6 +155,13 @@ class CardSelection extends GameControls {
         }
 
         return this._containerCards;
+    }
+
+    get selectionCount() {
+        if (typeof this._selectionCount !== "number") {
+            throw new Error("BattleZone.selectionCount must be a number");
+        }
+        return this._selectionCount;
     }
 
     addCardToContainer(value) {
@@ -218,12 +237,15 @@ class CardSelection extends GameControls {
         if (!(this.cardsSelection instanceof HTMLElement)) {
             throw new Error("Invalid cards selection selector");
         }
+        if (!(this.buttonSelectCards instanceof HTMLElement)) {
+            throw new Error("Invalid select cards card selection selector");
+        }
         if (!(this.collapseElement instanceof HTMLElement)) {
             throw new Error("Invalid collapse card selection selector");
         }
-        if (!(this.closeElement instanceof HTMLElement)) {
-            throw new Error("Invalid close card selection selector");
-        }
+        // if (!(this.closeElement instanceof HTMLElement)) {
+        //     throw new Error("Invalid close card selection selector");
+        // }
         if (!(this.containerElement instanceof HTMLElement)) {
             throw new Error("Invalid container card selection selector");
         }
@@ -246,6 +268,29 @@ class CardSelection extends GameControls {
 
     init() {
         this.setupCollapseListener();
+        this.setupButtonSelectCardListener();
+    }
+
+    setupButtonSelectCardListener() {
+        this.buttonSelectCards.addEventListener("click", () => {
+            console.log(this.selectionCount);
+            
+            if (this.selectionCount === 0) {
+                this.hideMainController();
+                document.dispatchEvent(
+                    new CustomEvent("sendServer", {
+                        detail: {
+                            data: this.containerCards.filter((card) => card.isSelection()),
+                            action: "playerCardSelected",
+                        },
+                    })
+                );
+            } else {
+                console.log(`Должны быть выбраны еще ${this.selectionCount} кард.`);
+                
+                // throw new Error(`Должны быть выбраны еще ${this.selectionCount} кард.`);
+            }
+        });
     }
 
     setupCollapseListener() {
@@ -288,19 +333,22 @@ class CardSelection extends GameControls {
         });
     }
 
-    setupDragCardListener() {
+    setupCardListener() {
         this.containerCards.forEach((card, index) => {
             if (card instanceof CardModel && card.isCreatedCardElement()) {
                 card.cardElement.addEventListener("click", (e) => {
-                    this.hideMainController();
-                    document.dispatchEvent(
-                        new CustomEvent("sendServer", {
-                            detail: {
-                                data: card,
-                                action: "playerCardSelected",
-                            },
-                        })
-                    );
+                    if (card.isSelection()) {
+                        // Если карта уже выбрана, снимаем выбор и увеличиваем доступное количество
+                        card.toggleSelection();
+                        this.selectionCount++;
+                    } else if (this.selectionCount > 0) {
+                        // Если карта не выбрана и доступно еще количество для выбора
+                        card.toggleSelection();
+                        this.selectionCount--;
+                    } else {
+                        // Если лимит выбора исчерпан, не даем выбрать карту
+                        // console.warn("Вы не можете выбрать больше карт.");
+                    }
                 });
             }
         });

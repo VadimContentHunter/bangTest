@@ -122,6 +122,19 @@ main {
     border-radius: inherit;
 }
 
+.game-card-activate::before {
+    content: "";
+    cursor: pointer;
+    position: absolute;
+    border: 2px solid #4baf3e;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4caf3e63;
+    border-radius: inherit;
+}
+
 .icon-control {
     padding: var(--player-hand-cards-padding);
     background-color: var(--colored-spacer-white);
