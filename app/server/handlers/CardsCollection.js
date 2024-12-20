@@ -8,14 +8,30 @@ class CardsCollection {
          * @private
          */
         this.cards = [];
+
+        /**
+         * @type {number}
+         * @private
+         */
+        this.nextId = 1; // Начальное значение для генерации ID.
+    }
+
+    /**
+     * Генерирует уникальный ID для карты.
+     * @private
+     * @returns {number} Новый уникальный ID.
+     */
+    generateId() {
+        return this.nextId++;
     }
 
     /**
      * Устанавливает массив карт в коллекцию.
      * @param {aCard[]} cards - Массив экземпляров aCard.
+     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карт на новые.
      * @throws {CardError} Если аргумент не массив, массив пуст, или элементы не являются экземплярами aCard.
      */
-    setCards(cards) {
+    setCards(cards, overwriteId = true) {
         if (!Array.isArray(cards)) {
             throw new CardError("Аргумент должен быть массивом.");
         }
@@ -26,21 +42,33 @@ class CardsCollection {
             return;
         }
 
-        if (!cards.every((card) => card instanceof aCard) && cards.length > 0) {
+        if (!cards.every((card) => card instanceof aCard)) {
             throw new CardError("Все элементы массива должны быть экземплярами aCard.");
         }
 
-        this.cards = [...cards];
+        this.cards = cards.map((card) => {
+            if (overwriteId || typeof card.id !== "number" || card.id <= 0) {
+                card.id = this.generateId();
+            }
+            return card;
+        });
     }
 
     /**
      * Добавляет одну карту в коллекцию.
      * @param {aCard} card - Карта для добавления.
+     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карты на новое.
      * @throws {CardError} Если карта не является экземпляром aCard.
      */
-    addCard(card) {
+    addCard(card, overwriteId = true) {
         if (!(card instanceof aCard)) {
             throw new CardError("Объект карты должен быть экземпляром aCard.");
+        }
+
+        if (overwriteId || typeof card.id !== "number" || card.id <= 0) {
+            card.id = this.generateId();
+        } else if (this.cards.some((existingCard) => existingCard.id === card.id)) {
+            throw new CardError(`Карта с ID ${card.id} уже существует.`);
         }
 
         this.cards.push(card);
