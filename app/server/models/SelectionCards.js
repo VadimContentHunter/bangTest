@@ -41,6 +41,7 @@ class SelectionCards {
         textExtension = "",
         collectionCards = [],
         selectionCount = 0,
+        selectedIndices = [],
         timer = null,
     }) {
         this.title = title;
@@ -50,6 +51,7 @@ class SelectionCards {
         this.timer = timer;
         this.collectionCards = new CardsCollection();
         this.collectionCards.setCards(collectionCards);
+        this.selectedIndices = selectedIndices;
     }
 
     // ======== SET методы ========

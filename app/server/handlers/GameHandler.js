@@ -137,7 +137,8 @@ class GameHandler extends EventEmitter {
                         new StubCard(CardType.WEAPON),
                         new StubCard(CardType.CHARACTER),
                     ],
-                    selectionCount: 2,
+                    selectionCount: 0,
+                    selectedIndices: [1, 3],
                 });
 
                 // Генерируем событие для сервера

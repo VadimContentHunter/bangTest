@@ -135,6 +135,19 @@ main {
     border-radius: inherit;
 }
 
+.game-card-activate-opponent::before {
+    content: "";
+    cursor: pointer;
+    position: absolute;
+    border: 2px solid #3e6baf;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #3e62af63;
+    border-radius: inherit;
+}
+
 .icon-control {
     padding: var(--player-hand-cards-padding);
     background-color: var(--colored-spacer-white);
@@ -159,9 +172,7 @@ main {
     background-color: #fff;
 }
 
-.button-end-move {
-    
-}
+.button-end-move {}
 
 /************************** players field **************************/
 .players-field {

@@ -237,6 +237,35 @@ class CardModel {
         }
     }
 
+    isSelectionByOpponent() {
+        if (
+            this.isCreatedCardElement &&
+            this.cardElement.classList.contains("game-card-activate-opponent")
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    enablesSelectionByOpponent() {
+        if (
+            this.isCreatedCardElement &&
+            !this.cardElement.classList.contains("game-card-activate-opponent")
+        ) {
+            this.cardElement.classList.add("game-card-activate-opponent");
+        }
+    }
+
+    deactivateSelectionByOpponent() {
+        if (
+            this.isCreatedCardElement &&
+            this.cardElement.classList.contains("game-card-activate-opponent")
+        ) {
+            this.cardElement.classList.remove("game-card-activate-opponent");
+        }
+    }
+
     isSelection() {
         if (
             this.isCreatedCardElement &&

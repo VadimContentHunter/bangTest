@@ -32,6 +32,7 @@ class CardSelection extends GameControls {
     _textExtension = "";
     _timer = null;
     _selectionCount = 0;
+    _selectedIndices = [];
 
     constructor(selectorMainElement, selectorCardsSelection) {
         super(selectorMainElement);
@@ -117,6 +118,44 @@ class CardSelection extends GameControls {
         this._selectionCount = value;
     }
 
+    /**
+     * Устанавливает массив выбранных ID.
+     * @param {number[] | aCard[]} indices - Массив ID или объектов aCard.
+     * @throws {Error} Если элементы массива не являются числами или экземплярами aCard.
+     */
+    set selectedIndices(indices) {
+        if (!Array.isArray(indices)) {
+            throw new Error("Аргумент должен быть массивом.");
+        }
+
+        if (!indices.every((item) => typeof item === "number" || item instanceof aCard)) {
+            throw new Error(
+                "Элементы массива должны быть числами или экземплярами aCard."
+            );
+        }
+
+        this._selectedIndices = indices.map((item) => (item instanceof CardModel ? item.id : item));
+    }
+
+    /**
+     * Добавляет ID или объект CardModelв выбранные элементы.
+     * @param {number | aCard} index - ID карты или объект aCard.
+     * @throws {Error} Если аргумент не число и не объект aCard.
+     */
+    addSelectedIndex(index) {
+        if (typeof index === "number") {
+            if (!this._selectedIndices.includes(index)) {
+                this._selectedIndices.push(index);
+            }
+        } else if (index instanceof aCard) {
+            if (!this._selectedIndices.includes(index.id)) {
+                this._selectedIndices.push(index.id);
+            }
+        } else {
+            throw new Error("Аргумент должен быть числом или экземпляром aCard.");
+        }
+    }
+
     get title() {
         if (typeof this._title !== "string") {
             throw new Error("CardSelection.title(value): value must be string.");
@@ -162,6 +201,14 @@ class CardSelection extends GameControls {
             throw new Error("BattleZone.selectionCount must be a number");
         }
         return this._selectionCount;
+    }
+
+    /**
+     * Возвращает массив выбранных ID.
+     * @returns {number[]} Массив ID выбранных карт.
+     */
+    get selectedIndices() {
+        return [...this._selectedIndices];
     }
 
     addCardToContainer(value) {
@@ -221,9 +268,12 @@ class CardSelection extends GameControls {
                 if (!card.isCreatedCardElement()) {
                     card.createHtmlShell();
                 }
-
                 card.deactivateDrag();
                 this.containerElement.append(card.cardElement);
+
+                if (this.selectedIndices.includes(card.cardId)) {
+                    card.enablesSelectionByOpponent();
+                }
             }
         });
 
@@ -274,7 +324,7 @@ class CardSelection extends GameControls {
     setupButtonSelectCardListener() {
         this.buttonSelectCards.addEventListener("click", () => {
             console.log(this.selectionCount);
-            
+
             if (this.selectionCount === 0) {
                 this.hideMainController();
                 document.dispatchEvent(
@@ -287,7 +337,7 @@ class CardSelection extends GameControls {
                 );
             } else {
                 console.log(`Должны быть выбраны еще ${this.selectionCount} кард.`);
-                
+
                 // throw new Error(`Должны быть выбраны еще ${this.selectionCount} кард.`);
             }
         });

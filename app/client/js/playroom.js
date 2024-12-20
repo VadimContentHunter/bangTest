@@ -160,6 +160,7 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.description = request?.params?.description;
                 cardSelection.textExtension = request?.params?.textExtension;
                 cardSelection.selectionCount = request?.params?.selectionCount;
+                cardSelection.selectedIndices = request?.params?.selectedIndices;
                 cardSelection.timer = request?.params?.timer;
                 cardSelection.setCardToContainer(request?.params?.collectionCards ?? []);
 
