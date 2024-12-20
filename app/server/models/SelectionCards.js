@@ -19,10 +19,21 @@ class SelectionCards {
     /** @type {CardsCollection | null} */
     #collectionCards = null;
 
+    /** @type {number} */
     #selectionCount = 0;
+
+    /** @type {number[]} */
+    #selectedIndices = [];
 
     /**
      * Конструктор класса SelectionCardsHandler.
+     * @param {Object} config - Конфигурация для инициализации.
+     * @param {string} [config.title=""] - Заголовок.
+     * @param {string} [config.description=""] - Описание.
+     * @param {string} [config.textExtension=""] - Текст расширения.
+     * @param {aCard[]} [config.collectionCards=[]] - Коллекция карт.
+     * @param {number} [config.selectionCount=0] - Количество выборов.
+     * @param {number | null} [config.timer=null] - Таймер.
      */
     constructor({
         title = "",
@@ -119,6 +130,44 @@ class SelectionCards {
         this.#collectionCards = value;
     }
 
+    /**
+     * Устанавливает массив выбранных ID.
+     * @param {number[] | aCard[]} indices - Массив ID или объектов aCard.
+     * @throws {SelectionCardsError} Если элементы массива не являются числами или экземплярами aCard.
+     */
+    set selectedIndices(indices) {
+        if (!Array.isArray(indices)) {
+            throw new SelectionCardsError("Аргумент должен быть массивом.");
+        }
+
+        if (!indices.every((item) => typeof item === "number" || item instanceof aCard)) {
+            throw new SelectionCardsError(
+                "Элементы массива должны быть числами или экземплярами aCard."
+            );
+        }
+
+        this.#selectedIndices = indices.map((item) => (item instanceof aCard ? item.id : item));
+    }
+
+    /**
+     * Добавляет ID или объект aCard в выбранные элементы.
+     * @param {number | aCard} index - ID карты или объект aCard.
+     * @throws {SelectionCardsError} Если аргумент не число и не объект aCard.
+     */
+    addSelectedIndex(index) {
+        if (typeof index === "number") {
+            if (!this.#selectedIndices.includes(index)) {
+                this.#selectedIndices.push(index);
+            }
+        } else if (index instanceof aCard) {
+            if (!this.#selectedIndices.includes(index.id)) {
+                this.#selectedIndices.push(index.id);
+            }
+        } else {
+            throw new SelectionCardsError("Аргумент должен быть числом или экземпляром aCard.");
+        }
+    }
+
     // ======== GET методы ========
 
     /**
@@ -169,8 +218,15 @@ class SelectionCards {
         return this.#collectionCards;
     }
 
-    // ======== Другие методы ========
+    /**
+     * Возвращает массив выбранных ID.
+     * @returns {number[]} Массив ID выбранных карт.
+     */
+    get selectedIndices() {
+        return [...this.#selectedIndices];
+    }
 
+    // ======== Другие методы ========
     /**
      * Преобразует объект в JSON.
      * @returns {Object} JSON-представление объекта.
@@ -183,6 +239,7 @@ class SelectionCards {
             selectionCount: this.#selectionCount,
             timer: this.#timer,
             collectionCards: this.#collectionCards?.getAllCards(),
+            selectedIndices: this.#selectedIndices,
         };
     }
 }
