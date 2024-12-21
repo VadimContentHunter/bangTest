@@ -122,8 +122,28 @@ class HistoryHandler {
         return this._moves;
     }
 
-    static initFromJSON(json) {
-        return new HistoryHandler();
+    static initFromJSON(inputData) {
+        const historyHandler = new HistoryHandler(); // Создаем новый экземпляр коллекции
+
+        try {
+            // Если входные данные - строка, парсим её
+            const historyDataArray =
+                typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+
+            // Проверяем, что данные являются массивом
+            if (!Array.isArray(playerDataArray)) {
+                throw new TypeError("Данные должны быть массивом объектов Истории ходов.");
+            }
+
+            // Обрабатываем каждый объект игрока
+            historyDataArray.forEach((moveData) => {
+                historyHandler.addMove(Move.initFromJSON(moveData));
+            });
+        } catch (error) {
+            console.error("Ошибка при инициализации Истории ходов из JSON или массива:", error);
+        }
+
+        return historyHandler;
     }
 }
 
