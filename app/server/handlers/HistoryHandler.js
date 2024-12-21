@@ -23,6 +23,7 @@ class HistoryHandler {
             );
         }
 
+        move.moveNumber = this._moves.length;
         this._moves.push(move);
     }
 
@@ -35,18 +36,8 @@ class HistoryHandler {
             throw new HistoryHandlerError("Moves должны быть массивом.");
         }
 
-        // Проверка на уникальность номеров ходов
-        const moveNumbers = new Set();
-        for (const move of moves) {
-            if (moveNumbers.has(move.moveNumber)) {
-                throw new HistoryHandlerError(
-                    `Номер хода ${move.moveNumber} должен быть уникальным.`
-                );
-            }
-            moveNumbers.add(move.moveNumber);
-        }
-
-        this._moves = moves;
+        this._moves = [];
+        moves.forEach((move) => this.addMove(move));
     }
 
     /**

@@ -119,14 +119,14 @@ class GameSessionHandler {
         }
     }
 
-    setData({playersDistances, players, history }) {
-        if(!this.head.statusGame) {
-            throw new ServerError("GameSessionHandler: Cannot add move data while game is not started.");
-        }
-        this.head.playersDistances = playersDistances;
-        this.players.setPlayers(players, true);
+    // setData({playersDistances, players, history }) {
+    //     if(!this.head.statusGame) {
+    //         throw new ServerError("GameSessionHandler: Cannot add move data while game is not started.");
+    //     }
+    //     this.head.playersDistances = playersDistances;
+    //     this.players.setPlayers(players, true);
 
-    }
+    // }
 }
 
 module.exports = GameSessionHandler;

@@ -21,6 +21,7 @@ const SelectionCardsError = require("../Errors/SelectionCardsError");
 const SelectionCards = require("../models/SelectionCards");
 const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
+const HookManager = require("../handlers/HookManager");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -92,15 +93,7 @@ class GameHandler extends EventEmitter {
         }
         this.playroomHandler = playroomHandler;
         this.gameSessionHandler = new GameSessionHandler();
-        this.gameTable = new GameTable();
-        this.mainDeck = new CardsCollection();
-        this.discardDeck = new CardsCollection();
-        this.distanceHandler = new DistanceHandler();
-        this.historyHandler = new HistoryHandler();
-    }
-
-    getDistanceHandler() {
-        return this.gameSessionHandler?.head?.playersDistances;
+        this.hookManager = new HookManager();
     }
 
     /**
@@ -111,9 +104,16 @@ class GameHandler extends EventEmitter {
     startGame() {
         this.emit("beforeGameStart");
 
+        this.gameSessionHandler.history.addMove(
+            new Move({
+                description: "Первый ход, инициализация первичных данных",
+                players: this.playroomHandler,
+                playersDistances: new DistanceHandler(
+                    this.playroomHandler.playerOnline.getPlayers()
+                ),
+            })
+        );
         this.gameSessionHandler.createGameSession();
-        this.distanceHandler.setDistancesForPlayers(this.playroomHandler.playerOnline.getPlayers());
-        this.saveForGameSession();
 
         this.emit("afterGameStart");
     }
@@ -265,16 +265,16 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    saveForGameSession() {
-        this.gameSessionHandler.loadData();
-        this.gameSessionHandler.setData({
-            playersDistances: this.distanceHandler,
-            players: [],
-            history: {},
-        });
+    // saveForGameSession() {
+    //     this.gameSessionHandler.loadData();
+    //     this.gameSessionHandler.setData({
+    //         playersDistances: this.distanceHandler,
+    //         players: [],
+    //         history: {},
+    //     });
 
-        this.gameSessionHandler.saveData();
-    }
+    //     this.gameSessionHandler.saveData();
+    // }
 }
 
 module.exports = GameHandler;

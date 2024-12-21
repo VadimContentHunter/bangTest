@@ -5,7 +5,11 @@ const DistanceError = require("../Errors/DistanceError");
 class DistanceHandler {
     #distances = [];
 
-    constructor() {}
+    constructor(players = []) {
+        if (players.length > 0) {
+            this.setDistancesForPlayers(players);
+        }
+    }
 
     /**
      * Установить дистанции для массива игроков по заданным правилам.

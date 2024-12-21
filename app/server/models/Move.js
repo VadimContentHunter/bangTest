@@ -25,7 +25,7 @@ class Move {
      * @param {DistanceHandler} [params.playersDistances=null] - Колода сброса.
      */
     constructor({
-        moveNumber,
+        moveNumber = null,
         description = "",
         players = null,
         dateTime = null,
