@@ -3,17 +3,27 @@ const { aCard, CardType } = require("../interfaces/aCard");
 
 const StubCard = require("../models/cards/StubCard");
 
+/**
+ * Класс для управления коллекцией карт.
+ */
 class CardsCollection {
+    /**
+     * Массив допустимых типов карт.
+     * @type {typeof aCard[]}
+     * @static
+     */
     static typesCards = [StubCard];
 
     constructor() {
         /**
+         * Массив карт в коллекции.
          * @type {aCard[]}
          * @private
          */
         this.cards = [];
 
         /**
+         * Следующий доступный ID для карты.
          * @type {number}
          * @private
          */
@@ -40,7 +50,6 @@ class CardsCollection {
             throw new CardError("Аргумент должен быть массивом.");
         }
 
-        // Если массив пустой, просто очищаем коллекцию.
         if (cards.length === 0) {
             this.cards = [];
             return;
@@ -78,6 +87,12 @@ class CardsCollection {
         this.cards.push(card);
     }
 
+    /**
+     * Создает карту из данных и добавляет её в коллекцию.
+     * @param {Object} cardData - Данные для создания карты.
+     * @param {typeof aCard} classCard - Класс карты для создания.
+     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карты на новое.
+     */
     addCardFromData(cardData, classCard, overwriteId = true) {
         this.addCard(aCard.initCard(cardData, [classCard]), overwriteId);
     }
@@ -170,6 +185,10 @@ class CardsCollection {
         return [...this.cards];
     }
 
+    /**
+     * Возвращает JSON-представление коллекции карт.
+     * @returns {Object} Объект с массивом карт и их количеством.
+     */
     toJSON() {
         return {
             cards: this.cards,
@@ -177,27 +196,30 @@ class CardsCollection {
         };
     }
 
+    /**
+     * Инициализирует коллекцию из JSON-данных.
+     * @param {string|Object[]} inputData - JSON-строка или массив объектов карт.
+     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карт на новые.
+     * @returns {CardsCollection} Новая коллекция карт.
+     */
     static initFromJSON(inputData, overwriteId = true) {
-        const cardCollection = new CardsCollection(); // Создаем новый экземпляр коллекции
+        const cardCollection = new CardsCollection();
 
         try {
-            // Если входные данные - строка, парсим её
             const cardDataArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
-            // Проверяем, что данные являются массивом
             if (!Array.isArray(cardDataArray)) {
-                throw new TypeError("Данные должны быть массивом объектов игроков.");
+                throw new TypeError("Данные должны быть массивом объектов карт.");
             }
 
-            // Обрабатываем каждый объект игрока
-            cardCollection.forEach((cardData) => {
+            cardDataArray.forEach((cardData) => {
                 cardCollection.addCardFromData(cardData, CardsCollection.typesCards, overwriteId);
             });
         } catch (error) {
-            console.error("Ошибка при инициализации игроков из JSON или массива:", error);
+            console.error("Ошибка при инициализации карт из JSON или массива:", error);
         }
 
-        return cardCollection; // Возвращаем заполненную коллекцию
+        return cardCollection;
     }
 }
 
