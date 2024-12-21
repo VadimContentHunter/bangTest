@@ -1,151 +1,159 @@
 const MoveError = require("../Errors/MoveError");
 const PlayerCollection = require("../handlers/PlayerCollection");
 const CardsCollection = require("../handlers/CardsCollection");
+const DistanceError = require("../Errors/DistanceError");
+const DistanceHandler = require("../handlers/DistanceHandler");
 
 class Move {
-    _moveNumber = null;
-    _playersBeforeMove = null;
-    _playersAfterMove = null;
-    _dateTime = null;
-    _description = null;
-    _mainDeck = null; // Главная колода
-    _discardDeck = null; // Колода сброса
+    #moveNumber = null;
+    #playersAfterMove = null;
+    #dateTime = null;
+    #description = null;
+    #mainDeck = null; // Главная колода
+    #discardDeck = null; // Колода сброса
+    #playersDistances = null;
 
     /**
      * Конструктор для модели "Ход".
-     * @param {number} moveNumber - Номер хода.
-     * @param {PlayerCollection} playersBeforeMove - Коллекция игроков до хода.
-     * @param {PlayerCollection} playersAfterMove - Коллекция игроков после хода.
-     * @param {Date} dateTime - Дата и время хода.
-     * @param {string} description - Описание хода.
-     * @param {CardsCollection} mainDeck - Главная колода.
-     * @param {CardsCollection} discardDeck - Колода сброса.
+     * @param {Object} params - Параметры хода.
+     * @param {number} params.moveNumber - Номер хода.
+     * @param {string} [params.description=""] - Описание хода.
+     * @param {PlayerCollection} [params.playersAfterMove=null] - Коллекция игроков после хода.
+     * @param {Date} [params.dateTime=null] - Дата и время хода.
+     * @param {CardsCollection} [params.mainDeck=null] - Главная колода.
+     * @param {CardsCollection} [params.discardDeck=null] - Колода сброса.
+     * @param {DistanceHandler} [params.playersDistances=null] - Колода сброса.
      */
-    constructor(
+    constructor({
         moveNumber,
         description = "",
-        playersBeforeMove = null,
         playersAfterMove = null,
         dateTime = null,
         mainDeck = null,
-        discardDeck = null
-    ) {
+        discardDeck = null,
+        playersDistances = null,
+    }) {
         this.moveNumber = moveNumber;
-        this.playersBeforeMove = playersBeforeMove ?? new PlayerCollection();
         this.playersAfterMove = playersAfterMove ?? new PlayerCollection();
         this.dateTime = dateTime ?? new Date();
         this.description = description;
         this.mainDeck = mainDeck ?? new CardsCollection();
         this.discardDeck = discardDeck ?? new CardsCollection();
+        this.playersDistances = playersDistances ?? new DistanceHandler();
+    }
+
+    /**
+     * Получить текущий экземпляр DistanceHandler.
+     * @returns {DistanceHandler|null} Текущий DistanceHandler или null, если не установлен.
+     */
+    get playersDistances() {
+        return this.#playersDistances;
+    }
+
+    /**
+     * Установить экземпляр DistanceHandler.
+     * @param {DistanceHandler} distanceHandler - Новый экземпляр DistanceHandler.
+     * @throws {TypeError} Если переданный объект не является экземпляром DistanceHandler.
+     */
+    set playersDistances(distanceHandler) {
+        if (!(distanceHandler instanceof DistanceHandler)) {
+            throw new TypeError("playersDistances должен быть экземпляром DistanceHandler.");
+        }
+        this.#playersDistances = distanceHandler;
     }
 
     // Геттер и сеттер для номера хода
     get moveNumber() {
-        if (typeof this._moveNumber !== "number" || this._moveNumber <= 0) {
+        if (typeof this.#moveNumber !== "number" || this.#moveNumber <= 0) {
             throw new MoveError("Номер хода должен быть положительным числом.");
         }
-        return this._moveNumber;
+        return this.#moveNumber;
     }
 
     set moveNumber(value) {
         if (typeof value !== "number" || value <= 0) {
             throw new MoveError("Номер хода должен быть положительным числом.");
         }
-        this._moveNumber = value;
-    }
-
-    // Геттер и сеттер для игроков до хода
-    get playersBeforeMove() {
-        if (!(this._playersBeforeMove instanceof PlayerCollection)) {
-            throw new MoveError("playersBeforeMove должен быть экземпляром PlayerCollection.");
-        }
-        return this._playersBeforeMove;
-    }
-
-    set playersBeforeMove(value) {
-        if (!(value instanceof PlayerCollection)) {
-            throw new MoveError("playersBeforeMove должен быть экземпляром PlayerCollection.");
-        }
-        this._playersBeforeMove = value;
+        this.#moveNumber = value;
     }
 
     // Геттер и сеттер для игроков после хода
     get playersAfterMove() {
-        if (!(this._playersAfterMove instanceof PlayerCollection)) {
+        if (!(this.#playersAfterMove instanceof PlayerCollection)) {
             throw new MoveError("playersAfterMove должен быть экземпляром PlayerCollection.");
         }
-        return this._playersAfterMove;
+        return this.#playersAfterMove;
     }
 
     set playersAfterMove(value) {
         if (!(value instanceof PlayerCollection)) {
             throw new MoveError("playersAfterMove должен быть экземпляром PlayerCollection.");
         }
-        this._playersAfterMove = value;
+        this.#playersAfterMove = value;
     }
 
     // Геттер и сеттер для даты и времени
     get dateTime() {
-        if (!(this._dateTime instanceof Date)) {
+        if (!(this.#dateTime instanceof Date)) {
             throw new MoveError("dateTime должен быть экземпляром Date.");
         }
-        return this._dateTime;
+        return this.#dateTime;
     }
 
     set dateTime(value) {
         if (!(value instanceof Date)) {
             throw new MoveError("dateTime должен быть экземпляром Date.");
         }
-        this._dateTime = value;
+        this.#dateTime = value;
     }
 
     // Геттер и сеттер для описания хода
     get description() {
-        if (typeof this._description !== "string") {
+        if (typeof this.#description !== "string") {
             throw new MoveError("description должно быть строкой.");
         }
-        return this._description;
+        return this.#description;
     }
 
     set description(value) {
         if (typeof value !== "string") {
             throw new MoveError("description должно быть строкой.");
         }
-        this._description = value;
+        this.#description = value;
     }
 
     // Геттер и сеттер для главной колоды
     get mainDeck() {
-        if (!(this._mainDeck instanceof CardsCollection)) {
+        if (!(this.#mainDeck instanceof CardsCollection)) {
             throw new MoveError("mainDeck должен быть экземпляром CardsCollection.");
         }
-        return this._mainDeck;
+        return this.#mainDeck;
     }
 
     set mainDeck(value) {
         if (!(value instanceof CardsCollection)) {
             throw new MoveError("mainDeck должен быть экземпляром CardsCollection.");
         }
-        this._mainDeck = value;
+        this.#mainDeck = value;
     }
 
     // Геттер и сеттер для колоды сброса
     get discardDeck() {
-        if (!(this._discardDeck instanceof CardsCollection)) {
+        if (!(this.#discardDeck instanceof CardsCollection)) {
             throw new MoveError("discardDeck должен быть экземпляром CardsCollection.");
         }
-        return this._discardDeck;
+        return this.#discardDeck;
     }
 
     set discardDeck(value) {
         if (!(value instanceof CardsCollection)) {
             throw new MoveError("discardDeck должен быть экземпляром CardsCollection.");
         }
-        this._discardDeck = value;
+        this.#discardDeck = value;
     }
 
     getFormattedDateTime() {
-        const date = this._dateTime;
+        const date = this.#dateTime;
         const day = String(date.getDate()).padStart(2, "0");
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const year = date.getFullYear();
@@ -165,10 +173,10 @@ class Move {
             description: this.description,
             dateTime: this.dateTime.toISOString(),
             formattedDateTime: this.getFormattedDateTime(),
-            playersBeforeMove: this.playersBeforeMove,
             playersAfterMove: this.playersAfterMove,
             mainDeck: this.mainDeck,
             discardDeck: this.discardDeck,
+            playersDistances: this.playersDistances,
         };
     }
 
@@ -185,30 +193,26 @@ class Move {
             // Проверяем, что в JSON есть все необходимые поля
             if (
                 typeof data.moveNumber !== "number" ||
-                !(data.playersBeforeMove instanceof Array) ||
-                !(data.playersAfterMove instanceof Array) ||
-                !(data.dateTime instanceof String) ||
+                // !Array,isArray(data.playersAfterMove) ||
+                typeof data.dateTime !== "string" ||
                 typeof data.description !== "string"
+                // !Array,isArray(data.mainDeck) ||
+                // !Array,isArray(data.discardDeck) ||
+                // !Array,isArray(data.playersDistances) ||
             ) {
                 throw new Error("Некорректный формат данных в JSON.");
             }
 
-            // Создаем объект PlayerCollection для игроков до и после хода
-            const playersBeforeMove = new PlayerCollection(data.playersBeforeMove);
-            const playersAfterMove = new PlayerCollection(data.playersAfterMove);
-            const mainDeck = new CardsCollection(data.mainDeck);
-            const discardDeck = new CardsCollection(data.discardDeck);
-
             // Создаем объект Move и инициализируем его данными из JSON
-            const move = new Move(
-                data.moveNumber,
-                data.description,
-                playersBeforeMove,
-                playersAfterMove,
-                new Date(data.dateTime),
-                mainDeck,
-                discardDeck
-            );
+            const move = new Move({
+                moveNumber: data.moveNumber,
+                description: data.description,
+                playersAfterMove: PlayerCollection.initFromJSON(data.playersAfterMove),
+                dateTime: new Date(data.dateTime),
+                mainDeck: CardsCollection.initFromJSON(data.mainDeck, false),
+                discardDeck: CardsCollection.initFromJSON(data.discardDeck, false),
+                // playersDistances: data.playersDistances,
+            });
 
             return move;
         } catch (error) {
