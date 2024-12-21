@@ -139,6 +139,7 @@ class GameHandler extends EventEmitter {
                     ],
                     selectionCount: 0,
                     selectedIndices: [1, 3],
+                    isWaitingForResponse: false,
                 });
 
                 // Генерируем событие для сервера

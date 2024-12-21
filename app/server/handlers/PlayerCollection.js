@@ -91,7 +91,7 @@ class PlayerCollection {
         }
 
         if (!player.id) {
-            player.id = this.generateId(); // Генерация нового ID для игрока
+            player.id = this.generateId(); // Генерация нового ID для игрока если его нет
         }
 
         // Проверяем, что игрок с таким ID ещё не существует в коллекции
@@ -481,7 +481,7 @@ class PlayerCollection {
             const playersData = JSON.parse(jsonString); // Парсим строку JSON
             playersData.forEach((playerData) => {
                 collection.addPlayerFromInstance(
-                    Player.initFromJSON(playerData, generateId),
+                    Player.initFromJSON(playerData),
                     generateId
                 );
             });
