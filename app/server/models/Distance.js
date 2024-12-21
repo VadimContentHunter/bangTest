@@ -1,5 +1,6 @@
 const Player = require("./Player"); // Подключение модели Player
 const DistanceError = require("../Errors/DistanceError"); // Подключение ошибки для дистанции
+const PlayerCollection = require("../handlers/PlayerCollection");
 
 class Distance {
     #player1 = null;
@@ -80,6 +81,30 @@ class Distance {
             player2: this.#player2.name,
             distance: this.#distance,
         };
+    }
+
+    static initFromJSON(inputData, playerCollection) {
+
+        try {
+            const distanceDataArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+
+            if (!Array.isArray(distanceDataArray)) {
+                throw new TypeError("Данные должны быть массивом Distance.");
+            }
+
+            if (!(playerCollection instanceof PlayerCollection)) {
+                throw new TypeError("playerCollection must be a PlayerCollection.");
+            }
+
+            return new Distance(
+                playerCollection.getPlayerByName(distanceDataArray.player1),
+                playerCollection.getPlayerByName(distanceDataArray.player2),
+                distanceDataArray.distance
+            );
+            
+        } catch (error) {
+            throw error;
+        }
     }
 }
 
