@@ -56,6 +56,16 @@ class DistanceHandler {
         this.#distances.push(newDistance);
     }
 
+    addInitDistance(distance) {
+        if (!(distance instanceof Distance)) {
+            throw new DistanceError("distance должны быть экземплярами Distance.");
+        }
+        if (this.findDistance(distance.player1, distance.player2)) {
+            throw new DistanceError("Дистанция между этими игроками уже существует.");
+        }
+        this.#distances.push(distance);
+    }
+
     /**
      * Найти дистанцию между двумя игроками.
      * @param {Player} player1 - Первый игрок.
@@ -194,10 +204,30 @@ class DistanceHandler {
         return this.#distances;
     }
 
-    static initFromJSON(json) {
-        const distances = new DistanceHandler();
-        console.log(json);
-        return distances;
+    static initFromJSON(inputData, playerCollection) {
+        const distanceHandler = new DistanceHandler(); // Создаем новый экземпляр коллекции
+
+        try {
+            // Если входные данные - строка, парсим её
+            const distanceDataArray =
+                typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+
+            // Проверяем, что данные являются массивом
+            if (!Array.isArray(distanceDataArray)) {
+                throw new TypeError("Данные должны быть массивом объектов.");
+            }
+
+            // Обрабатываем каждый объект игрока
+            distanceDataArray.forEach((distanceData) => {
+                distanceHandler.addInitDistance(
+                    Distance.initFromJSON(distanceData, playerCollection)
+                );
+            });
+        } catch (error) {
+            console.error("Ошибка при инициализации Дистанции из JSON или массива:", error);
+        }
+
+        return distanceHandler;
     }
 }
 
