@@ -287,7 +287,10 @@ class PlayerCollection {
         const playersWithoutCharacter = this.getPlayersWithoutCharacter(cardsClass);
 
         // Используем getPlayerWithMinId для поиска игрока с минимальным id среди отфильтрованных игроков
-        return PlayerCollection.findPlayerWithMinIdExcludingIgnored(ignoredIds, playersWithoutCharacter);
+        return PlayerCollection.findPlayerWithMinIdExcludingIgnored(
+            ignoredIds,
+            playersWithoutCharacter
+        );
     }
 
     /**
@@ -469,27 +472,36 @@ class PlayerCollection {
     }
 
     /**
-     * Статический метод для инициализации коллекции игроков из JSON.
-     * @param {string} jsonString - Строка JSON, содержащая массив данных игроков.
-     * @param {boolean} generateId - Флаг для генерации ID для игроков.
+     * Статический метод для инициализации коллекции игроков из JSON или массива объектов.
+     * @param {string | Object[]} inputData - Строка JSON или массив данных игроков.
+     * @param {boolean} generateNewId — Флаг, указывающий, нужно ли генерировать новый ID для игрока.
      * @returns {PlayerCollection} - Экземпляр коллекции игроков.
      */
-    static initFromJSON(jsonString, generateId = false) {
-        const collection = new PlayerCollection(); // Создаем новый экземпляр коллекции
+    static initFromJSON(inputData, generateNewId = false) {
+        const playerCollection = new PlayerCollection(); // Создаем новый экземпляр коллекции
 
         try {
-            const playersData = JSON.parse(jsonString); // Парсим строку JSON
-            playersData.forEach((playerData) => {
-                collection.addPlayerFromInstance(
+            // Если входные данные - строка, парсим её
+            const playerDataArray =
+                typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+
+            // Проверяем, что данные являются массивом
+            if (!Array.isArray(playerDataArray)) {
+                throw new TypeError("Данные должны быть массивом объектов игроков.");
+            }
+
+            // Обрабатываем каждый объект игрока
+            playerDataArray.forEach((playerData) => {
+                playerCollection.addPlayerFromInstance(
                     Player.initFromJSON(playerData),
-                    generateId
+                    generateNewId
                 );
             });
         } catch (error) {
-            console.error("Ошибка при инициализации игроков из JSON:", error);
+            console.error("Ошибка при инициализации игроков из JSON или массива:", error);
         }
 
-        return collection; // Возвращаем заполненную коллекцию
+        return playerCollection; // Возвращаем заполненную коллекцию
     }
 
     /**

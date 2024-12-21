@@ -237,8 +237,20 @@ class Player {
         //     player.role = Lives.initFromJSON(data?.lives);
         // }
 
-        // if (data?.lives !== null) {
-        //     player.lives = Lives.initFromJSON(data?.lives);
+        // if (data?.character !== null) {
+        //     player.character = Lives.initFromJSON(data?.lives);
+        // }
+
+        // if (data?.weapon !== null) {
+        //     player.weapon = Lives.initFromJSON(data?.lives);
+        // }
+
+        // if (data?.temporaryCards !== null) {
+        //     player.temporaryCards = Lives.initFromJSON(data?.lives);
+        // }
+
+        // if (data?.hand !== null) {
+        //     player.hand = Lives.initFromJSON(data?.lives);
         // }
 
         // Создаем и возвращаем новый экземпляр Player

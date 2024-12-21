@@ -1,7 +1,11 @@
 const CardError = require("../Errors/CardError");
 const { aCard, CardType } = require("../interfaces/aCard");
 
+const StubCard = require("../models/cards/StubCard");
+
 class CardsCollection {
+    static typesCards = [StubCard];
+
     constructor() {
         /**
          * @type {aCard[]}
@@ -72,6 +76,10 @@ class CardsCollection {
         }
 
         this.cards.push(card);
+    }
+
+    addCardFromData(cardData, classCard, overwriteId = true) {
+        this.addCard(aCard.initCard(cardData, [classCard]), overwriteId);
     }
 
     /**
@@ -167,6 +175,29 @@ class CardsCollection {
             cards: this.cards,
             countCards: this.countCards(),
         };
+    }
+
+    static initFromJSON(inputData, overwriteId = true) {
+        const cardCollection = new CardsCollection(); // Создаем новый экземпляр коллекции
+
+        try {
+            // Если входные данные - строка, парсим её
+            const cardDataArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+
+            // Проверяем, что данные являются массивом
+            if (!Array.isArray(cardDataArray)) {
+                throw new TypeError("Данные должны быть массивом объектов игроков.");
+            }
+
+            // Обрабатываем каждый объект игрока
+            cardCollection.forEach((cardData) => {
+                cardCollection.addCardFromData(cardData, CardsCollection.typesCards, overwriteId);
+            });
+        } catch (error) {
+            console.error("Ошибка при инициализации игроков из JSON или массива:", error);
+        }
+
+        return cardCollection; // Возвращаем заполненную коллекцию
     }
 }
 

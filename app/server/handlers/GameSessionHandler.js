@@ -13,7 +13,7 @@ class GameSessionHandler {
     constructor() {
         this.filePath = null;
         this.head = new GameSessionHead();
-        this.players = new PlayerCollection(); // Заменяем массив на коллекцию PlayerCollection
+        // this.players = new PlayerCollection(); // Заменяем массив на коллекцию PlayerCollection
         this.history = new HistoryHandler();
     }
 
@@ -46,9 +46,9 @@ class GameSessionHandler {
         if (!this._validateHead()) {
             throw new ServerError("Invalid head data");
         }
-        if (!this._validatePlayers()) {
-            throw new ServerError("Invalid players data");
-        }
+        // if (!this._validatePlayers()) {
+        //     throw new ServerError("Invalid players data");
+        // }
         if (!this._validateHistory()) {
             throw new ServerError("Invalid history data");
         }
@@ -86,7 +86,7 @@ class GameSessionHandler {
             JSON.stringify(
                 {
                     head: this.head,
-                    players: this.players.getPlayers(), // Получаем массив игроков из коллекции
+                    // players: this.players.getPlayers(), // Получаем массив игроков из коллекции
                     history: this.history,
                 },
                 null,
@@ -104,10 +104,10 @@ class GameSessionHandler {
 
             if (head && players && history) {
                 this.head = GameSessionHead.initFromJSON(head);
-                this.players.removeAllPlayers();
-                players.forEach((player) => {
-                    this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
-                });
+                // this.players.removeAllPlayers();
+                // players.forEach((player) => {
+                //     this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
+                // });
                 // console.log(`loadData ${this.players}`);
                 this.history = HistoryHandler.initFromJSON(history);
                 console.log("GameSessionHandler: Data loaded successfully.");
