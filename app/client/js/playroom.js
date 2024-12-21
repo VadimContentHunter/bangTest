@@ -161,6 +161,7 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.textExtension = request?.params?.textExtension;
                 cardSelection.selectionCount = request?.params?.selectionCount;
                 cardSelection.selectedIndices = request?.params?.selectedIndices;
+                cardSelection.isWaitingForResponse = request?.params?.isWaitingForResponse;
                 cardSelection.timer = request?.params?.timer;
                 cardSelection.setCardToContainer(request?.params?.collectionCards ?? []);
 
@@ -169,7 +170,27 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.showMainController();
             } else {
                 console.error(
-                    "requestServer ('battleZoneUpdate'): data.battleZone must be BattleZone"
+                    "requestServer ('selectionCardsMenu'): data.cardSelection must be CardSelection"
+                );
+            }
+            break;
+        case "closeSelectionCardsMenu":
+            if (data.cardSelection instanceof CardSelection) {
+                const cardSelection = data.cardSelection;
+                cardSelection.title = "";
+                cardSelection.description = "";
+                cardSelection.textExtension = "";
+                cardSelection.selectionCount = 0;
+                cardSelection.selectedIndices = [];
+                cardSelection.isWaitingForResponse = true;
+                // cardSelection.timer = request?.params?.timer;
+                cardSelection.setCardToContainer([]);
+
+                cardSelection.renderUpdatedData();
+                cardSelection.hideMainController();
+            } else {
+                console.error(
+                    "requestServer ('closeSelectionCardsMenu'): data.cardSelection must be CardSelection"
                 );
             }
             break;
