@@ -33,6 +33,7 @@ class CardSelection extends GameControls {
     _timer = null;
     _selectionCount = 0;
     _selectedIndices = [];
+    _isWaitingForResponse = true;
 
     constructor(selectorMainElement, selectorCardsSelection) {
         super(selectorMainElement);
@@ -129,12 +130,22 @@ class CardSelection extends GameControls {
         }
 
         if (!indices.every((item) => typeof item === "number" || item instanceof aCard)) {
-            throw new Error(
-                "Элементы массива должны быть числами или экземплярами aCard."
-            );
+            throw new Error("Элементы массива должны быть числами или экземплярами aCard.");
         }
 
         this._selectedIndices = indices.map((item) => (item instanceof CardModel ? item.id : item));
+    }
+
+    /**
+     * Устанавливает состояние ожидания ответа.
+     * @param {boolean} value - True, если сервер ожидает ответа.
+     * @throws {SelectionCardsError} Если значение не булевое.
+     */
+    set isWaitingForResponse(value) {
+        if (typeof value !== "boolean") {
+            throw new SelectionCardsError("Состояние ожидания должно быть булевым значением.");
+        }
+        this._isWaitingForResponse = value;
     }
 
     /**
@@ -211,6 +222,14 @@ class CardSelection extends GameControls {
         return [...this._selectedIndices];
     }
 
+    /**
+     * Возвращает состояние ожидания ответа.
+     * @returns {boolean} True, если сервер ожидает ответа.
+     */
+    get isWaitingForResponse() {
+        return this._isWaitingForResponse;
+    }
+
     addCardToContainer(value) {
         if (!(value instanceof CardModel)) {
             try {
@@ -255,6 +274,10 @@ class CardSelection extends GameControls {
         this.headerDescriptionElement.innerHTML = this.description;
         this.textElement.innerHTML = this.textExtension;
         this.timerValueElement.innerHTML = this.timer ?? "--";
+
+        if (!this.isWaitingForResponse) {
+            this.buttonSelectCards.style.display = "none";
+        }
 
         this.renderContainerCards();
     }

@@ -25,8 +25,11 @@ class SelectionCards {
     /** @type {number[]} */
     #selectedIndices = [];
 
+    /** @type {boolean} */
+    #isWaitingForResponse = false;
+
     /**
-     * Конструктор класса SelectionCardsHandler.
+     * Конструктор класса SelectionCards.
      * @param {Object} config - Конфигурация для инициализации.
      * @param {string} [config.title=""] - Заголовок.
      * @param {string} [config.description=""] - Описание.
@@ -34,6 +37,7 @@ class SelectionCards {
      * @param {aCard[]} [config.collectionCards=[]] - Коллекция карт.
      * @param {number} [config.selectionCount=0] - Количество выборов.
      * @param {number | null} [config.timer=null] - Таймер.
+     * @param {boolean} [config.isWaitingForResponse=true] - Состояние ожидания ответа.
      */
     constructor({
         title = "",
@@ -43,6 +47,7 @@ class SelectionCards {
         selectionCount = 0,
         selectedIndices = [],
         timer = null,
+        isWaitingForResponse = true,
     }) {
         this.title = title;
         this.description = description;
@@ -52,6 +57,7 @@ class SelectionCards {
         this.collectionCards = new CardsCollection();
         this.collectionCards.setCards(collectionCards);
         this.selectedIndices = selectedIndices;
+        this.isWaitingForResponse = isWaitingForResponse;
     }
 
     // ======== SET методы ========
@@ -152,6 +158,18 @@ class SelectionCards {
     }
 
     /**
+     * Устанавливает состояние ожидания ответа.
+     * @param {boolean} value - True, если сервер ожидает ответа.
+     * @throws {SelectionCardsError} Если значение не булевое.
+     */
+    set isWaitingForResponse(value) {
+        if (typeof value !== "boolean") {
+            throw new SelectionCardsError("Состояние ожидания должно быть булевым значением.");
+        }
+        this.#isWaitingForResponse = value;
+    }
+
+    /**
      * Добавляет ID или объект aCard в выбранные элементы.
      * @param {number | aCard} index - ID карты или объект aCard.
      * @throws {SelectionCardsError} Если аргумент не число и не объект aCard.
@@ -228,6 +246,14 @@ class SelectionCards {
         return [...this.#selectedIndices];
     }
 
+    /**
+     * Возвращает состояние ожидания ответа.
+     * @returns {boolean} True, если сервер ожидает ответа.
+     */
+    get isWaitingForResponse() {
+        return this.#isWaitingForResponse;
+    }
+
     // ======== Другие методы ========
     /**
      * Преобразует объект в JSON.
@@ -242,6 +268,7 @@ class SelectionCards {
             timer: this.#timer,
             collectionCards: this.#collectionCards?.getAllCards(),
             selectedIndices: this.#selectedIndices,
+            isWaitingForResponse: this.#isWaitingForResponse,
         };
     }
 }

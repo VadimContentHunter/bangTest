@@ -47,7 +47,7 @@ class PlayroomHandler {
     connect(sessionId) {
         let player = this.playerOnline.getPlayerBySessionId(sessionId);
         if (player instanceof Player) {
-            console.log(`PlayroomHandler: Игрок подключился:`, player);
+            console.log(`PlayroomHandler: Игрок подключился: ${player.name}`);
             return player;
         }
 
@@ -61,7 +61,7 @@ class PlayroomHandler {
                 this.addPlayerOnline(playerFromSession.lastName, sessionId);
                 player = this.playerOnline.getPlayerBySessionId(sessionId);
                 if (player instanceof Player) {
-                    console.log(`PlayroomHandler: Игрок подключился:`, player);
+                    console.log(`PlayroomHandler: Игрок подключился: ${player.name}, из сохраненной сессии.`);
                     return player;
                 }
             }
