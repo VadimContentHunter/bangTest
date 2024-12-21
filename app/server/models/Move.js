@@ -6,7 +6,7 @@ const DistanceHandler = require("../handlers/DistanceHandler");
 
 class Move {
     #moveNumber = null;
-    #playersAfterMove = null;
+    #players = null;
     #dateTime = null;
     #description = null;
     #mainDeck = null; // Главная колода
@@ -18,7 +18,7 @@ class Move {
      * @param {Object} params - Параметры хода.
      * @param {number} params.moveNumber - Номер хода.
      * @param {string} [params.description=""] - Описание хода.
-     * @param {PlayerCollection} [params.playersAfterMove=null] - Коллекция игроков после хода.
+     * @param {PlayerCollection} [params.players=null] - Коллекция игроков после хода.
      * @param {Date} [params.dateTime=null] - Дата и время хода.
      * @param {CardsCollection} [params.mainDeck=null] - Главная колода.
      * @param {CardsCollection} [params.discardDeck=null] - Колода сброса.
@@ -27,14 +27,14 @@ class Move {
     constructor({
         moveNumber,
         description = "",
-        playersAfterMove = null,
+        players = null,
         dateTime = null,
         mainDeck = null,
         discardDeck = null,
         playersDistances = null,
     }) {
         this.moveNumber = moveNumber;
-        this.playersAfterMove = playersAfterMove ?? new PlayerCollection();
+        this.players = players ?? new PlayerCollection();
         this.dateTime = dateTime ?? new Date();
         this.description = description;
         this.mainDeck = mainDeck ?? new CardsCollection();
@@ -78,18 +78,18 @@ class Move {
     }
 
     // Геттер и сеттер для игроков после хода
-    get playersAfterMove() {
-        if (!(this.#playersAfterMove instanceof PlayerCollection)) {
-            throw new MoveError("playersAfterMove должен быть экземпляром PlayerCollection.");
+    get players() {
+        if (!(this.#players instanceof PlayerCollection)) {
+            throw new MoveError("players должен быть экземпляром PlayerCollection.");
         }
-        return this.#playersAfterMove;
+        return this.#players;
     }
 
-    set playersAfterMove(value) {
+    set players(value) {
         if (!(value instanceof PlayerCollection)) {
-            throw new MoveError("playersAfterMove должен быть экземпляром PlayerCollection.");
+            throw new MoveError("players должен быть экземпляром PlayerCollection.");
         }
-        this.#playersAfterMove = value;
+        this.#players = value;
     }
 
     // Геттер и сеттер для даты и времени
@@ -173,7 +173,7 @@ class Move {
             description: this.description,
             dateTime: this.dateTime.toISOString(),
             formattedDateTime: this.getFormattedDateTime(),
-            playersAfterMove: this.playersAfterMove,
+            players: this.players,
             mainDeck: this.mainDeck,
             discardDeck: this.discardDeck,
             playersDistances: this.playersDistances,
@@ -193,7 +193,7 @@ class Move {
             // Проверяем, что в JSON есть все необходимые поля
             if (
                 typeof data.moveNumber !== "number" ||
-                // !Array,isArray(data.playersAfterMove) ||
+                // !Array,isArray(data.players) ||
                 typeof data.dateTime !== "string" ||
                 typeof data.description !== "string"
                 // !Array,isArray(data.mainDeck) ||
@@ -203,15 +203,16 @@ class Move {
                 throw new Error("Некорректный формат данных в JSON.");
             }
 
+            const players = PlayerCollection.initFromJSON(data.players);
             // Создаем объект Move и инициализируем его данными из JSON
             const move = new Move({
                 moveNumber: data.moveNumber,
                 description: data.description,
-                playersAfterMove: PlayerCollection.initFromJSON(data.playersAfterMove),
+                players: players,
                 dateTime: new Date(data.dateTime),
                 mainDeck: CardsCollection.initFromJSON(data.mainDeck, false),
                 discardDeck: CardsCollection.initFromJSON(data.discardDeck, false),
-                // playersDistances: data.playersDistances,
+                playersDistances: DistanceHandler.initFromJSON(data.playersDistances, players),
             });
 
             return move;
