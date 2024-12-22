@@ -15,15 +15,17 @@ class HistoryHandler {
             throw new HistoryHandlerError("Невалидный ход. Ожидается объект Move.");
         }
 
-        // Проверка на уникальность номера хода
-        const existingMove = this._moves.find((m) => m.moveNumber === move.moveNumber);
-        if (existingMove) {
-            throw new HistoryHandlerError(
-                `Номер хода ${move.moveNumber} уже существует в истории.`
-            );
+        // Проверка на уникальность номера хода, если не null
+        if (move.moveNumber !== null) {
+            const existingMove = this._moves.find((m) => m.moveNumber === move.moveNumber);
+            if (existingMove) {
+                throw new HistoryHandlerError(
+                    `Номер хода ${move.moveNumber} уже существует в истории.`
+                );
+            }
         }
 
-        move.moveNumber = this._moves.length;
+        move.moveNumber = ++this._moves.length;
         this._moves.push(move);
     }
 

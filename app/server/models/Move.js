@@ -64,15 +64,18 @@ class Move {
 
     // Геттер и сеттер для номера хода
     get moveNumber() {
-        if (typeof this.#moveNumber !== "number" || this.#moveNumber <= 0) {
-            throw new MoveError("Номер хода должен быть положительным числом.");
+        if (
+            this.#moveNumber !== null &&
+            (typeof this.#moveNumber !== "number" || this.#moveNumber <= 0)
+        ) {
+            throw new MoveError("Номер хода должен быть положительным числом или null.");
         }
         return this.#moveNumber;
     }
 
     set moveNumber(value) {
-        if (typeof value !== "number" || value <= 0) {
-            throw new MoveError("Номер хода должен быть положительным числом.");
+        if (value !== null && (typeof value !== "number" || value <= 0)) {
+            throw new MoveError("Номер хода должен быть положительным числом  или null.");
         }
         this.#moveNumber = value;
     }
