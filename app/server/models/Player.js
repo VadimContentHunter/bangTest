@@ -256,6 +256,35 @@ class Player {
         // Создаем и возвращаем новый экземпляр Player
         return new Player(data.id, data.name, data?.sessionId);
     }
+
+    /**
+     * Создает новый объект Player, объединяя данные двух игроков.
+     * @param {Player} player1 - Первый игрок.
+     * @param {Player} player2 - Второй игрок, из которого будут скопированы свойства.
+     * @param {Array} propertiesToCopy - Массив свойств, которые нужно скопировать со второго игрока.
+     * @returns {Player} Новый объект Player, объединяющий свойства двух игроков.
+     */
+    static mergePlayers(player1, player2, propertiesToCopy) {
+        if (!(player1 instanceof Player) || !(player2 instanceof Player)) {
+            throw new ValidatePlayerError("Оба объекта должны быть экземплярами Player.");
+        }
+
+        const newPlayer = new Player(player1.id, player1.name, player1.sessionId);
+        newPlayer.lives = player1.lives;
+        newPlayer.role = player1.role;
+        newPlayer.character = player1.character;
+        newPlayer.weapon = player1.weapon;
+        newPlayer.temporaryCards = player1.temporaryCards;
+        newPlayer.hand = player1.hand;
+
+        // Копируем только те свойства, которые указаны в массиве propertiesToCopy
+        propertiesToCopy.forEach((property) => {
+            if (player2.hasOwnProperty(property)) {
+                newPlayer[property] = player2[property];
+            }
+        });
+        return newPlayer;
+    }
 }
 
 module.exports = Player;

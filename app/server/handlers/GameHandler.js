@@ -124,8 +124,11 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
-        const playerOnline = this.playroomHandler.playerOnline.getPlayerWithMinIdWithoutCharacter();
-        const player = this.playroomHandler.playerOnline.getPlayerWithMinIdWithoutCharacter();
+        this.gameSessionHandler.loadData();
+        const lastMove = this.gameSessionHandler.history.getLastMove();
+        const player = this.getMergePlayerWithOnline(
+            lastMove.players.getPlayerWithMinIdWithoutCharacter
+        );
 
         if (player instanceof Player) {
             try {
@@ -151,6 +154,15 @@ class GameHandler extends EventEmitter {
                 const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
                 console.log(`GameHandler: Игрок ${player.name} выбрал карту: ${selectedCard.name}`);
                 player.character = selectedCard;
+                
+                this.gameSessionHandler.history.addMove(
+                    new Move({
+                        description: `Игрок ${player.name} выбрал себе персонажа`,
+                        players: lastMove.players,
+                        playersDistances: new DistanceHandler(lastMove.players),
+                    })
+                );
+                this.gameSessionHandler.saveData();
 
                 this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
             } catch (error) {
@@ -267,6 +279,16 @@ class GameHandler extends EventEmitter {
         });
     }
 
+    getMergePlayerWithOnline(player) {
+        if (!player instanceof Player) {
+            throw new Error(
+                "GameHandler: Что бы получить корректного игрока, нужно передать аргумент класса Player"
+            );
+        }
+        const playerOnline = this.playroomHandler.playerOnline.getPlayerByName(player.name);
+        return Player.mergePlayers(player, playerOnline);
+    }
+
     saveAndTriggerHook(player, nameHook, dataHook = {}) {
         if (!(player instanceof Player)) {
             throw new Error("GameHandler: Передан неверный игрок для метода saveAndTriggerHook");
@@ -289,8 +311,11 @@ class GameHandler extends EventEmitter {
         const dataHook = this.playerActionManager.getHooksByPlayer(player);
         if (dataHook.length > 0) {
             dataHook.forEach((hook) => {
-                this.emit(PlayerActionManager.getHookName(hook), PlayerActionManager.getHookData(hook));
-            })
+                this.emit(
+                    PlayerActionManager.getHookName(hook),
+                    PlayerActionManager.getHookData(hook)
+                );
+            });
         }
     }
 }
