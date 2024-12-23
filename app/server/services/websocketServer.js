@@ -118,6 +118,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     // Подписка на Игровые хуки
     gameHandler.on("afterGameStart", () => {
+        gameHandler.playerActionManager.clearAll();
         gameHandler.selectCharactersForPlayers();
     });
 
@@ -151,6 +152,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         const ip = clientIp.startsWith("::ffff:") ? clientIp.slice(7) : clientIp;
         ws.sessionId = SessionHandler.getCreateSessionId(queryParams.cookies);
         console.log(`WebSocket: Новое соединение установлено с IP: ${ip}`);
+
+        // const asd = gameHandler.listenerCount('playerCardSelected') > 0;
 
         try {
             const player = playroomHandler.connect(ws.sessionId);
@@ -209,6 +212,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     new StubCard(CardType.WEAPON),
                 ]);
                 serverHook.emit("requestAllUser", "battleZoneUpdate", gameTable);
+
+                gameHandler.triggerHooksForPlayer(player);
             }
         } catch (error) {
             ws.send(JsonRpcFormatter.formatError(error.code ?? -32000, error.message));

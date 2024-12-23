@@ -21,7 +21,7 @@ const SelectionCardsError = require("../Errors/SelectionCardsError");
 const SelectionCards = require("../models/SelectionCards");
 const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
-const HookManager = require("../handlers/HookManager");
+const PlayerActionManager = require("./PlayerActionManager");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -93,7 +93,7 @@ class GameHandler extends EventEmitter {
         }
         this.playroomHandler = playroomHandler;
         this.gameSessionHandler = new GameSessionHandler();
-        this.hookManager = new HookManager();
+        this.playerActionManager = new PlayerActionManager();
     }
 
     /**
@@ -107,7 +107,7 @@ class GameHandler extends EventEmitter {
         this.gameSessionHandler.history.addMove(
             new Move({
                 description: "Первый ход, инициализация первичных данных",
-                players: this.playroomHandler,
+                players: this.playroomHandler.playerOnline,
                 playersDistances: new DistanceHandler(
                     this.playroomHandler.playerOnline.getPlayers()
                 ),
@@ -124,6 +124,7 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
+        const playerOnline = this.playroomHandler.playerOnline.getPlayerWithMinIdWithoutCharacter();
         const player = this.playroomHandler.playerOnline.getPlayerWithMinIdWithoutCharacter();
 
         if (player instanceof Player) {
@@ -143,7 +144,8 @@ class GameHandler extends EventEmitter {
                 });
 
                 // Генерируем событие для сервера
-                this.emit("selectionStarted", { player, selectionCards });
+                this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
+                // this.saveAndTriggerHook(player, "testTwasd");
 
                 // Ожидаем выбора карты игроком
                 const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
@@ -265,16 +267,32 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    // saveForGameSession() {
-    //     this.gameSessionHandler.loadData();
-    //     this.gameSessionHandler.setData({
-    //         playersDistances: this.distanceHandler,
-    //         players: [],
-    //         history: {},
-    //     });
+    saveAndTriggerHook(player, nameHook, dataHook = {}) {
+        if (!(player instanceof Player)) {
+            throw new Error("GameHandler: Передан неверный игрок для метода saveAndTriggerHook");
+        }
 
-    //     this.gameSessionHandler.saveData();
-    // }
+        this.emit(nameHook, dataHook);
+        this.playerActionManager.addHook(player, {
+            name: nameHook,
+            data: dataHook,
+        });
+    }
+
+    triggerHooksForPlayer(player) {
+        if (!(player instanceof Player)) {
+            throw new Error(
+                "GameHandler: Передан неверный игрок для метода triggerLastHookForPlayer"
+            );
+        }
+
+        const dataHook = this.playerActionManager.getHooksByPlayer(player);
+        if (dataHook.length > 0) {
+            dataHook.forEach((hook) => {
+                this.emit(PlayerActionManager.getHookName(hook), PlayerActionManager.getHookData(hook));
+            })
+        }
+    }
 }
 
 module.exports = GameHandler;
