@@ -13,7 +13,6 @@ class GameSessionHandler {
     constructor() {
         this.filePath = null;
         this.head = new GameSessionHead();
-        // this.players = new PlayerCollection(); // Заменяем массив на коллекцию PlayerCollection
         this.history = new HistoryHandler();
     }
 
@@ -41,14 +40,11 @@ class GameSessionHandler {
         return `${day}_${month}_${year}__${hours}_${minutes}_${seconds}`;
     }
 
-    // Проверка head, players и history перед сохранением
+    // Проверка head и history перед сохранением
     _validateSessionData() {
         if (!this._validateHead()) {
             throw new ServerError("Invalid head data");
         }
-        // if (!this._validatePlayers()) {
-        //     throw new ServerError("Invalid players data");
-        // }
         if (!this._validateHistory()) {
             throw new ServerError("Invalid history data");
         }
@@ -56,11 +52,6 @@ class GameSessionHandler {
 
     _validateHead() {
         return this.head instanceof GameSessionHead;
-    }
-
-    _validatePlayers() {
-        // return this.players.countAllPlayers() > 0; // Используем метод countAllPlayers из PlayerCollection
-        return true;
     }
 
     _validateHistory() {
@@ -86,7 +77,6 @@ class GameSessionHandler {
             JSON.stringify(
                 {
                     head: this.head,
-                    // players: this.players.getPlayers(), // Получаем массив игроков из коллекции
                     history: this.history,
                 },
                 null,
@@ -100,15 +90,10 @@ class GameSessionHandler {
     loadData() {
         if (fs.existsSync(this.filePath)) {
             const fileContent = fs.readFileSync(this.filePath, "utf8");
-            const { head, players, history } = JSON.parse(fileContent);
+            const { head, history } = JSON.parse(fileContent);
 
-            if (head && players && history) {
+            if (head && history) {
                 this.head = GameSessionHead.initFromJSON(head);
-                // this.players.removeAllPlayers();
-                // players.forEach((player) => {
-                //     this.players.addPlayer(player?.name, player?.sessionId); // Восстанавливаем игроков
-                // });
-                // console.log(`loadData ${this.players}`);
                 this.history = HistoryHandler.initFromJSON(history);
                 console.log("GameSessionHandler: Data loaded successfully.");
             } else {
@@ -118,15 +103,6 @@ class GameSessionHandler {
             console.log("GameSessionHandler: No session file found, starting with empty data.");
         }
     }
-
-    // setData({playersDistances, players, history }) {
-    //     if(!this.head.statusGame) {
-    //         throw new ServerError("GameSessionHandler: Cannot add move data while game is not started.");
-    //     }
-    //     this.head.playersDistances = playersDistances;
-    //     this.players.setPlayers(players, true);
-
-    // }
 }
 
 module.exports = GameSessionHandler;

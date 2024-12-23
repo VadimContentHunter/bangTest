@@ -81,6 +81,9 @@ class Move {
     }
 
     // Геттер и сеттер для игроков после хода
+    /**
+     * @returns {PlayerCollection}
+     */
     get players() {
         if (!(this.#players instanceof PlayerCollection)) {
             throw new MoveError("players должен быть экземпляром PlayerCollection.");
@@ -188,40 +191,40 @@ class Move {
      * @param {string} jsonString - Строка JSON, содержащая данные для хода.
      * @returns {Move} Новый объект Move.
      */
-    static initFromJSON(jsonString) {
-        try {
-            // Парсим JSON строку
-            const data = JSON.parse(jsonString);
+    static initFromJSON(inputData) {
+        // try {
+        // Если входные данные - строка, парсим её
+        const data = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
-            // Проверяем, что в JSON есть все необходимые поля
-            if (
-                typeof data.moveNumber !== "number" ||
-                // !Array,isArray(data.players) ||
-                typeof data.dateTime !== "string" ||
-                typeof data.description !== "string"
-                // !Array,isArray(data.mainDeck) ||
-                // !Array,isArray(data.discardDeck) ||
-                // !Array,isArray(data.playersDistances) ||
-            ) {
-                throw new Error("Некорректный формат данных в JSON.");
-            }
-
-            const players = PlayerCollection.initFromJSON(data.players);
-            // Создаем объект Move и инициализируем его данными из JSON
-            const move = new Move({
-                moveNumber: data.moveNumber,
-                description: data.description,
-                players: players,
-                dateTime: new Date(data.dateTime),
-                mainDeck: CardsCollection.initFromJSON(data.mainDeck, false),
-                discardDeck: CardsCollection.initFromJSON(data.discardDeck, false),
-                playersDistances: DistanceHandler.initFromJSON(data.playersDistances, players),
-            });
-
-            return move;
-        } catch (error) {
-            throw new Error("Ошибка при инициализации Move из JSON: " + error.message);
+        // Проверяем, что в JSON есть все необходимые поля
+        if (
+            typeof data?.moveNumber !== "number" ||
+            // !Array,isArray(data.players) ||
+            typeof data?.dateTime !== "string" ||
+            typeof data?.description !== "string"
+            // !Array,isArray(data.mainDeck) ||
+            // !Array,isArray(data.discardDeck) ||
+            // !Array,isArray(data.playersDistances) ||
+        ) {
+            throw new Error("Некорректный формат данных в JSON.");
         }
+
+        const players = PlayerCollection.initFromJSON(data.players);
+        // Создаем объект Move и инициализируем его данными из JSON
+        const move = new Move({
+            moveNumber: data.moveNumber,
+            description: data.description,
+            players: players,
+            dateTime: new Date(data.dateTime),
+            mainDeck: CardsCollection.initFromJSON(data.mainDeck, false),
+            discardDeck: CardsCollection.initFromJSON(data.discardDeck, false),
+            playersDistances: DistanceHandler.initFromJSON(data.playersDistances, players),
+        });
+
+        return move;
+        // } catch (error) {
+        //     throw new Error("Ошибка при инициализации Move из JSON: " + error.message);
+        // }
     }
 }
 

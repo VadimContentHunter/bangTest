@@ -482,16 +482,17 @@ class PlayerCollection {
 
         try {
             // Если входные данные - строка, парсим её
-            const playerDataArray =
+            const playerDataObject =
                 typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
-            // Проверяем, что данные являются массивом
-            if (!Array.isArray(playerDataArray)) {
-                throw new TypeError("Данные должны быть массивом объектов игроков.");
+            // Проверяем, что данные являются объектом
+            if (typeof playerDataObject !== "object" || playerDataObject === null) {
+                throw new TypeError("Данные должны быть объектом, где ключ - ID игрока.");
             }
 
             // Обрабатываем каждый объект игрока
-            playerDataArray.forEach((playerData) => {
+            Object.entries(playerDataObject).forEach(([id, playerData]) => {
+                // Добавляем игрока в коллекцию
                 playerCollection.addPlayerFromInstance(
                     Player.initFromJSON(playerData),
                     generateNewId

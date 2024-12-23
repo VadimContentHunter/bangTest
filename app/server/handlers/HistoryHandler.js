@@ -25,7 +25,7 @@ class HistoryHandler {
             }
         }
 
-        move.moveNumber = ++this._moves.length;
+        move.moveNumber = this._moves.length + 1;
         this._moves.push(move);
     }
 
@@ -118,13 +118,13 @@ class HistoryHandler {
     static initFromJSON(inputData) {
         const historyHandler = new HistoryHandler(); // Создаем новый экземпляр коллекции
 
-        try {
+        // try {
             // Если входные данные - строка, парсим её
             const historyDataArray =
                 typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
             // Проверяем, что данные являются массивом
-            if (!Array.isArray(playerDataArray)) {
+            if (!Array.isArray(historyDataArray)) {
                 throw new TypeError("Данные должны быть массивом объектов Истории ходов.");
             }
 
@@ -132,9 +132,11 @@ class HistoryHandler {
             historyDataArray.forEach((moveData) => {
                 historyHandler.addMove(Move.initFromJSON(moveData));
             });
-        } catch (error) {
-            console.error("Ошибка при инициализации Истории ходов из JSON или массива:", error);
-        }
+        // } catch (error) {
+        //     throw new HistoryHandlerError(
+        //         "Ошибка при инициализации Истории ходов из JSON или массива:"
+        //     );
+        // }
 
         return historyHandler;
     }
