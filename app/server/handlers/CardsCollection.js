@@ -206,7 +206,8 @@ class CardsCollection {
         const cardCollection = new CardsCollection();
 
         try {
-            const cardDataArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+            const cardCollectionArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+            const cardDataArray = cardCollectionArray?.cards;
 
             if (!Array.isArray(cardDataArray)) {
                 throw new TypeError("Данные должны быть массивом объектов карт.");
@@ -216,7 +217,7 @@ class CardsCollection {
                 cardCollection.addCardFromData(cardData, CardsCollection.typesCards, overwriteId);
             });
         } catch (error) {
-            console.error("Ошибка при инициализации карт из JSON или массива:", error);
+            throw new CardError("Ошибка при инициализации карт из JSON или массива:", error);
         }
 
         return cardCollection;

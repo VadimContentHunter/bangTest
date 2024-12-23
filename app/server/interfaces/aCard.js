@@ -105,14 +105,15 @@ class aCard {
             image: this.image,
             type: this.type,
             ownerName: this.ownerName,
+            className: this.constructor.name,
         };
     }
 
     static initCard(data, classCards) {
-        const nameCard = data?.name; // Извлекаем имя карты из данных
+        const classNameCard = data?.className; // Извлекаем имя класса карты из данных
 
-        if (!nameCard) {
-            throw new CardError("Имя карты не указано в данных.");
+        if (!classNameCard) {
+            throw new CardError("Имя Класса карты не указано в данных.");
         }
 
         if (!Array.isArray(classCards)) {
@@ -124,19 +125,17 @@ class aCard {
             if (typeof card !== "function" || !(card.prototype instanceof aCard)) {
                 throw new CardError(
                     `Один из элементов массива не является экземпляром aCard. Проверьте объект ${
-                        card.constructor.name || "неизвестный объект"
+                        card.name || "неизвестный объект"
                     }.`
                 );
             }
         }
 
         // Найти нужный объект карты по имени его конструктора
-        const cardTemplate = classCards.find(
-            (card) => card.name === nameCard
-        );
+        const cardTemplate = classCards.find((card) => card.name === classNameCard);
 
         if (!cardTemplate) {
-            throw new CardError(`Карта с именем '${nameCard}' не найдена.`);
+            throw new CardError(`Карта с именем класса '${classNameCard}' не найдена.`);
         }
 
         // Проверяем, что класс реализует метод initFromJSON
