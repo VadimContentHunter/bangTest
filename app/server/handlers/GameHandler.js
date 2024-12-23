@@ -126,8 +126,8 @@ class GameHandler extends EventEmitter {
     async selectCharactersForPlayers() {
         this.gameSessionHandler.loadData();
         const lastMove = this.gameSessionHandler.history.getLastMove();
-        const player = this.getMergePlayerWithOnline(
-            lastMove.players.getPlayerWithMinIdWithoutCharacter
+        const player = this.getCopyDataPlayerWithOnlinePlayer(
+            lastMove.players.getPlayerWithMinIdWithoutCharacter()
         );
 
         if (player instanceof Player) {
@@ -141,9 +141,9 @@ class GameHandler extends EventEmitter {
                         new StubCard(CardType.WEAPON),
                         new StubCard(CardType.CHARACTER),
                     ],
-                    selectionCount: 0,
-                    selectedIndices: [1, 3],
-                    isWaitingForResponse: false,
+                    selectionCount: 2,
+                    // selectedIndices: [1, 3],
+                    // isWaitingForResponse: false,
                 });
 
                 // Генерируем событие для сервера
@@ -154,7 +154,7 @@ class GameHandler extends EventEmitter {
                 const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
                 console.log(`GameHandler: Игрок ${player.name} выбрал карту: ${selectedCard.name}`);
                 player.character = selectedCard;
-                
+
                 this.gameSessionHandler.history.addMove(
                     new Move({
                         description: `Игрок ${player.name} выбрал себе персонажа`,
@@ -279,14 +279,12 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    getMergePlayerWithOnline(player) {
-        if (!player instanceof Player) {
-            throw new Error(
-                "GameHandler: Что бы получить корректного игрока, нужно передать аргумент класса Player"
-            );
+    getCopyDataPlayerWithOnlinePlayer(player) {
+        if (!(player instanceof Player)) {
+            return null;
         }
         const playerOnline = this.playroomHandler.playerOnline.getPlayerByName(player.name);
-        return Player.mergePlayers(player, playerOnline);
+        return Player.copyDataPlayer(player, playerOnline, ["sessionId"]);
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {
