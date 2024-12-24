@@ -514,9 +514,9 @@ class PlayerCollection {
 
         for (let player of players) {
             // Проверяем, что id игрока существует и не игнорируется
-            if (player.id && !ignoredIds.includes(player.id)) {
+            if (Number.isInteger(player.id) && !ignoredIds.includes(player.id)) {
                 // Если minPlayer еще не найден или текущий игрок имеет меньший id
-                if (!minPlayer || player.id < minPlayer.id) {
+                if (minPlayer === null || player.id < minPlayer.id) {
                     minPlayer = player;
                 }
             }
