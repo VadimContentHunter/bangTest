@@ -93,6 +93,21 @@ class Distance {
     }
 
     /**
+     * Проверяет, что объект дистанции содержит все необходимые поля.
+     * @param {Object} distanceDataObject - Объект, который необходимо проверить.
+     * @throws {TypeError} Если в объекте отсутствуют необходимые поля.
+     */
+    static validateDistanceData(distanceDataObject) {
+        if (typeof distanceDataObject !== "object" || distanceDataObject === null) {
+            throw new TypeError("Данные должны быть объектом.");
+        }
+        const { player1, player2, distance } = distanceDataObject;
+        if (!player1 || !player2 || typeof distance !== "number") {
+            throw new TypeError("Объект должен содержать поля player1, player2 и distance.");
+        }
+    }
+
+    /**
      * Статический метод для инициализации объекта Distance из данных JSON.
      * @param {Object|String} inputData - Данные для создания объекта Distance, могут быть строкой или объектом.
      * @param {PlayerCollection} playerCollection - Коллекция игроков для поиска игроков по имени.
@@ -100,26 +115,28 @@ class Distance {
      * @throws {TypeError} Если данные не соответствуют ожидаемому формату.
      */
     static initFromJSON(inputData, playerCollection) {
-        try {
-            const distanceDataArray =
+        // try {
+            // Если входные данные - строка, парсим её в объект
+            const distanceDataObject =
                 typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
-            if (!Array.isArray(distanceDataArray)) {
-                throw new TypeError("Данные должны быть массивом Distance.");
-            }
+            this.validateDistanceData(distanceDataObject);
 
+            // Проверка, что playerCollection является экземпляром PlayerCollection
             if (!(playerCollection instanceof PlayerCollection)) {
                 throw new TypeError("playerCollection должен быть экземпляром PlayerCollection.");
             }
 
+            // Создаем и возвращаем объект Distance
             return new Distance(
-                playerCollection.getPlayerByName(distanceDataArray.player1),
-                playerCollection.getPlayerByName(distanceDataArray.player2),
-                distanceDataArray.distance
+                playerCollection.getPlayerByName(distanceDataObject.player1),
+                playerCollection.getPlayerByName(distanceDataObject.player2),
+                distanceDataObject.distance
             );
-        } catch (error) {
-            throw error;
-        }
+        // } catch (error) {
+        //     console.error("Ошибка при инициализации объекта Distance:", error);
+        //     throw error; // Перебрасываем ошибку, если произошла ошибка
+        // }
     }
 }
 

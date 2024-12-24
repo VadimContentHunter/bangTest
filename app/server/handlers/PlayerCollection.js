@@ -4,8 +4,7 @@ const Player = require("../models/Player");
 
 class PlayerCollection {
     constructor(useIncrementalId = true) {
-        this.players = {};
-        this.nextId = 1; // Следующий уникальный идентификатор для нового игрока
+        this.players = [];
         this.useIncrementalId = useIncrementalId; // Флаг, определяющий, как будет происходить идентификация
     }
 
@@ -17,7 +16,7 @@ class PlayerCollection {
      */
     generateId() {
         if (this.useIncrementalId) {
-            return this.nextId++;
+            return this.players.length;
         } else {
             // Находим первый свободный ID
             let id = 0;
@@ -26,19 +25,6 @@ class PlayerCollection {
             }
             return id;
         }
-    }
-
-    /**
-     * Проверяет существование игрока по имени.
-     * @param {string} name - Имя игрока.
-     * @returns {Player|null} Игрок, если найден; null, если не найден.
-     * @throws {ValidatePlayerError} Если имя не является строкой.
-     */
-    getPlayerByName(name) {
-        if (typeof name !== "string") {
-            throw new ValidatePlayerError("Имя должно быть строкой.");
-        }
-        return Object.values(this.players).find((player) => player.name === name) || null;
     }
 
     /**
@@ -66,11 +52,9 @@ class PlayerCollection {
             throw new ValidatePlayerError(`Игрок с именем "${name}" уже существует.`);
         }
 
-        const id = this.generateId(); // Генерация уникального ID для игрока
-        const player = new Player(id, name, sessionId); // Создание нового игрока
-        this.players[id] = player; // Добавляем игрока в коллекцию по его ID
-        console.log(`Добавлен игрок с именем: ${name} и ID: ${id}`);
-        return player;
+        const player = new Player(this.generateId(), name, sessionId); // Создание нового игрока
+        this.players.push(player);
+        console.log(`Добавлен игрок с именем: ${player.name} и ID: ${player.id}`);
     }
 
     /**
@@ -90,7 +74,7 @@ class PlayerCollection {
             player.id = this.generateId(); // Генерация нового ID для игрока
         }
 
-        if (!player.id) {
+        if (!Number.isInteger(player.id)) {
             player.id = this.generateId(); // Генерация нового ID для игрока если его нет
         }
 
@@ -100,7 +84,7 @@ class PlayerCollection {
         }
 
         // Добавляем игрока в коллекцию
-        this.players[player.id] = player;
+        this.players.push(player);
         console.log(`Игрок с ID ${player.id} добавлен в коллекцию.`);
     }
 
@@ -136,6 +120,19 @@ class PlayerCollection {
     }
 
     /**
+     * Проверяет существование игрока по имени.
+     * @param {string} name - Имя игрока.
+     * @returns {Player|null} Игрок, если найден; null, если не найден.
+     * @throws {ValidatePlayerError} Если имя не является строкой.
+     */
+    getPlayerByName(name) {
+        if (typeof name !== "string") {
+            throw new ValidatePlayerError("Имя должно быть строкой.");
+        }
+        return Object.values(this.players).find((player) => player.name === name) || null;
+    }
+
+    /**
      * Получает игрока по его ID.
      * @param {number} id - ID игрока.
      * @returns {Player|null} Игрок, если найден; null, если не найден.
@@ -145,7 +142,7 @@ class PlayerCollection {
         if (typeof id !== "number") {
             throw new ValidatePlayerError("ID должен быть числом.");
         }
-        return this.players[id] || null;
+        return this.players.find((player) => player.id === id);
     }
 
     /**
@@ -393,13 +390,13 @@ class PlayerCollection {
             throw new ValidatePlayerError("ID должен быть числом.");
         }
 
-        const player = this.getPlayerById(id);
-        if (player) {
-            delete this.players[id];
-            console.log(`Игрок с ID ${id} удалён.`);
+        const index = this.players.findIndex((player) => player.id === id); // Находим индекс
+        if (index !== -1) {
+            this.players.splice(index, 1); // Удаляем игрока из массива
         } else {
             throw new ValidatePlayerError("Игрок не найден");
         }
+        console.log(`Игрок с ID ${id} удалён.`);
     }
 
     /**
@@ -407,7 +404,6 @@ class PlayerCollection {
      */
     removeAllPlayers() {
         this.players = {};
-        this.nextId = 1;
     }
 
     /**
@@ -420,13 +416,14 @@ class PlayerCollection {
             throw new ValidatePlayerError("Имя должно быть строкой и не должно быть пустым.");
         }
 
-        const player = this.getPlayerByName(name); // Используем метод getPlayerByName для поиска игрока
-        if (player) {
-            delete this.players[player.id]; // Удаляем игрока по его ID
-            console.log(`Игрок с именем "${name}" и ID ${player.id} удалён.`);
+        const index = this.players.findIndex((player) => player.name === name); // Находим индекс
+        if (index !== -1) {
+            this.players.splice(index, 1); // Удаляем игрока из массива
         } else {
             throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
         }
+
+        console.log(`Игрок с именем "${name}" удалён.`);
     }
 
     /**
@@ -449,19 +446,11 @@ class PlayerCollection {
 
     // Метод для перемешивания ID игроков
     shufflePlayerIds() {
-        const playerIds = Object.keys(this.players); // Получаем все ID игроков
-        for (let i = playerIds.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * playerIds.length); // Случайный индекс
-            [playerIds[i], playerIds[j]] = [playerIds[j], playerIds[i]]; // Меняем местами
+        // Перемешиваем массив игроков
+        for (let i = this.players.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1)); // Случайный индекс
+            [this.players[i], this.players[j]] = [this.players[j], this.players[i]]; // Меняем местами
         }
-
-        // Теперь можно использовать перемешанные ID для изменения порядка игроков в коллекции
-        const shuffledPlayers = {};
-        playerIds.forEach((id) => {
-            shuffledPlayers[id] = this.players[id]; // Добавляем игроков в новый порядок
-        });
-
-        this.players = shuffledPlayers; // Обновляем коллекцию игроков
     }
 
     /**
@@ -482,16 +471,16 @@ class PlayerCollection {
 
         try {
             // Если входные данные - строка, парсим её
-            const playerDataObject =
+            const playerDataArray =
                 typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
-            // Проверяем, что данные являются объектом
-            if (typeof playerDataObject !== "object" || playerDataObject === null) {
-                throw new TypeError("Данные должны быть объектом, где ключ - ID игрока.");
+            // Проверяем, что данные являются массивом
+            if (!Array.isArray(playerDataArray)) {
+                throw new TypeError("Данные должны быть массивом объектов игроков.");
             }
 
             // Обрабатываем каждый объект игрока
-            Object.entries(playerDataObject).forEach(([id, playerData]) => {
+            playerDataArray.forEach((playerData) => {
                 // Добавляем игрока в коллекцию
                 playerCollection.addPlayerFromInstance(
                     Player.initFromJSON(playerData),
@@ -520,15 +509,20 @@ class PlayerCollection {
             return null; // Возвращаем null, если массив игроков пуст
         }
 
-        return players.reduce((minPlayer, currentPlayer) => {
-            // Проверяем, не нужно ли игнорировать текущего игрока
-            if (ignoredIds.includes(currentPlayer.id)) {
-                return minPlayer; // Пропускаем этого игрока
-            }
+        // Инициализируем минимального игрока первым игроком в списке, если он не игнорируется
+        let minPlayer = null;
 
-            // Если текущий игрок имеет меньший id, чем текущий минимальный
-            return currentPlayer.id < minPlayer.id ? currentPlayer : minPlayer;
-        }, players[0] || null); // В случае пустого массива возвращаем null
+        for (let player of players) {
+            // Проверяем, что id игрока существует и не игнорируется
+            if (player.id && !ignoredIds.includes(player.id)) {
+                // Если minPlayer еще не найден или текущий игрок имеет меньший id
+                if (!minPlayer || player.id < minPlayer.id) {
+                    minPlayer = player;
+                }
+            }
+        }
+
+        return minPlayer || null; // Если minPlayer не найден, возвращаем null
     }
 }
 
