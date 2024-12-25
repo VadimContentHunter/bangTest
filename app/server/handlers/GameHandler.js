@@ -92,7 +92,7 @@ class GameHandler extends EventEmitter {
             throw new Error("GameHandler: playroomHandler must be an instance of PlayroomHandler");
         }
         this.playroomHandler = playroomHandler;
-        this.gameSessionHandler = new GameSessionHandler();
+        this.gameSessionHandler = new GameSessionHandler(true, 2);
         this.playerActionManager = new PlayerActionManager();
     }
 
