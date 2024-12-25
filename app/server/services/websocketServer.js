@@ -70,7 +70,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     serverHook.on("responseAllUser", (result, id = null) => {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-                cws.send(JsonRpcFormatter.serializeResponse(result, id));
+                client.send(JsonRpcFormatter.serializeResponse(result, id));
             }
         });
     });
@@ -91,7 +91,10 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     serverHook.on("GetAdminMenu", (ws, params, id = null) => {
         const adminMenuHandler = new AdminMenuHandler(params?.sessionId);
-        ws.send(JsonRpcFormatter.serializeResponse(adminMenuHandler.getAdminMenuTemplate(), id));
+        const htmlElement = adminMenuHandler.getAdminMenuTemplate();
+        if (typeof htmlElement === "string" && htmlElement !== "") {
+            ws.send(JsonRpcFormatter.serializeResponse(htmlElement, id));
+        }
     });
 
     serverHook.on("StartGame", (ws, params, id = null) => {
