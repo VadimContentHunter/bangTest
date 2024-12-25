@@ -54,7 +54,7 @@ class PlayerCollection {
 
         const player = new Player(this.generateId(), name, sessionId); // Создание нового игрока
         this.players.push(player);
-        console.log(`Добавлен игрок с именем: ${player.name} и ID: ${player.id}`);
+        // console.log(`Добавлен игрок с именем: ${player.name} и ID: ${player.id}`);
     }
 
     /**
@@ -85,7 +85,7 @@ class PlayerCollection {
 
         // Добавляем игрока в коллекцию
         this.players.push(player);
-        console.log(`Игрок с ID ${player.id} добавлен в коллекцию.`);
+        // console.log(`Игрок с ID ${player.id} добавлен в коллекцию.`);
     }
 
     /**
@@ -116,7 +116,7 @@ class PlayerCollection {
             this.addPlayerFromInstance(player, generateNewId);
         });
 
-        console.log(`Коллекция игроков обновлена. Всего игроков: ${players.length}`);
+        // console.log(`Коллекция игроков обновлена. Всего игроков: ${players.length}`);
     }
 
     /**
@@ -344,7 +344,7 @@ class PlayerCollection {
         const player = this.getPlayerById(id);
         if (player) {
             player.update(updates);
-            console.log(`Игрок с ID ${id} обновлён.`);
+            // console.log(`Игрок с ID ${id} обновлён.`);
         } else {
             throw new ValidatePlayerError("Игрок не найден");
         }
@@ -359,7 +359,7 @@ class PlayerCollection {
         const player = this.getPlayerByName(name);
         if (player) {
             player.update(updates);
-            console.log(`Игрок с именем "${name}" обновлён.`);
+            // console.log(`Игрок с именем "${name}" обновлён.`);
         } else {
             throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
         }
@@ -374,7 +374,7 @@ class PlayerCollection {
         const player = this.getPlayerBySessionId(sessionId);
         if (player) {
             player.update(updates);
-            console.log(`Игрок с sessionId "${sessionId}" обновлён.`);
+            // console.log(`Игрок с sessionId "${sessionId}" обновлён.`);
         } else {
             throw new ValidatePlayerError(`Игрок с sessionId "${sessionId}" не найден.`);
         }
@@ -396,7 +396,7 @@ class PlayerCollection {
         } else {
             throw new ValidatePlayerError("Игрок не найден");
         }
-        console.log(`Игрок с ID ${id} удалён.`);
+        // console.log(`Игрок с ID ${id} удалён.`);
     }
 
     /**
@@ -423,7 +423,7 @@ class PlayerCollection {
             throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
         }
 
-        console.log(`Игрок с именем "${name}" удалён.`);
+        // console.log(`Игрок с именем "${name}" удалён.`);
     }
 
     /**

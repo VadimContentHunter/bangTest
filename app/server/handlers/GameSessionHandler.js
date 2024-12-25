@@ -122,7 +122,7 @@ class GameSessionHandler {
             ),
             "utf8"
         );
-        console.log(`GameSessionHandler: Data saved to ${this.filePath}`);
+        // console.log(`GameSessionHandler: Data saved to ${this.filePath}`);
     }
 
     /**
@@ -141,12 +141,12 @@ class GameSessionHandler {
             if (head && history) {
                 this.head = GameSessionHead.initFromJSON(head);
                 this.history = HistoryHandler.initFromJSON(history);
-                console.log("GameSessionHandler: Data loaded successfully.");
+                // console.log("GameSessionHandler: Data loaded successfully.");
             } else {
                 throw new ServerError("GameSessionHandler: Invalid file format.");
             }
         } else {
-            console.log("GameSessionHandler: No session file found, starting with empty data.");
+            // console.log("GameSessionHandler: No session file found, starting with empty data.");
         }
     }
 }

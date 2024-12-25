@@ -61,7 +61,9 @@ class PlayroomHandler {
                 this.addPlayerOnline(playerFromSession.lastName, sessionId);
                 player = this.playerOnline.getPlayerBySessionId(sessionId);
                 if (player instanceof Player) {
-                    console.log(`PlayroomHandler: Игрок подключился: ${player.name}, из сохраненной сессии.`);
+                    console.log(
+                        `PlayroomHandler: Игрок подключился: ${player.name}, из сохраненной сессии.`
+                    );
                     return player;
                 }
             }
@@ -70,8 +72,30 @@ class PlayroomHandler {
             // return;
         }
 
-        console.log(`PlayroomHandler: Игрок с сессией "${sessionId}" - не подключен.`);
+        // console.log(`PlayroomHandler: Игрок с сессией "${sessionId}" - не подключен.`);
         return null;
+    }
+
+    hasOnline(sessionId) {
+        let player = this.playerOnline.getPlayerBySessionId(sessionId);
+        if (player instanceof Player) {
+            return true;
+        }
+
+        try {
+            const playerFromSession = SessionHandler.getSessionData(sessionId);
+            if (
+                playerFromSession !== null &&
+                typeof playerFromSession.lastName === "string" &&
+                playerFromSession.lastName.length > 0
+            ) {
+                return true;
+            }
+        } catch (error) {
+            this.handleError(error);
+        }
+
+        return false;
     }
 
     /**
@@ -89,7 +113,7 @@ class PlayroomHandler {
                 );
             }
             this.playerOnline.addPlayer(name, sessionId); // Добавляем игрока в коллекцию
-            console.log(`Игрок ${name} и сессией ${sessionId} добавлен в онлайн.`);
+            // console.log(`Игрок ${name} и сессией ${sessionId} добавлен в онлайн.`);
         } catch (error) {
             this.handleError(error);
             return;
@@ -114,15 +138,15 @@ class PlayroomHandler {
 
             this.playerOnline.removePlayerById(player.id); // Удаляем игрока из коллекции
             // SessionHandler.deleteSession(sessionId); // Удаляем сессию
-            console.log(`PlayroomHandler: Игрок с сессией ${sessionId} был удален.`);
+            // console.log(`PlayroomHandler: Игрок с сессией ${sessionId} был удален.`);
         } catch (error) {
             this.handleError(error);
         }
     }
 
-    getAllPlayersSummaryInfo(){
+    getAllPlayersSummaryInfo() {
         return this.playerOnline.getDataSummaryAllPlayers();
-    };
+    }
 
     /**
      * Подсчитывает количество игроков, находящихся онлайн.

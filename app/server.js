@@ -81,40 +81,39 @@ app.get("/", (req, res) => {
 app.get("/playroom", (req, res) => {
     SessionHandler.addParametersToSession(req.sessionId, { lastUrl: req.url });
     try {
-        const player = playroomHandler.connect(req.sessionId);
-        if (player instanceof Player) {
+        if (playroomHandler.hasOnline(req.sessionId)) {
             const templatePath = path.join(pathClientHtml, "playroom.html");
             const htmlContent = renderTemplate(templatePath, {
                 pageTitle: "Bang!-Test",
                 cssLinks: `
-            <link rel="stylesheet" href="/css/vars.css" />
-            <link rel="stylesheet" href="/css/reset.css" />
-            <link rel="stylesheet" href="/css/icons.css" />
-            <link rel="stylesheet" href="/css/main.css" />
-            <link rel="stylesheet" href="/css/playroom.css" />
-            <link rel="stylesheet" href="/css/notification.css" />
-        `,
+                    <link rel="stylesheet" href="/css/vars.css" />
+                    <link rel="stylesheet" href="/css/reset.css" />
+                    <link rel="stylesheet" href="/css/icons.css" />
+                    <link rel="stylesheet" href="/css/main.css" />
+                    <link rel="stylesheet" href="/css/playroom.css" />
+                    <link rel="stylesheet" href="/css/notification.css" />
+                `,
                 scriptHeadLinks: `
-            <script src="/module/vadimcontenthunter-jsonrpc-formatter/JsonRpcFormatter.js"></script>
-            <script src="/js/NotificationsHtml.js"></script>
-            <script src="/js/websocketClient.js"></script>
-            <script src="/js/RequestManager.js"></script>
-            <script src="/js/CardModel.js"></script>
-            <script src="/js/GameControls.js"></script>
-            <script src="/js/PlayerHand.js"></script>
-            <script src="/js/GameBoard.js"></script>
-            <script src="/js/BattleZone.js"></script>
-            <script>const serverIp = "${serverIp}:${port}";</script>
-        `,
+                    <script src="/module/vadimcontenthunter-jsonrpc-formatter/JsonRpcFormatter.js"></script>
+                    <script src="/js/NotificationsHtml.js"></script>
+                    <script src="/js/websocketClient.js"></script>
+                    <script src="/js/RequestManager.js"></script>
+                    <script src="/js/CardModel.js"></script>
+                    <script src="/js/GameControls.js"></script>
+                    <script src="/js/PlayerHand.js"></script>
+                    <script src="/js/GameBoard.js"></script>
+                    <script src="/js/BattleZone.js"></script>
+                    <script>const serverIp = "${serverIp}:${port}";</script>
+                `,
                 scriptEndLinks: `
-            <script src="/js/playroom.js"></script>
-        `,
-                content: `
-            <h1>Игрок</h1>
-            <h2>id: ${player?.id ?? "---"}</h2>
-            <h2>name: ${player?.name ?? "---"}</h2>
-            <h2>sessionId: ${player?.sessionId ?? "---"}</h2>
-        `,
+                    <script src="/js/playroom.js"></script>
+                `,
+                //         content: `
+                //     <h1>Игрок</h1>
+                //     <h2>id: ${player?.id ?? "---"}</h2>
+                //     <h2>name: ${player?.name ?? "---"}</h2>
+                //     <h2>sessionId: ${player?.sessionId ?? "---"}</h2>
+                // `,
             });
             res.send(htmlContent);
         } else {

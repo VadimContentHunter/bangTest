@@ -19,7 +19,7 @@ class SessionHandler {
         if (fs.existsSync(this.filePath)) {
             const fileContent = fs.readFileSync(this.filePath, "utf8");
             this.sessions = JSON.parse(fileContent);
-            console.log(`SessionHandler: Loaded sessions: ${Object.keys(this.sessions).length}`);
+            // console.log(`SessionHandler: Loaded sessions: ${Object.keys(this.sessions).length}`);
         } else {
             console.log("SessionHandler: No session file found. Starting with empty sessions.");
         }
@@ -30,7 +30,7 @@ class SessionHandler {
      */
     static saveSessions() {
         fs.writeFileSync(this.filePath, JSON.stringify(this.sessions, null, 2), "utf8");
-        console.log(`SessionHandler: Saved sessions: ${Object.keys(this.sessions).length}`);
+        // console.log(`SessionHandler: Saved sessions: ${Object.keys(this.sessions).length}`);
     }
 
     /**
@@ -62,7 +62,7 @@ class SessionHandler {
         };
         this.saveSessions();
 
-        console.log(`SessionHandler: Created session: ${sessionId}, at ${createdAtFormatted}`);
+        // console.log(`SessionHandler: Created session: ${sessionId}, at ${createdAtFormatted}`);
         return sessionId;
     }
 
@@ -79,7 +79,7 @@ class SessionHandler {
 
             const expired = now - createdAt >= this.sessionLifetime * 1000;
             if (expired) {
-                console.log(`SessionHandler: Session expired: ${sessionId}`);
+                // console.log(`SessionHandler: Session expired: ${sessionId}`);
             }
             return expired;
         }
@@ -96,7 +96,7 @@ class SessionHandler {
         if (sessionData) {
             this.deleteSession(sessionId);
             const newSessionId = this.createSession(sessionData);
-            console.log(`SessionHandler: Refreshed session: ${sessionId} -> ${newSessionId}`);
+            // console.log(`SessionHandler: Refreshed session: ${sessionId} -> ${newSessionId}`);
             return newSessionId;
         }
         console.log(`SessionHandler: Session not found for refresh: ${sessionId}`);
@@ -139,7 +139,7 @@ class SessionHandler {
         if (this.sessions[sessionId]) {
             delete this.sessions[sessionId];
             this.saveSessions();
-            console.log(`SessionHandler: Deleted session: ${sessionId}`);
+            // console.log(`SessionHandler: Deleted session: ${sessionId}`);
         } else {
             console.log(`SessionHandler: Session not found for deletion: ${sessionId}`);
         }
@@ -167,12 +167,12 @@ class SessionHandler {
             if (this.isSessionExpired(sessionId)) {
                 return this.refreshSession(sessionId);
             }
-            console.log(`SessionHandler: Using existing session: ${sessionId}`);
+            // console.log(`SessionHandler: Using existing session: ${sessionId}`);
             return sessionId;
         }
 
         const newSessionId = this.createSession();
-        console.log(`SessionHandler: Created new session: ${newSessionId}`);
+        // console.log(`SessionHandler: Created new session: ${newSessionId}`);
         return newSessionId;
     }
 
@@ -188,16 +188,16 @@ class SessionHandler {
             if (this.isSessionExpired(sessionId)) {
                 this.deleteSession(sessionId);
                 sessionId = this.createSession(session);
-                console.log(`SessionHandler: Session expired and recreated: ${sessionId}`);
+                // console.log(`SessionHandler: Session expired and recreated: ${sessionId}`);
             }
 
             Object.assign(this.sessions[sessionId], params);
             this.saveSessions();
-            console.log(
-                `SessionHandler: Updated session: ${sessionId} with params: ${JSON.stringify(
-                    params
-                )}`
-            );
+            // console.log(
+            //     `SessionHandler: Updated session: ${sessionId} with params: ${JSON.stringify(
+            //         params
+            //     )}`
+            // );
         } else {
             throw new ServerError("Session not found");
         }
@@ -216,7 +216,7 @@ class SessionHandler {
             if (this.isSessionExpired(sessionId)) {
                 this.deleteSession(sessionId);
                 sessionId = this.createSession(newData);
-                console.log(`SessionHandler: Session expired and recreated: ${sessionId}`);
+                // console.log(`SessionHandler: Session expired and recreated: ${sessionId}`);
             } else {
                 // Копируем только те поля из старых данных, которые указаны в preserveFields
                 const preservedData = {};
@@ -230,7 +230,7 @@ class SessionHandler {
                 this.sessions[sessionId] = { ...newData, ...preservedData };
                 this.saveSessions();
                 console.log(
-                    `SessionHandler: Updated session: ${sessionId} with new data, preserving fields: ${preserveFields}`
+                    // `SessionHandler: Updated session: ${sessionId} with new data, preserving fields: ${preserveFields}`
                 );
             }
         } else {
