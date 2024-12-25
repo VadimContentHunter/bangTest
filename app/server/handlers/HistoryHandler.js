@@ -3,8 +3,38 @@ const Move = require("../models/Move"); // Предполагается, что 
 
 class HistoryHandler {
     _moves = []; // Приватный массив для хранения ходов
+    _maxMoves = null; // Максимальное количество хранимых ходов (null для хранения всех)
 
-    constructor() {}
+    /**
+     * @param {number|null} maxMoves - Максимальное количество хранимых ходов (null для хранения всех).
+     */
+    constructor(maxMoves = null) {
+        this.maxMoves = maxMoves;
+    }
+
+    /**
+     * Устанавливает максимальное количество хранимых ходов.
+     * @param {number|null} value - Новое значение maxMoves (null для хранения всех).
+     */
+    set maxMoves(value) {
+        if (value !== null && (typeof value !== "number" || value <= 0)) {
+            throw new HistoryHandlerError("maxMoves должен быть положительным числом или null.");
+        }
+        this._maxMoves = value;
+
+        // Удаляем старые ходы, если превышен новый maxMoves
+        if (this.maxMoves !== null && this._moves.length > this.maxMoves) {
+            this._moves = this._moves.slice(-this.maxMoves);
+        }
+    }
+
+    /**
+     * Возвращает текущее значение maxMoves.
+     * @returns {number|null} Текущее значение maxMoves.
+     */
+    get maxMoves() {
+        return this._maxMoves;
+    }
 
     /**
      * Добавляет новый ход в историю.
@@ -27,6 +57,11 @@ class HistoryHandler {
 
         move.moveNumber = this._moves.length + 1;
         this._moves.push(move);
+
+        // Удаляем старые ходы, если превышен maxMoves
+        if (this.maxMoves !== null && this._moves.length > this.maxMoves) {
+            this._moves.shift();
+        }
     }
 
     /**
@@ -115,28 +150,18 @@ class HistoryHandler {
         return this._moves;
     }
 
-    static initFromJSON(inputData) {
-        const historyHandler = new HistoryHandler(); // Создаем новый экземпляр коллекции
+    static initFromJSON(inputData, maxMoves = null) {
+        const historyHandler = new HistoryHandler(maxMoves); // Создаем новый экземпляр коллекции
 
-        // try {
-            // Если входные данные - строка, парсим её
-            const historyDataArray =
-                typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+        const historyDataArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
 
-            // Проверяем, что данные являются массивом
-            if (!Array.isArray(historyDataArray)) {
-                throw new TypeError("Данные должны быть массивом объектов Истории ходов.");
-            }
+        if (!Array.isArray(historyDataArray)) {
+            throw new TypeError("Данные должны быть массивом объектов Истории ходов.");
+        }
 
-            // Обрабатываем каждый объект игрока
-            historyDataArray.forEach((moveData) => {
-                historyHandler.addMove(Move.initFromJSON(moveData));
-            });
-        // } catch (error) {
-        //     throw new HistoryHandlerError(
-        //         "Ошибка при инициализации Истории ходов из JSON или массива:"
-        //     );
-        // }
+        historyDataArray.forEach((moveData) => {
+            historyHandler.addMove(Move.initFromJSON(moveData));
+        });
 
         return historyHandler;
     }
