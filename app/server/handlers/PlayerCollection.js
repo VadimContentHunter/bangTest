@@ -18,9 +18,8 @@ class PlayerCollection {
         if (this.useIncrementalId) {
             return this.players.length;
         } else {
-            // Находим первый свободный ID
             let id = 0;
-            while (this.players.hasOwnProperty(id)) {
+            while (this.players.some((player) => player.id === id)) {
                 id++;
             }
             return id;
@@ -109,7 +108,7 @@ class PlayerCollection {
         });
 
         // Очищаем текущую коллекцию игроков
-        this.players = {};
+        this.players = [];
 
         // Добавляем игроков в коллекцию и присваиваем каждому новый ID
         players.forEach((player) => {
@@ -129,7 +128,7 @@ class PlayerCollection {
         if (typeof name !== "string") {
             throw new ValidatePlayerError("Имя должно быть строкой.");
         }
-        return Object.values(this.players).find((player) => player.name === name) || null;
+        return this.players.find((player) => player.name === name) || null;
     }
 
     /**
@@ -150,7 +149,7 @@ class PlayerCollection {
      * @returns {Player[]} Массив игроков, отсортированных по ID от меньшего к большему.
      */
     getPlayersSortedAsc() {
-        return Object.values(this.players).sort((a, b) => a.id - b.id); // Сортировка по ID от меньшего к большему
+        return [...this.players].sort((a, b) => a.id - b.id); // Сортировка по ID от меньшего к большему
     }
 
     /**
@@ -158,7 +157,7 @@ class PlayerCollection {
      * @returns {Player[]} Массив игроков, отсортированных по ID от большего к меньшему.
      */
     getPlayersSortedDesc() {
-        return Object.values(this.players).sort((a, b) => b.id - a.id); // Сортировка по ID от большего к меньшему
+        return [...this.players].sort((a, b) => b.id - a.id); // Сортировка по ID от большего к меньшему
     }
 
     /**
@@ -171,7 +170,7 @@ class PlayerCollection {
      * @returns {Object|null} Игрок с минимальным id, или null, если подходящий игрок не найден.
      */
     getPlayerWithMinId(ignoredIds = []) {
-        return Object.values(this.players).reduce((minPlayer, currentPlayer) => {
+        return this.players.reduce((minPlayer, currentPlayer) => {
             // Проверяем, не нужно ли игнорировать текущего игрока
             if (ignoredIds.includes(currentPlayer.id)) {
                 return minPlayer; // Пропускаем этого игрока
@@ -189,7 +188,7 @@ class PlayerCollection {
      */
     getPlayerWithoutRole(cardsClass = []) {
         return (
-            Object.values(this.players).find((player) => {
+            this.players.find((player) => {
                 return (
                     !(player.role instanceof aCard) || // Роль отсутствует
                     player.role.type !== CardType.ROLE || // Некорректный тип карты роли
@@ -206,7 +205,7 @@ class PlayerCollection {
      */
     getPlayerWithoutCharacter(cardsClass = []) {
         return (
-            Object.values(this.players).find((player) => {
+            this.players.find((player) => {
                 return (
                     !(player.character instanceof aCard) || // Персонаж отсутствует
                     player.character.type !== CardType.CHARACTER || // Некорректный тип карты персонажа
@@ -224,7 +223,7 @@ class PlayerCollection {
      * @returns {Player[]} Массив игроков без роли или с картой из cardsClass.
      */
     getPlayersWithoutRole(cardsClass = []) {
-        return Object.values(this.players).filter((player) => {
+        return this.players.filter((player) => {
             return (
                 !(player.role instanceof aCard) || // Роль отсутствует
                 player.role.type !== CardType.ROLE || // Некорректный тип карты роли
@@ -239,7 +238,7 @@ class PlayerCollection {
      * @returns {Player[]} Массив игроков без персонажа или с картой из cardsClass.
      */
     getPlayersWithoutCharacter(cardsClass = []) {
-        return Object.values(this.players).filter((player) => {
+        return this.players.filter((player) => {
             return (
                 !(player.character instanceof aCard) || // Персонаж отсутствует
                 player.character.type !== CardType.CHARACTER || // Некорректный тип карты персонажа
@@ -300,7 +299,7 @@ class PlayerCollection {
         if (typeof sessionId !== "string") {
             throw new ValidatePlayerError("sessionId должен быть строкой.");
         }
-        return Object.values(this.players).find((player) => player.sessionId === sessionId) || null;
+        return this.players.find((player) => player.sessionId === sessionId) || null;
     }
 
     /**
@@ -313,7 +312,7 @@ class PlayerCollection {
         if (typeof sessionId !== "string") {
             throw new ValidatePlayerError("sessionId должен быть строкой.");
         }
-        return Object.values(this.players).filter((player) => player.sessionId === sessionId);
+        return this.players.filter((player) => player.sessionId === sessionId);
     }
 
     /**
@@ -321,7 +320,7 @@ class PlayerCollection {
      * @returns {Player[]} Массив игроков.
      */
     getPlayers() {
-        return Object.values(this.players).filter((player) => player instanceof Player);
+        return this.players.filter((player) => player instanceof Player);
     }
 
     /**
@@ -330,9 +329,46 @@ class PlayerCollection {
      * @throws {Error} Если у игрока отсутствует метод getSummaryInfo.
      */
     getDataSummaryAllPlayers() {
-        return Object.values(this.players)
+        return this.players
             .filter((player) => typeof player.getSummaryInfo === "function") // Проверяем наличие метода getSummaryInfo
             .map((player) => player.getSummaryInfo()); // Вызываем метод getSummaryInfo и собираем данные в массив
+    }
+
+    /**
+     * Создает нового игрока на основе текущей коллекции, копируя указанные свойства из найденного игрока.
+     * @param {Player|string} playerOrName - Объект игрока или имя игрока.
+     * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из найденного игрока.
+     * @returns {Player|null} - Новый объект игрока с скопированными данными или null, если игрок не найден.
+     */
+    createPlayerFromCollection(playerOrName, propertiesToCopy) {
+        let targetPlayer = null;
+
+        // Определяем, передан ли объект игрока или имя
+        if (playerOrName instanceof Player) {
+            targetPlayer = this.getPlayerByName(playerOrName.name);
+        } else if (typeof playerOrName === "string") {
+            targetPlayer = this.getPlayerByName(playerOrName);
+        }
+
+        // Если игрок не найден, возвращаем null
+        if (!(targetPlayer instanceof Player)) {
+            return null;
+        }
+
+        // Проверяем, что propertiesToCopy - это массив
+        if (!Array.isArray(propertiesToCopy)) {
+            throw new TypeError("propertiesToCopy должен быть массивом строк.");
+        }
+
+        // Создаем нового игрока с копированием указанных свойств
+        const newPlayer = new Player();
+        propertiesToCopy.forEach((property) => {
+            if (Object.hasOwn(targetPlayer, property)) {
+                newPlayer[property] = targetPlayer[property];
+            }
+        });
+
+        return newPlayer;
     }
 
     // Обновляет информацию об игроке по ID
@@ -431,7 +467,7 @@ class PlayerCollection {
      * @returns {number} Количество игроков.
      */
     countAllPlayers() {
-        return Object.values(this.players).filter((player) => player instanceof Player).length;
+        return this.players.filter((player) => player instanceof Player).length;
     }
 
     /**
@@ -439,7 +475,7 @@ class PlayerCollection {
      * @returns {number} Количество игроков с активной сессией.
      */
     countPlayersWithSession() {
-        return Object.values(this.players).filter(
+        return this.players.filter(
             (player) => player instanceof Player && player.sessionId !== null
         ).length;
     }
