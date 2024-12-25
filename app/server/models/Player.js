@@ -5,8 +5,14 @@ const LivesError = require("../Errors/LivesError");
 const Lives = require("../models/Lives");
 
 class Player {
+    /**
+     * Конструктор для создания игрока.
+     * @param {number} id - Идентификатор игрока.
+     * @param {string} name - Имя игрока.
+     * @param {string|null} [sessionId=null] - Идентификатор сессии игрока.
+     */
     constructor(id, name, sessionId = null) {
-        this.id = id; // Идентификатор теперь передается при создании игрока
+        this.id = id;
         this.name = name;
         this.sessionId = sessionId;
         this._lives = new Lives();
@@ -18,25 +24,29 @@ class Player {
     }
 
     /**
-     * @param {Lives} card
+     * Сеттер для lives.
+     * @param {Lives|null} value - Значение для установки жизни игрока.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если передано неправильное значение.
      */
     set lives(value) {
-        if (!(value instanceof Lives)) {
-            throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives");
+        if (value !== null && !(value instanceof Lives)) {
+            throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives или null.");
         }
 
         this._lives = value;
     }
 
     /**
-     * @param {aCard} card
+     * Сеттер для роли игрока.
+     * @param {aCard|null} card - Карта роли игрока.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если карта не соответствующего типа.
      */
     set role(card) {
-        if (!(card instanceof aCard)) {
-            throw new ValidatePlayerError("Роль игрока должен быть класса aCard.");
+        if (card !== null && !(card instanceof aCard)) {
+            throw new ValidatePlayerError("Роль игрока должна быть класса aCard или null.");
         }
 
-        if (card.type !== CardType.ROLE) {
+        if (card !== null && card.type !== CardType.ROLE) {
             throw new ValidatePlayerError("Карта для роли должна быть type = ROLE.");
         }
 
@@ -44,49 +54,63 @@ class Player {
     }
 
     /**
-     * @param {aCard} card
+     * Сеттер для персонажа игрока.
+     * @param {aCard|null} card - Карта персонажа игрока.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если карта не соответствующего типа.
      */
     set character(card) {
-        if (!(card instanceof aCard)) {
-            throw new ValidatePlayerError("Персонаж игрока должен быть класса aCard.");
+        if (card !== null && !(card instanceof aCard)) {
+            throw new ValidatePlayerError("Персонаж игрока должен быть класса aCard или null.");
         }
 
-        if (card.type !== CardType.CHARACTER) {
-            throw new ValidatePlayerError("Карта для Персонажа должна быть type = CHARACTER.");
+        if (card !== null && card.type !== CardType.CHARACTER) {
+            throw new ValidatePlayerError("Карта для персонажа должна быть type = CHARACTER.");
         }
 
         this._character = card;
     }
 
     /**
-     * @param {aCard} card
+     * Сеттер для оружия игрока.
+     * @param {aCard|null} card - Карта оружия игрока.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если карта не соответствующего типа.
      */
     set weapon(card) {
-        if (!(card instanceof aCard)) {
-            throw new ValidatePlayerError("Персонаж игрока должен быть класса aCard.");
+        if (card !== null && !(card instanceof aCard)) {
+            throw new ValidatePlayerError("Оружие игрока должно быть класса aCard или null.");
         }
 
-        if (card.type !== CardType.WEAPON) {
-            throw new ValidatePlayerError("Карта для роли должна быть type = WEAPON.");
+        if (card !== null && card.type !== CardType.WEAPON) {
+            throw new ValidatePlayerError("Карта для оружия должна быть type = WEAPON.");
         }
 
         this._weapon = card;
     }
 
+    /**
+     * Сеттер для коллекции временных карт игрока.
+     * @param {CardsCollection|null} collection - Коллекция временных карт.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если передана неправильная коллекция.
+     */
     set temporaryCards(collection) {
-        if (!(collection instanceof CardsCollection)) {
+        if (collection !== null && !(collection instanceof CardsCollection)) {
             throw new ValidatePlayerError(
-                "Коллекция временных карт должна быть экземпляром CardsCollection."
+                "Коллекция временных карт должна быть экземпляром CardsCollection или null."
             );
         }
 
         this._temporaryCards = collection;
     }
 
+    /**
+     * Сеттер для коллекции карт в руке игрока.
+     * @param {CardsCollection|null} collection - Коллекция карт в руке.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если передана неправильная коллекция.
+     */
     set hand(collection) {
-        if (!(collection instanceof CardsCollection)) {
+        if (collection !== null && !(collection instanceof CardsCollection)) {
             throw new ValidatePlayerError(
-                "Коллекция карт в руке должна быть экземпляром CardsCollection."
+                "Коллекция карт в руке должна быть экземпляром CardsCollection или null."
             );
         }
 
@@ -94,56 +118,58 @@ class Player {
     }
 
     /**
-     * @returns {Lives}
+     * Геттер для жизни игрока.
+     * @returns {Lives|null} - Жизнь игрока.
      */
     get lives() {
-        if (!(this._lives instanceof Lives)) {
-            throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives");
-        }
-
         return this._lives;
     }
 
     /**
-     * @returns {aCard | null}
+     * Геттер для роли игрока.
+     * @returns {aCard|null} - Роль игрока.
      */
     get role() {
         return this._role;
     }
 
     /**
-     * @returns {aCard | null}
+     * Геттер для персонажа игрока.
+     * @returns {aCard|null} - Персонаж игрока.
      */
     get character() {
         return this._character;
     }
 
     /**
-     * @returns {aCard | null}
+     * Геттер для оружия игрока.
+     * @returns {aCard|null} - Оружие игрока.
      */
     get weapon() {
         return this._weapon;
     }
 
+    /**
+     * Геттер для коллекции временных карт.
+     * @returns {CardsCollection|null} - Коллекция временных карт.
+     */
     get temporaryCards() {
-        if (!(this._temporaryCards instanceof CardsCollection)) {
-            throw new ValidatePlayerError(
-                "Коллекция временных карт должна быть экземпляром CardsCollection."
-            );
-        }
         return this._temporaryCards;
     }
 
+    /**
+     * Геттер для коллекции карт в руке.
+     * @returns {CardsCollection|null} - Коллекция карт в руке.
+     */
     get hand() {
-        if (!(this._hand instanceof CardsCollection)) {
-            throw new ValidatePlayerError(
-                "Коллекция карт в руке должна быть экземпляром CardsCollection."
-            );
-        }
-
         return this._hand;
     }
 
+    /**
+     * Устанавливает сессию для игрока.
+     * @param {string} sessionId - Идентификатор сессии.
+     * @throws {ValidatePlayerError} - Ошибка, если идентификатор сессии некорректен.
+     */
     setSession(sessionId) {
         if (typeof sessionId !== "string" || sessionId.length === 0) {
             throw new ValidatePlayerError("Некорректный идентификатор сессии");
@@ -152,6 +178,10 @@ class Player {
         console.log(`Игроку ${this.name} присвоена сессия: ${sessionId}`);
     }
 
+    /**
+     * Возвращает полную информацию о игроке.
+     * @returns {Object} - Объект с полной информацией о игроке.
+     */
     getInfo() {
         return {
             id: this.id,
@@ -166,6 +196,10 @@ class Player {
         };
     }
 
+    /**
+     * Возвращает краткую информацию о игроке.
+     * @returns {Object} - Объект с краткой информацией о игроке.
+     */
     getSummaryInfo() {
         return {
             id: this.id,
@@ -180,17 +214,25 @@ class Player {
         };
     }
 
+    /**
+     * Обновляет данные игрока.
+     * @param {Object} updates - Объект с новыми данными для обновления.
+     */
     update(updates) {
         Object.assign(this, updates);
         console.log(`Данные игрока ${this.name} обновлены.`);
     }
 
+    /**
+     * Удаляет игрока.
+     */
     remove() {
         console.log(`Игрок ${this.name} удалён.`);
     }
 
     /**
-     * @returns {Object} JSON-представление дистанции
+     * Преобразует игрока в JSON.
+     * @returns {Object} - Объект в формате JSON, содержащий данные игрока.
      */
     toJSON() {
         return {
@@ -207,10 +249,10 @@ class Player {
     }
 
     /**
-     * Инициализирует экземпляр Player из JSON-данных.
-     * @param {Object} data - Данные игрока в формате JSON.
-     * @returns {Player} Новый экземпляр Player.
-     * @throws {ValidatePlayerError} Если данные игрока некорректны.
+     * Инициализирует игрока из JSON данных.
+     * @param {Object} data - Данные для инициализации игрока.
+     * @returns {Player} - Новый экземпляр игрока.
+     * @throws {ValidatePlayerError} - Ошибка валидации, если данные некорректны.
      */
     static initFromJSON(data) {
         if (typeof data.id !== "number") {
@@ -233,38 +275,38 @@ class Player {
             player.lives = Lives.initFromJSON(data?.lives);
         }
 
-        // if (data?.role !== null) {
-        //     player.role = Lives.initFromJSON(data?.lives);
-        // }
+        if (data?.role !== null) {
+            player.role = aCard.initCard(data?.role, CardsCollection.typesCards);
+        }
 
         if (data?.character !== null) {
             player.character = aCard.initCard(data?.character, CardsCollection.typesCards);
         }
 
-        // if (data?.weapon !== null) {
-        //     player.weapon = Lives.initFromJSON(data?.lives);
-        // }
+        if (data?.weapon !== null) {
+            player.weapon = aCard.initCard(data?.weapon, CardsCollection.typesCards);
+        }
 
-        // if (data?.temporaryCards !== null) {
-        //     player.temporaryCards = Lives.initFromJSON(data?.lives);
-        // }
+        if (data?.temporaryCards !== null) {
+            player.temporaryCards = CardsCollection.initFromJSON(data?.temporaryCards);
+        }
 
-        // if (data?.hand !== null) {
-        //     player.hand = Lives.initFromJSON(data?.lives);
-        // }
+        if (data?.hand !== null) {
+            player.hand = CardsCollection.initFromJSON(data?.hand);
+        }
 
-        // Создаем и возвращаем новый экземпляр Player
         return player;
     }
 
     /**
-     * Создает новый объект Player, объединяя данные двух игроков.
+     * Объединяет данные двух игроков в новом.
      * @param {Player} player1 - Первый игрок.
-     * @param {Player} player2 - Второй игрок, из которого будут скопированы свойства.
-     * @param {Array} propertiesToCopy - Массив свойств, которые нужно скопировать со второго игрока.
-     * @returns {Player} Новый объект Player, объединяющий свойства двух игроков.
+     * @param {Player} player2 - Второй игрок.
+     * @param {Array<string>} propertiesToCopy - Список свойств для копирования.
+     * @returns {Player} - Новый игрок с объединёнными данными.
+     * @throws {ValidatePlayerError} - Ошибка, если объекты не являются экземплярами Player.
      */
-    static newMergePlayers(player1, player2, propertiesToCopy) {
+    static newMergePlayers(player1, player2, propertiesToCopy = []) {
         if (!(player1 instanceof Player) || !(player2 instanceof Player)) {
             throw new ValidatePlayerError("Оба объекта должны быть экземплярами Player.");
         }
@@ -279,33 +321,41 @@ class Player {
         newPlayer.temporaryCards = player1.temporaryCards;
         newPlayer.hand = player1.hand;
 
-        // Копируем только те свойства, которые указаны в массиве propertiesToCopy
         propertiesToCopy.forEach((property) => {
             if (player2.hasOwnProperty(property)) {
                 newPlayer[property] = player2[property];
             }
         });
+
         return newPlayer;
     }
 
     /**
-     * Возвращает Player, с скопированными данными из 2 игрока.
-     * @param {Player} mainPlayer - Первый игрок. Основной в который будут копироваться данные.
-     * @param {Player} player2 - Второй игрок, из которого будут скопированы свойства.
-     * @param {Array} propertiesToCopy - Массив свойств, которые нужно скопировать со второго игрока.
-     * @returns {Player} Новый объект Player, объединяющий свойства двух игроков.
+     * Копирует данные одного игрока в другого.
+     * @param {Player} mainPlayer - Игрок, в которого копируются данные.
+     * @param {Player} player2 - Игрок, чьи данные копируются.
+     * @param {Array<string>} [propertiesToCopy=[]] - Список свойств для копирования.
+     * @returns {Player} - Обновлённый объект mainPlayer.
+     * @throws {ValidatePlayerError} - Ошибка, если объекты не являются экземплярами Player.
      */
-    static copyDataPlayer(mainPlayer, player2, propertiesToCopy) {
+    static copyDataPlayer(mainPlayer, player2, propertiesToCopy = []) {
         if (!(mainPlayer instanceof Player) || !(player2 instanceof Player)) {
             throw new ValidatePlayerError("Оба объекта должны быть экземплярами Player.");
         }
 
-        // Копируем только те свойства, которые указаны в массиве propertiesToCopy
-        propertiesToCopy.forEach((property) => {
+        const properties =
+            propertiesToCopy.length === 0 ? Object.getOwnPropertyNames(player2) : propertiesToCopy;
+
+        properties.forEach((property) => {
             if (player2.hasOwnProperty(property)) {
-                mainPlayer[property] = player2[property];
+                const cleanProperty = property.startsWith("_") ? property.slice(1) : property;
+
+                if (typeof mainPlayer[cleanProperty] !== "undefined") {
+                    mainPlayer[cleanProperty] = player2[property];
+                }
             }
         });
+
         return mainPlayer;
     }
 }
