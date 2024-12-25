@@ -27,6 +27,41 @@ class PlayerCollection {
     }
 
     /**
+     * Создает нового игрока на основе игрока из текущей коллекции, копируя указанные свойства из найденного игрока.
+     * @param {Player} targetPlayer - Объект игрока.
+     * @param {Player|string} playerOrNameCollection - Объект игрока или имя игрока из коллекции.
+     * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из найденного игрока.
+     * @returns {Player|null} - Новый объект игрока с скопированными данными или null, если игрок не найден.
+     */
+    createPlayerFromPlayerCollection(targetPlayer, playerOrNameCollection, propertiesToCopy) {
+        // Определяем, передан ли объект игрока или имя
+        if (!(targetPlayer instanceof Player)) {
+            return null;
+        }
+
+        // Определяем, передан ли объект игрока или имя Для поиска в коллекции
+        let playerCollection = null;
+        if (playerOrNameCollection instanceof Player) {
+            playerCollection = this.getPlayerByName(playerOrNameCollection.name);
+        } else if (typeof playerOrNameCollection === "string") {
+            playerCollection = this.getPlayerByName(playerOrNameCollection);
+        }
+
+        // Если игрок не найден, возвращаем null
+        if (!(targetPlayer instanceof Player) || !(playerCollection instanceof Player)) {
+            return null;
+        }
+
+        // Проверяем, что propertiesToCopy - это массив
+        if (!Array.isArray(propertiesToCopy)) {
+            throw new TypeError("propertiesToCopy должен быть массивом строк.");
+        }
+
+        // Создаем нового игрока с копированием указанных свойств
+        return Player.newMergePlayers(targetPlayer, playerCollection, propertiesToCopy);
+    }
+
+    /**
      * Добавляет нового игрока с автоматическим увеличением ID.
      * @param {string} name - Имя игрока.
      * @param {string|null} [sessionId=null] - ID сессии игрока (по умолчанию null).
@@ -335,23 +370,28 @@ class PlayerCollection {
     }
 
     /**
-     * Создает нового игрока на основе текущей коллекции, копируя указанные свойства из найденного игрока.
-     * @param {Player|string} playerOrName - Объект игрока или имя игрока.
+     * Копирует указанные свойства из найденного в текущей коллекции игрока для targetPlayer.
+     * @param {Player} targetPlayer - Объект игрока.
+     * @param {Player|string} playerOrNameCollection - Объект игрока или имя игрока из коллекции.
      * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из найденного игрока.
-     * @returns {Player|null} - Новый объект игрока с скопированными данными или null, если игрок не найден.
+     * @returns {Player|null} - Объект игрока targetPlayer с скопированными данными или null, если игрок не найден.
      */
-    copyPlayerFromCollection(playerOrName, propertiesToCopy) {
-        let targetPlayer = null;
-
+    copyPlayerFromPlayerCollection(targetPlayer, playerOrNameCollection, propertiesToCopy) {
         // Определяем, передан ли объект игрока или имя
-        if (playerOrName instanceof Player) {
-            targetPlayer = this.getPlayerByName(playerOrName.name);
-        } else if (typeof playerOrName === "string") {
-            targetPlayer = this.getPlayerByName(playerOrName);
+        if (!(targetPlayer instanceof Player)) {
+            return null;
+        }
+
+        // Определяем, передан ли объект игрока или имя Для поиска в коллекции
+        let playerCollection = null;
+        if (playerOrNameCollection instanceof Player) {
+            playerCollection = this.getPlayerByName(playerOrNameCollection.name);
+        } else if (typeof playerOrNameCollection === "string") {
+            playerCollection = this.getPlayerByName(playerOrNameCollection);
         }
 
         // Если игрок не найден, возвращаем null
-        if (!(targetPlayer instanceof Player)) {
+        if (!(targetPlayer instanceof Player) || !(playerCollection instanceof Player)) {
             return null;
         }
 
@@ -361,31 +401,18 @@ class PlayerCollection {
         }
 
         // Создаем нового игрока с копированием указанных свойств
-        const newPlayer = new Player();
-        propertiesToCopy.forEach((property) => {
-            if (Object.hasOwn(targetPlayer, property)) {
-                newPlayer[property] = targetPlayer[property];
-            }
-        });
-
-        return newPlayer;
+        return Player.copyDataPlayer(targetPlayer, playerCollection, propertiesToCopy);
     }
 
     /**
      * Создает копию текущей коллекции игроков, копируя указанные свойства каждого игрока.
-     * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из каждого игрока.
      * @returns {Player[]} - Массив новых объектов игроков с указанными свойствами.
      */
-    copyPlayerCollectionFromCollection(propertiesToCopy) {
-        // Проверяем, что propertiesToCopy - это массив
-        if (!Array.isArray(propertiesToCopy)) {
-            throw new TypeError("propertiesToCopy должен быть массивом строк.");
-        }
-
+    copyPlayerCollectionFromCollection() {
         // Копируем коллекцию
         const copiedCollection = new PlayerCollection(this.useIncrementalId);
         this.players.forEach((player) => {
-            const copiedPlayer = this.copyPlayerFromCollection(player, propertiesToCopy);
+            const copiedPlayer = Player.copyDataPlayer(player, player);
             if (copiedPlayer instanceof Player) {
                 copiedCollection.addPlayerFromInstance(copiedPlayer);
             }
