@@ -346,7 +346,7 @@ class CardSelection extends GameControls {
 
     setupButtonSelectCardListener() {
         this.buttonSelectCards.addEventListener("click", () => {
-            console.log(this.selectionCount);
+            // console.log(this.selectionCount);
 
             if (this.selectionCount === 0) {
                 this.hideMainController();

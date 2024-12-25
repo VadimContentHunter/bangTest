@@ -153,6 +153,15 @@ function requestServer(request, data = {}, ws) {
         case "updateUserCount":
             updateUserCount(request?.params, "#user-count");
             break;
+        case "lockPlayerMove":
+            if (data.playerHand instanceof PlayerHand) {
+                data.playerHand.isMyMove = request?.params?.isMyMove ?? false;
+            }
+
+            if (data.playerHand instanceof PlayerHand && data.battleZone instanceof BattleZone) {
+                data.battleZone.setupButtonEndMoveVisible(data.playerHand);
+            }
+            break;
         case "selectionCardsMenu":
             if (data.cardSelection instanceof CardSelection) {
                 const cardSelection = data.cardSelection;
@@ -457,7 +466,7 @@ function main() {
     const battleZone = new BattleZone("main .battle-zone");
     battleZone.init();
     battleZone.setupDragCardListener(playerHand, notificationsHtml);
-    battleZone.setupButtonEndMove(playerHand);
+    battleZone.setupButtonEndMoveListener();
 
     const cardSelection = new CardSelection("main .game-controls", ".cards-selection");
     cardSelection.init();
@@ -501,6 +510,8 @@ function main() {
                 } else {
                     errorHandler(error, notificationsHtml);
                 }
+
+                // throw error;
             }
         },
         (ws) => {

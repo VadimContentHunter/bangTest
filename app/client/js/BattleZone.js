@@ -200,10 +200,21 @@ class BattleZone {
 
     init() {
         // this.setupDragCardListener();
+        // this.setupButtonEndMoveVisible();
+        this.valueButtonEndMoveElement.style.display = "none";
     }
 
-    setupButtonEndMove(playerHand) {
-        this.valueButtonEndMoveElement.style.display = "none";
+    setupButtonEndMoveVisible(playerHand) {
+        if (playerHand instanceof PlayerHand) {
+            if (playerHand.isMyMove) {
+                this.valueButtonEndMoveElement.style.display = "block";
+            } else {
+                this.valueButtonEndMoveElement.style.display = "none";
+            }
+        }
+    }
+
+    setupButtonEndMoveListener() {
         this.valueButtonEndMoveElement.addEventListener("click", () => {
             document.dispatchEvent(
                 new CustomEvent("sendServer", {
@@ -213,14 +224,8 @@ class BattleZone {
                     },
                 })
             );
+            this.valueButtonEndMoveElement.style.display = "none";
         });
-        if (playerHand instanceof PlayerHand) {
-            if (playerHand.isMyMove) {
-                this.valueButtonEndMoveElement.style.display = "block";
-            } else {
-                this.valueButtonEndMoveElement.style.display = "none";
-            }
-        }
     }
 
     setupDragCardListener(playerHand, notificationsHtml) {

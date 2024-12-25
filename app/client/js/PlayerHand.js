@@ -9,7 +9,7 @@ class PlayerHand {
     _handCards = [];
     _tempCards = [];
     _selectCard = null;
-    _isMyMove = true;
+    _isMyMove = false;
 
     constructor(selectorMainElement) {
         this.mainElement = document.querySelector(selectorMainElement);
