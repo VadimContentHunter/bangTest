@@ -104,13 +104,12 @@ class GameHandler extends EventEmitter {
     startGame() {
         this.emit("beforeGameStart");
 
+        const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
         this.gameSessionHandler.history.addMove(
             new Move({
                 description: "Первый ход, инициализация первичных данных",
-                players: this.playroomHandler.playerOnline,
-                playersDistances: new DistanceHandler(
-                    this.playroomHandler.playerOnline.getPlayers()
-                ),
+                players: tempPlayers,
+                playersDistances: new DistanceHandler(tempPlayers.getPlayers()),
             })
         );
         this.gameSessionHandler.createGameSession();
@@ -126,51 +125,53 @@ class GameHandler extends EventEmitter {
     async selectCharactersForPlayers() {
         this.gameSessionHandler.loadData();
         const lastMove = this.gameSessionHandler.history.getLastMove();
-        const player = this.getCopyDataPlayerWithOnlinePlayer(
-            lastMove.players.getPlayerWithMinIdWithoutCharacter()
+        const playerWithMinId = lastMove.players.getPlayerWithMinIdWithoutCharacter();
+        const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
+            playerWithMinId,
+            playerWithMinId?.name,
+            ["sessionId"]
         );
 
         if (player instanceof Player) {
-            try {
-                const selectionCards = new SelectionCards({
-                    title: "Выбор карты для роли",
-                    description: "Выберите карту для роли:",
-                    textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
-                    collectionCards: [
-                        new StubCard(CardType.DEFAULT),
-                        new StubCard(CardType.WEAPON),
-                        new StubCard(CardType.CHARACTER),
-                    ],
-                    selectionCount: 2,
-                    // selectedIndices: [1, 3],
-                    // isWaitingForResponse: false,
-                });
+            // try {
+            const selectionCards = new SelectionCards({
+                title: "Выбор карты для роли",
+                description: "Выберите карту для роли:",
+                textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
+                collectionCards: [
+                    new StubCard(CardType.DEFAULT),
+                    new StubCard(CardType.WEAPON),
+                    new StubCard(CardType.CHARACTER),
+                ],
+                selectionCount: 2,
+                // selectedIndices: [1, 3],
+                // isWaitingForResponse: false,
+            });
 
-                // Генерируем событие для сервера
-                this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
-                // this.saveAndTriggerHook(player, "testTwasd");
+            this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
 
-                // Ожидаем выбора карты игроком
-                const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
-                console.log(`GameHandler: Игрок ${player.name} выбрал карту: ${selectedCard.name}`);
-                player.character = selectedCard;
+            const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
+            player.character = selectedCard;
+            this.gameSessionHandler.history.addMove(
+                new Move({
+                    description: `Игрок ${player.name} выбрал себе персонажа ${selectedCard.name}`,
+                    players: lastMove.players,
+                    playersDistances: new DistanceHandler(lastMove.players),
+                })
+            );
+            this.gameSessionHandler.saveData();
+            this.playerActionManager.clearHooksByPlayer(player);
+            console.log(
+                `GameHandler: Игрок ${player.name} выбрал себе персонажа ${selectedCard.name}`
+            );
 
-                this.gameSessionHandler.history.addMove(
-                    new Move({
-                        description: `Игрок ${player.name} выбрал себе персонажа`,
-                        players: lastMove.players,
-                        playersDistances: new DistanceHandler(lastMove.players),
-                    })
-                );
-                this.gameSessionHandler.saveData();
-
-                this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
-            } catch (error) {
-                console.error(
-                    `GameHandler: Ошибка выбора карты для игрока ${player.name}:`,
-                    error.message
-                );
-            }
+            this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
+            // } catch (error) {
+            //     console.error(
+            //         `GameHandler: Ошибка выбора карты для игрока ${player.name}:`,
+            //         error.message
+            //     );
+            // }
         } else {
             console.log("GameHandler: Все игроки выбрали персонажей.");
             this.emit("afterSelectCharactersForPlayers");
@@ -191,21 +192,43 @@ class GameHandler extends EventEmitter {
 
         return new Promise((resolve, reject) => {
             // const timeout = setTimeout(() => {
-            //     reject(new SelectionCardsError("Время на выбор карты истекло."));
+            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
             // }, timer);
 
-            this.once("playerCardSelected", (ws, card, id = null) => {
-                // clearTimeout(timeout); // Очищаем таймаут
+            const playerCardSelected = (ws, params, id = null) => {
+                // Проверяем, что sessionId из события совпадает с ожидаемым
+                if (ws.sessionId === player.sessionId) {
+                    // clearTimeout(timeout); // Очищаем таймер, если используем его
 
-                // Здесь можно добавить проверку выбранной карты
-                // if (params && selectionCards.collectionCards.some((c) => c.id === params.id)) {
-                //     resolve(params);
-                // } else {
-                //     reject(new SelectionCardsError("Выбрана неверная карта."));
-                // }
-                // Здесь можно добавить проверку выбранной карты
-                resolve(new StubCard(CardType.CHARACTER));
-            });
+                    // Здесь можно добавить проверку выбранной карты
+                    // if (params && selectionCards.collectionCards.some((c) => c.id === params.id)) {
+                    //     resolve(params);
+                    // } else {
+                    //     reject(new SelectionCardsError("Выбрана неверная карта."));
+                    // }
+                    // Здесь можно добавить проверку выбранной карты
+                    resolve(new StubCard(CardType.CHARACTER));
+
+                    // После того как нужный игрок завершил ход, убираем обработчик
+                    this.removeListener("playerCardSelected", playerCardSelected);
+                } else {
+                    console.log(
+                        `Игрок с sessionId ${ws.sessionId} не может выбрать персонажа вместо ${player.name}`
+                    );
+                }
+            };
+
+            // Подписываемся на событие
+            this.on("playerCardSelected", playerCardSelected);
+
+            // В случае истечения времени или ошибки, обработчик должен быть удалён
+            // setTimeout(() => {
+            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
+            //     this.removeListener("playerMoveFinished", moveFinishedHandler); // Убираем обработчик при истечении таймаута
+            // }, timer);
+
+            // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
+            // Убедитесь, что он удаляется в любом случае.
         });
     }
 
@@ -218,11 +241,12 @@ class GameHandler extends EventEmitter {
     async executeMovesRound() {
         const playersRound = this.playroomHandler.playerOnline.getPlayersSortedAsc();
         for (const player of playersRound) {
-            this.emit("playerStartedMove", { player });
+            this.saveAndTriggerHook(player, "playerStartedMove", { player });
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
             try {
                 // Ожидаем завершения хода игрока с таймером
                 await this.waitForPlayerMove(player, 30000); // Таймаут на 30 секунд
+                this.playerActionManager.clearHooksByPlayer(player);
                 console.log(`GameHandler: Игрок ${player.name} завершил ход.`);
             } catch (error) {
                 console.error(
@@ -277,14 +301,6 @@ class GameHandler extends EventEmitter {
             // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
             // Убедитесь, что он удаляется в любом случае.
         });
-    }
-
-    getCopyDataPlayerWithOnlinePlayer(player) {
-        if (!(player instanceof Player)) {
-            return null;
-        }
-        const playerOnline = this.playroomHandler.playerOnline.getPlayerByName(player.name);
-        return Player.copyDataPlayer(player, playerOnline, ["sessionId"]);
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {
