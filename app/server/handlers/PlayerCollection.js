@@ -340,7 +340,7 @@ class PlayerCollection {
      * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из найденного игрока.
      * @returns {Player|null} - Новый объект игрока с скопированными данными или null, если игрок не найден.
      */
-    createPlayerFromCollection(playerOrName, propertiesToCopy) {
+    copyPlayerFromCollection(playerOrName, propertiesToCopy) {
         let targetPlayer = null;
 
         // Определяем, передан ли объект игрока или имя
@@ -369,6 +369,29 @@ class PlayerCollection {
         });
 
         return newPlayer;
+    }
+
+    /**
+     * Создает копию текущей коллекции игроков, копируя указанные свойства каждого игрока.
+     * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из каждого игрока.
+     * @returns {Player[]} - Массив новых объектов игроков с указанными свойствами.
+     */
+    copyPlayerCollectionFromCollection(propertiesToCopy) {
+        // Проверяем, что propertiesToCopy - это массив
+        if (!Array.isArray(propertiesToCopy)) {
+            throw new TypeError("propertiesToCopy должен быть массивом строк.");
+        }
+
+        // Копируем коллекцию
+        const copiedCollection = new PlayerCollection(this.useIncrementalId);
+        this.players.forEach((player) => {
+            const copiedPlayer = this.copyPlayerFromCollection(player, propertiesToCopy);
+            if (copiedPlayer instanceof Player) {
+                copiedCollection.addPlayerFromInstance(copiedPlayer);
+            }
+        });
+
+        return copiedCollection;
     }
 
     // Обновляет информацию об игроке по ID
