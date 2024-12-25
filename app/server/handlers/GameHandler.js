@@ -317,9 +317,7 @@ class GameHandler extends EventEmitter {
 
     triggerHooksForPlayer(player) {
         if (!(player instanceof Player)) {
-            throw new Error(
-                "GameHandler: Передан неверный игрок для метода triggerLastHookForPlayer"
-            );
+            throw new Error("GameHandler: Передан неверный игрок для метода triggerHooksForPlayer");
         }
 
         const dataHook = this.playerActionManager.getHooksByPlayer(player);
