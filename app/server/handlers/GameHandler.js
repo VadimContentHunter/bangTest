@@ -23,6 +23,8 @@ const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
 const PlayerActionManager = require("./PlayerActionManager");
 const RoleFilter = require("./PlayerCollection/Filters/RoleFilter");
+const IdFilter = require("./PlayerCollection/Filters/IdFilter");
+const CharacterFilter = require("./PlayerCollection/Filters/CharacterFilter");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -127,7 +129,11 @@ class GameHandler extends EventEmitter {
     async selectCharactersForPlayers() {
         this.gameSessionHandler.loadData();
         const lastMove = this.gameSessionHandler.history.getLastMove();
-        const playerWithMinId = lastMove.players.getPlayerWithMinIdWithoutCharacter();
+        const playerWithMinId = lastMove.players
+            .useFilterClass(CharacterFilter)
+            .getPlayersWithoutCharacter()
+            .useFilterClass(IdFilter)
+            .getPlayerWithMinId();
         const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
             playerWithMinId,
             playerWithMinId?.name,

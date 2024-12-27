@@ -2,9 +2,12 @@ const PlayroomHandlerError = require("../Errors/PlayroomHandlerError");
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
 const ValidateLoginError = require("../Errors/ValidateLoginError");
 const Player = require("../models/Player");
-const PlayerCollection = require("./PlayerCollection");
+const PlayerCollection = require("./PlayerCollection/PlayerCollection");
 const SessionHandler = require("./SessionHandler");
 const GameSessionHandler = require("./GameSessionHandler");
+const SessionIdFilter = require("./PlayerCollection/Filters/SessionIdFilter");
+const IdFilter = require("./PlayerCollection/Filters/IdFilter");
+const BaseFilter = require("./PlayerCollection/Filters/BaseFilter");
 // const GameHandler = require("./GameHandler");
 
 class PlayroomHandler {
@@ -45,7 +48,9 @@ class PlayroomHandler {
     }
 
     connect(sessionId) {
-        let player = this.playerOnline.getPlayerBySessionId(sessionId);
+        let player = this.playerOnline
+            .useFilterClass(SessionIdFilter)
+            .getPlayerBySessionId(sessionId);
         if (player instanceof Player) {
             console.log(`PlayroomHandler: Игрок подключился: ${player.name}`);
             return player;
@@ -59,7 +64,9 @@ class PlayroomHandler {
                 playerFromSession.lastName.length > 0
             ) {
                 this.addPlayerOnline(playerFromSession.lastName, sessionId);
-                player = this.playerOnline.getPlayerBySessionId(sessionId);
+                player = this.playerOnline
+                    .useFilterClass(SessionIdFilter)
+                    .getPlayerBySessionId(sessionId);
                 if (player instanceof Player) {
                     console.log(
                         `PlayroomHandler: Игрок подключился: ${player.name}, из сохраненной сессии.`
@@ -77,7 +84,9 @@ class PlayroomHandler {
     }
 
     hasOnline(sessionId) {
-        let player = this.playerOnline.getPlayerBySessionId(sessionId);
+        let player = this.playerOnline
+            .useFilterClass(SessionIdFilter)
+            .getPlayerBySessionId(sessionId);
         if (player instanceof Player) {
             return true;
         }
@@ -131,12 +140,18 @@ class PlayroomHandler {
                 throw new PlayroomHandlerError("ID сессии должно быть непустой строкой.");
             }
 
-            const player = this.playerOnline.getPlayerBySessionId(sessionId);
+            const player = this.playerOnline
+                .useFilterClass(SessionIdFilter)
+                .getPlayerBySessionId(sessionId);
             if (!player) {
                 throw new PlayroomHandlerError(`Игрок с сессией "${sessionId}" не найден.`);
             }
 
-            this.playerOnline.removePlayerById(player.id); // Удаляем игрока из коллекции
+            this.playerOnline.removePlayerOrCollection((playerCollection) => {
+                return playerCollection instanceof PlayerCollection
+                    ? playerCollection.useFilterClass(IdFilter).getPlayerById(player.id)
+                    : null;
+            }); // Удаляем игрока из коллекции
             // SessionHandler.deleteSession(sessionId); // Удаляем сессию
             // console.log(`PlayroomHandler: Игрок с сессией ${sessionId} был удален.`);
         } catch (error) {
@@ -145,7 +160,7 @@ class PlayroomHandler {
     }
 
     getAllPlayersSummaryInfo() {
-        return this.playerOnline.getDataSummaryAllPlayers();
+        return this.playerOnline.useFilterClass(BaseFilter).getDataSummaryAllPlayers();
     }
 
     /**
