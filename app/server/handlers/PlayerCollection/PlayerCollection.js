@@ -1,11 +1,24 @@
-const ValidatePlayerError = require("../Errors/ValidatePlayerError");
-const { aCard, CardType } = require("../interfaces/aCard");
-const Player = require("../models/Player");
+const ValidatePlayerError = require("../../Errors/ValidatePlayerError");
+const { aCard, CardType } = require("../../interfaces/aCard");
+const Player = require("../../models/Player");
+const iFilters = require("./Filters/iFilters");
 
 class PlayerCollection {
     constructor(useIncrementalId = true) {
         this.players = [];
         this.useIncrementalId = useIncrementalId; // Флаг, определяющий, как будет происходить идентификация
+    }
+
+    useFilter(filter) {
+        if (!(filter instanceof iFilters)) {
+            throw new ValidatePlayerError("Указан не корректный фильтр.");
+        }
+
+        if (!(filter.playerCollection instanceof PlayerCollection)) {
+            filter.playerCollection = this;
+        }
+
+        return filter;
     }
 
     /**
@@ -217,23 +230,6 @@ class PlayerCollection {
     }
 
     /**
-     * Возвращает игрока без роли или с картой, указанной в параметре cardsClass.
-     * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие роли".
-     * @returns {Player|null} Первый игрок без роли или с картой из cardsClass, или null, если таких игроков нет.
-     */
-    getPlayerWithoutRole(cardsClass = []) {
-        return (
-            this.players.find((player) => {
-                return (
-                    !(player.role instanceof aCard) || // Роль отсутствует
-                    player.role.type !== CardType.ROLE || // Некорректный тип карты роли
-                    cardsClass.some((cardClass) => player.role.constructor.name === cardClass.name) // Роль в списке исключений
-                );
-            }) || null
-        );
-    }
-
-    /**
      * Возвращает игрока без персонажа или с картой, указанной в параметре cardsClass.
      * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
      * @returns {Player|null} Первый игрок без персонажа или с картой из cardsClass, или null, если таких игроков нет.
@@ -253,21 +249,6 @@ class PlayerCollection {
     }
 
     /**
-     * Возвращает всех игроков без роли или с картой, указанной в параметре cardsClass.
-     * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие роли".
-     * @returns {Player[]} Массив игроков без роли или с картой из cardsClass.
-     */
-    getPlayersWithoutRole(cardsClass = []) {
-        return this.players.filter((player) => {
-            return (
-                !(player.role instanceof aCard) || // Роль отсутствует
-                player.role.type !== CardType.ROLE || // Некорректный тип карты роли
-                cardsClass.some((cardClass) => player.role.constructor.name === cardClass.name) // Роль в списке исключений
-            );
-        });
-    }
-
-    /**
      * Возвращает всех игроков без персонажа или с картой, указанной в параметре cardsClass.
      * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
      * @returns {Player[]} Массив игроков без персонажа или с картой из cardsClass.
@@ -280,24 +261,6 @@ class PlayerCollection {
                 cardsClass.some((cardClass) => player.character.constructor.name === cardClass.name) // Персонаж в списке исключений
             );
         });
-    }
-
-    /**
-     * Находит игрока с минимальным id среди тех, у которых отсутствует роль
-     * или роль находится в списке исключений, игнорируя указанные id.
-     *
-     * Этот метод комбинирует логику методов `getPlayersWithoutRole` и `getPlayerWithMinId`.
-     *
-     * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие роли".
-     * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
-     * @returns {Object|null} Игрок с минимальным id, или null, если подходящий игрок не найден.
-     */
-    getPlayerWithMinIdWithoutRole(cardsClass = [], ignoredIds = []) {
-        // Используем метод getPlayersWithoutRole для получения списка игроков без роли
-        const playersWithoutRole = this.getPlayersWithoutRole(cardsClass);
-
-        // Теперь используем метод getPlayerWithMinId для поиска игрока с минимальным id среди игроков без роли
-        return PlayerCollection.findPlayerWithMinIdExcludingIgnored(ignoredIds, playersWithoutRole);
     }
 
     /**
