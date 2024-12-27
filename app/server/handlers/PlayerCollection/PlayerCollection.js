@@ -1,6 +1,7 @@
 const ValidatePlayerError = require("../../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../../interfaces/aCard");
 const Player = require("../../models/Player");
+const Copy = require("./CopyMethods/Copy");
 const BaseFilter = require("./Filters/BaseFilter");
 const CharacterFilter = require("./Filters/CharacterFilter");
 const Filters = require("./Filters/Filters");
@@ -69,6 +70,34 @@ class PlayerCollection {
     }
 
     /**
+     * Применяет копирование данных из указанного класса, создавая экземпляр переданного класса для копирования.
+     * Метод проверяет, является ли переданный класс наследником класса Copy, и создает его экземпляр.
+     *
+     * @template T
+     * @param {new (playerCollection: PlayerCollection) => T} copyClass - Класс копирования, который необходимо использовать.
+     * Должен быть наследником класса Copy.
+     * @returns {T} Экземпляр копирования, наследующий Copy.
+     * @throws {ValidatePlayerError} Если переданный класс не наследуется от Copy.
+     */
+    useCopyClass(copyClass) {
+        if (!(copyClass.prototype instanceof Copy)) {
+            throw new ValidatePlayerError(
+                "Переданный класс не является копированием, наследующим Copy."
+            );
+        }
+
+        // Создаем и возвращаем экземпляр для копирования
+        const copyInstance = new copyClass(this);
+
+        // Проверяем и устанавливаем коллекцию игроков, если она отсутствует
+        if (!(copyInstance.playerCollection instanceof PlayerCollection)) {
+            copyInstance.playerCollection = this;
+        }
+
+        return copyInstance;
+    }
+
+    /**
      * Генерирует новый ID для игрока.
      * Если useIncrementalId равно true, то используется инкрементный ID.
      * Если false, то используется первый свободный ID.
@@ -84,41 +113,6 @@ class PlayerCollection {
             }
             return id;
         }
-    }
-
-    /**
-     * Создает нового игрока на основе игрока из текущей коллекции, копируя указанные свойства из найденного игрока.
-     * @param {Player} targetPlayer - Объект игрока.
-     * @param {Player|string} playerOrNameCollection - Объект игрока или имя игрока из коллекции.
-     * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из найденного игрока.
-     * @returns {Player|null} - Новый объект игрока с скопированными данными или null, если игрок не найден.
-     */
-    createPlayerFromPlayerCollection(targetPlayer, playerOrNameCollection, propertiesToCopy) {
-        // Определяем, передан ли объект игрока или имя
-        if (!(targetPlayer instanceof Player)) {
-            return null;
-        }
-
-        // Определяем, передан ли объект игрока или имя Для поиска в коллекции
-        let playerCollection = null;
-        if (playerOrNameCollection instanceof Player) {
-            playerCollection = this.getPlayerByName(playerOrNameCollection.name);
-        } else if (typeof playerOrNameCollection === "string") {
-            playerCollection = this.getPlayerByName(playerOrNameCollection);
-        }
-
-        // Если игрок не найден, возвращаем null
-        if (!(targetPlayer instanceof Player) || !(playerCollection instanceof Player)) {
-            return null;
-        }
-
-        // Проверяем, что propertiesToCopy - это массив
-        if (!Array.isArray(propertiesToCopy)) {
-            throw new TypeError("propertiesToCopy должен быть массивом строк.");
-        }
-
-        // Создаем нового игрока с копированием указанных свойств
-        return Player.newMergePlayers(targetPlayer, playerCollection, propertiesToCopy);
     }
 
     /**
@@ -220,58 +214,6 @@ class PlayerCollection {
      */
     getPlayers() {
         return this.useFilterClass(BaseFilter).getPlayers();
-    }
-
-    /**
-     * Копирует указанные свойства из найденного в текущей коллекции игрока для targetPlayer.
-     * @param {Player} targetPlayer - Объект игрока.
-     * @param {Player|string} playerOrNameCollection - Объект игрока или имя игрока из коллекции.
-     * @param {Array<string>} propertiesToCopy - Массив свойств, которые нужно скопировать из найденного игрока.
-     * @returns {Player|null} - Объект игрока targetPlayer с скопированными данными или null, если игрок не найден.
-     */
-    copyPlayerFromPlayerCollection(targetPlayer, playerOrNameCollection, propertiesToCopy) {
-        // Определяем, передан ли объект игрока или имя
-        if (!(targetPlayer instanceof Player)) {
-            return null;
-        }
-
-        // Определяем, передан ли объект игрока или имя Для поиска в коллекции
-        let playerCollection = null;
-        if (playerOrNameCollection instanceof Player) {
-            playerCollection = this.getPlayerByName(playerOrNameCollection.name);
-        } else if (typeof playerOrNameCollection === "string") {
-            playerCollection = this.getPlayerByName(playerOrNameCollection);
-        }
-
-        // Если игрок не найден, возвращаем null
-        if (!(targetPlayer instanceof Player) || !(playerCollection instanceof Player)) {
-            return null;
-        }
-
-        // Проверяем, что propertiesToCopy - это массив
-        if (!Array.isArray(propertiesToCopy)) {
-            throw new TypeError("propertiesToCopy должен быть массивом строк.");
-        }
-
-        // Создаем нового игрока с копированием указанных свойств
-        return Player.copyDataPlayer(targetPlayer, playerCollection, propertiesToCopy);
-    }
-
-    /**
-     * Создает копию текущей коллекции игроков, копируя указанные свойства каждого игрока.
-     * @returns {Player[]} - Массив новых объектов игроков с указанными свойствами.
-     */
-    copyPlayerCollectionFromCollection() {
-        // Копируем коллекцию
-        const copiedCollection = new PlayerCollection(this.useIncrementalId);
-        this.players.forEach((player) => {
-            const copiedPlayer = Player.copyDataPlayer(player, player);
-            if (copiedPlayer instanceof Player) {
-                copiedCollection.addPlayerFromInstance(copiedPlayer);
-            }
-        });
-
-        return copiedCollection;
     }
 
     // Обновляет информацию об игроке по ID
