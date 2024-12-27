@@ -1,5 +1,5 @@
 const MoveError = require("../Errors/MoveError");
-const PlayerCollection = require("../handlers/PlayerCollection");
+const PlayerCollection = require("../handlers/PlayerCollection/PlayerCollection");
 const CardsCollection = require("../handlers/CardsCollection");
 const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");

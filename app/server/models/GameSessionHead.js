@@ -1,5 +1,5 @@
 const ServerError = require("../Errors/ServerError");
-const PlayerCollection = require("../handlers/PlayerCollection");
+const PlayerCollection = require("../handlers/PlayerCollection/PlayerCollection");
 const Player = require("./Player");
 const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");
