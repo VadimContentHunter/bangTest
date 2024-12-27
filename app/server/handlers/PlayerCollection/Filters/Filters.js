@@ -22,6 +22,15 @@ class Filters {
     set playerCollection(value) {
         throw new Error("Метод 'playerCollection' должен быть реализован в наследуемом классе.");
     }
+
+    /**
+     * @param {PlayerCollection} value - Коллекция игроков.
+     * @throws {Error} Если метод не переопределен в наследуемом классе.
+     * @abstract
+     */
+    static init(playerCollection) {
+        throw new Error("Метод 'init' должен быть реализован в наследуемом классе.");
+    }
 }
 
 module.exports = Filters;
