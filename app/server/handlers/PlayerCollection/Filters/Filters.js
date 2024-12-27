@@ -3,7 +3,7 @@
  * Имитирует интерфейс с геттерами и сеттерами для playerCollection.
  * @abstract
  */
-class iFilters {
+class Filters {
     /**
      * Получает коллекцию игроков.
      * @returns {PlayerCollection|null} Коллекция игроков.
@@ -24,4 +24,4 @@ class iFilters {
     }
 }
 
-module.exports = iFilters;
+module.exports = Filters;

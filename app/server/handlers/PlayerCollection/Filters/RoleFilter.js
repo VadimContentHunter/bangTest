@@ -2,13 +2,13 @@ const ValidatePlayerError = require("../../../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../../../interfaces/aCard");
 const Player = require("../../../models/Player");
 const PlayerCollection = require("../PlayerCollection");
-const iFilters = require("./iFilters");
+const Filters = require("./Filters");
 
 /**
  * Класс для фильтрации игроков по ролям.
- * @extends iFilters
+ * @extends Filters
  */
-class RoleFilter extends iFilters {
+class RoleFilter extends Filters {
     /**
      * @type {PlayerCollection|null} Хранилище коллекции игроков.
      * @private
