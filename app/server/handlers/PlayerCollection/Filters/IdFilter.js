@@ -54,7 +54,7 @@ class IdFilter extends Filters {
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
     static init(playerCollection) {
-        const filter = new FilterRole(playerCollection);
+        const filter = new IdFilter(playerCollection);
         return filter;
     }
 

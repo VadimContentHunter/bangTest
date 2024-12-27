@@ -1,14 +1,13 @@
 const ValidatePlayerError = require("../../../Errors/ValidatePlayerError");
-const { aCard, CardType } = require("../../../interfaces/aCard");
 const Player = require("../../../models/Player");
 const PlayerCollection = require("../PlayerCollection");
-const Filters = require("./Filters");
+const Sorts = require("./Sorts");
 
 /**
- * Класс для фильтрации игроков по ролям.
- * @extends Filters
+ * Класс для сортировки игроков.
+ * @extends Sorts
  */
-class SessionIdFilter extends Filters {
+class BaseSort extends Sorts {
     /**
      * @type {PlayerCollection|null} Хранилище коллекции игроков.
      * @private
@@ -16,7 +15,7 @@ class SessionIdFilter extends Filters {
     _playerCollection = null;
 
     /**
-     * Создает экземпляр FilterRole.
+     * Создает экземпляр BaseSort.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
@@ -48,41 +47,36 @@ class SessionIdFilter extends Filters {
     }
 
     /**
-     * Инициализирует экземпляр FilterRole.
+     * Инициализирует экземпляр BaseSort.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
-     * @returns {FilterRole} Новый экземпляр FilterRole.
+     * @returns {BaseSort} Новый экземпляр BaseSort.
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
     static init(playerCollection) {
-        const filter = new SessionIdFilter(playerCollection);
-        return filter;
+        return new BaseSort(playerCollection);
     }
 
     /**
-     * Получает игрока по sessionId.
-     * @param {string} sessionId - ID сессии игрока.
-     * @returns {Player|null} Игрок, если найден; null, если не найден.
-     * @throws {ValidatePlayerError} Если sessionId не является строкой.
+     * Возвращает всех игроков, отсортированных по ID от меньшего к большему.
+     * @returns {Player[]} Массив игроков, отсортированных по ID от меньшего к большему.
      */
-    getPlayerBySessionId(sessionId) {
-        if (typeof sessionId !== "string") {
-            throw new ValidatePlayerError("sessionId должен быть строкой.");
+    getPlayersSortedAsc() {
+        if (!this.playerCollection) {
+            throw new ValidatePlayerError("playerCollection is not initialized.");
         }
-        return this.playerCollection.getPlayers().find((player) => player.sessionId === sessionId) || null;
+        return [...this.playerCollection.players].sort((a, b) => a.id - b.id);
     }
 
     /**
-     * Получает всех игроков по sessionId.
-     * @param {string} sessionId - ID сессии игрока.
-     * @returns {Player[]} Массив игроков с указанным sessionId. Пустой массив, если игроки не найдены.
-     * @throws {ValidatePlayerError} Если sessionId не является строкой.
+     * Возвращает всех игроков, отсортированных по ID от большего к меньшему.
+     * @returns {Player[]} Массив игроков, отсортированных по ID от большего к меньшему.
      */
-    getAllPlayersBySessionId(sessionId) {
-        if (typeof sessionId !== "string") {
-            throw new ValidatePlayerError("sessionId должен быть строкой.");
+    getPlayersSortedDesc() {
+        if (!this.playerCollection) {
+            throw new ValidatePlayerError("playerCollection is not initialized.");
         }
-        return this.playerCollection.getPlayers().filter((player) => player.sessionId === sessionId);
+        return [...this.playerCollection.players].sort((a, b) => b.id - a.id);
     }
 }
 
-module.exports = SessionIdFilter;
+module.exports = BaseSort;

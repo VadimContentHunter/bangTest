@@ -2,7 +2,7 @@ const ValidatePlayerError = require("../../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../../interfaces/aCard");
 const Player = require("../../models/Player");
 const CharacterFilter = require("./Filters/CharacterFilter");
-const iFilters = require("./Filters/iFilters");
+const Filters = require("./Filters/Filters");
 const RoleFilter = require("./Filters/RoleFilter");
 
 class PlayerCollection {
@@ -13,18 +13,18 @@ class PlayerCollection {
 
     /**
      * Применяет фильтр к коллекции игроков, создавая экземпляр указанного класса фильтра.
-     * Метод проверяет, наследуется ли переданный класс от iFilters, и создает его экземпляр.
+     * Метод проверяет, наследуется ли переданный класс от Filters, и создает его экземпляр.
      *
      * @template T
      * @param {new (playerCollection: PlayerCollection) => T} filterClass - Класс фильтра, который необходимо использовать.
-     * Должен быть наследником iFilters.
-     * @returns {T} Экземпляр фильтра, наследующего iFilters.
-     * @throws {ValidatePlayerError} Если переданный класс не наследуется от iFilters.
+     * Должен быть наследником Filters.
+     * @returns {T} Экземпляр фильтра, наследующего Filters.
+     * @throws {ValidatePlayerError} Если переданный класс не наследуется от Filters.
      */
     useFilterClass(filterClass) {
-        if (!(filterClass.prototype instanceof iFilters)) {
+        if (!(filterClass.prototype instanceof Filters)) {
             throw new ValidatePlayerError(
-                "Переданный класс не является фильтром, наследующим iFilters."
+                "Переданный класс не является фильтром, наследующим Filters."
             );
         }
 
@@ -37,6 +37,34 @@ class PlayerCollection {
         }
 
         return filter;
+    }
+
+    /**
+     * Применяет сортировку к коллекции игроков, создавая экземпляр указанного класса сортировки.
+     * Метод проверяет, наследуется ли переданный класс от Sorts, и создает его экземпляр.
+     *
+     * @template T
+     * @param {new (playerCollection: PlayerCollection) => T} sortClass - Класс сортировки, который необходимо использовать.
+     * Должен быть наследником Sorts.
+     * @returns {T} Экземпляр сортировки, наследующей Sorts.
+     * @throws {ValidatePlayerError} Если переданный класс не наследуется от Sorts.
+     */
+    useSortClass(sortClass) {
+        if (!(sortClass.prototype instanceof Sorts)) {
+            throw new ValidatePlayerError(
+                "Переданный класс не является сортировкой, наследующей Sorts."
+            );
+        }
+
+        // Создаем и возвращаем экземпляр сортировки
+        const sorter = new sortClass(this);
+
+        // Проверяем и устанавливаем коллекцию игроков, если она отсутствует
+        if (!(sorter.playerCollection instanceof PlayerCollection)) {
+            sorter.playerCollection = this;
+        }
+
+        return sorter;
     }
 
     /**
@@ -182,61 +210,6 @@ class PlayerCollection {
         });
 
         // console.log(`Коллекция игроков обновлена. Всего игроков: ${players.length}`);
-    }
-
-    /**
-     * Проверяет существование игрока по имени.
-     * @param {string} name - Имя игрока.
-     * @returns {Player|null} Игрок, если найден; null, если не найден.
-     * @throws {ValidatePlayerError} Если имя не является строкой.
-     */
-    getPlayerByName(name) {
-        if (typeof name !== "string") {
-            throw new ValidatePlayerError("Имя должно быть строкой.");
-        }
-        return this.players.find((player) => player.name === name) || null;
-    }
-
-    /**
-     * Возвращает всех игроков, отсортированных по ID от меньшего к большему.
-     * @returns {Player[]} Массив игроков, отсортированных по ID от меньшего к большему.
-     */
-    getPlayersSortedAsc() {
-        return [...this.players].sort((a, b) => a.id - b.id); // Сортировка по ID от меньшего к большему
-    }
-
-    /**
-     * Возвращает всех игроков, отсортированных по ID от большего к меньшему.
-     * @returns {Player[]} Массив игроков, отсортированных по ID от большего к меньшему.
-     */
-    getPlayersSortedDesc() {
-        return [...this.players].sort((a, b) => b.id - a.id); // Сортировка по ID от большего к меньшему
-    }
-
-    /**
-     * Получает игрока по sessionId.
-     * @param {string} sessionId - ID сессии игрока.
-     * @returns {Player|null} Игрок, если найден; null, если не найден.
-     * @throws {ValidatePlayerError} Если sessionId не является строкой.
-     */
-    getPlayerBySessionId(sessionId) {
-        if (typeof sessionId !== "string") {
-            throw new ValidatePlayerError("sessionId должен быть строкой.");
-        }
-        return this.players.find((player) => player.sessionId === sessionId) || null;
-    }
-
-    /**
-     * Получает всех игроков по sessionId.
-     * @param {string} sessionId - ID сессии игрока.
-     * @returns {Player[]} Массив игроков с указанным sessionId. Пустой массив, если игроки не найдены.
-     * @throws {ValidatePlayerError} Если sessionId не является строкой.
-     */
-    getAllPlayersBySessionId(sessionId) {
-        if (typeof sessionId !== "string") {
-            throw new ValidatePlayerError("sessionId должен быть строкой.");
-        }
-        return this.players.filter((player) => player.sessionId === sessionId);
     }
 
     /**
