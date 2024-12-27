@@ -216,68 +216,50 @@ class PlayerCollection {
         return this.useFilterClass(BaseFilter).getPlayers();
     }
 
-    // Обновляет информацию об игроке по ID
-    updatePlayerById(id, updates) {
-        if (typeof id !== "number") {
-            throw new ValidatePlayerError("ID должен быть числом.");
-        }
-
-        const player = this.getPlayerById(id);
-        if (player) {
-            player.update(updates);
-            // console.log(`Игрок с ID ${id} обновлён.`);
-        } else {
-            throw new ValidatePlayerError("Игрок не найден");
-        }
-    }
-
-    // Обновляет информацию об игроке по имени
-    updatePlayerByName(name, updates) {
-        if (typeof name !== "string" || name.length === 0) {
-            throw new ValidatePlayerError("Имя должно быть строкой и не должно быть пустым.");
-        }
-
-        const player = this.getPlayerByName(name);
-        if (player) {
-            player.update(updates);
-            // console.log(`Игрок с именем "${name}" обновлён.`);
-        } else {
-            throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
-        }
-    }
-
-    // Обновляет информацию об игроке по sessionId
-    updatePlayerBySessionId(sessionId, updates) {
-        if (typeof sessionId !== "string") {
-            throw new ValidatePlayerError("sessionId должен быть строкой.");
-        }
-
-        const player = this.getPlayerBySessionId(sessionId);
-        if (player) {
-            player.update(updates);
-            // console.log(`Игрок с sessionId "${sessionId}" обновлён.`);
-        } else {
-            throw new ValidatePlayerError(`Игрок с sessionId "${sessionId}" не найден.`);
-        }
-    }
-
     /**
-     * Удаляет игрока по ID.
-     * @param {number} id - ID игрока.
-     * @throws {ValidatePlayerError} Если игрок не найден или ID не является числом.
+     * Обновляет игрока или всех игроков, основываясь на данных, возвращаемых коллбеком filterData.
+     * Коллбек получает текущий контекст (this) и должен вернуть либо одного игрока, либо коллекцию игроков.
+     * @param {Object} updates - Данные для обновления игрока или коллекции игроков.
+     * @param {Function} filterDataCallback - Коллбек, который возвращает либо одного игрока, либо коллекцию игроков.
+     * Функция должна использовать текущий контекст (this) и возвращать данные.
      */
-    removePlayerById(id) {
-        if (typeof id !== "number") {
-            throw new ValidatePlayerError("ID должен быть числом.");
-        }
+    updatePlayerOrCollection(updates, filterDataCallback) {
+        // Получаем данные через filterDataCallback
+        const data = filterDataCallback(this);
 
-        const index = this.players.findIndex((player) => player.id === id); // Находим индекс
-        if (index !== -1) {
-            this.players.splice(index, 1); // Удаляем игрока из массива
+        if (data instanceof Player) {
+            data.update(updates);
+        } else if (data instanceof PlayerCollection) {
+            data.getPlayers().forEach((player) => {
+                player.update(updates);
+            });
         } else {
-            throw new ValidatePlayerError("Игрок не найден");
+            throw new ValidatePlayerError("Не удалось обновить.");
         }
-        // console.log(`Игрок с ID ${id} удалён.`);
+    }
+
+    removePlayerOrCollection(filterDataCallback) {
+        const data = filterDataCallback(this);
+
+        if (data instanceof Player) {
+            const index = this.players.findIndex((player) => player.name === data.name); // Находим индекс
+            if (index !== -1) {
+                this.players.splice(index, 1); // Удаляем игрока из массива
+            } else {
+                throw new ValidatePlayerError("Игрок не найден");
+            }
+        } else if (data instanceof PlayerCollection) {
+            data.getPlayers().forEach((dataPlayer) => {
+                const index = this.players.findIndex((player) => player.name === dataPlayer.name); // Находим индекс
+                if (index !== -1) {
+                    this.players.splice(index, 1); // Удаляем игрока из массива
+                } else {
+                    throw new ValidatePlayerError("Игрок не найден");
+                }
+            });
+        } else {
+            throw new ValidatePlayerError("Не удалось Удалить.");
+        }
     }
 
     /**
@@ -285,26 +267,6 @@ class PlayerCollection {
      */
     removeAllPlayers() {
         this.players = {};
-    }
-
-    /**
-     * Удаляет игрока по имени.
-     * @param {string} name - Имя игрока.
-     * @throws {ValidatePlayerError} Если игрок не найден или name не является строкой.
-     */
-    removePlayerByName(name) {
-        if (typeof name !== "string" || name.length === 0) {
-            throw new ValidatePlayerError("Имя должно быть строкой и не должно быть пустым.");
-        }
-
-        const index = this.players.findIndex((player) => player.name === name); // Находим индекс
-        if (index !== -1) {
-            this.players.splice(index, 1); // Удаляем игрока из массива
-        } else {
-            throw new ValidatePlayerError(`Игрок с именем "${name}" не найден.`);
-        }
-
-        // console.log(`Игрок с именем "${name}" удалён.`);
     }
 
     /**
