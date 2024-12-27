@@ -1,6 +1,7 @@
 const Player = require("./Player"); // Подключение модели Player
 const DistanceError = require("../Errors/DistanceError"); // Подключение ошибки для дистанции
-const PlayerCollection = require("../handlers/PlayerCollection");
+const PlayerCollection = require("../handlers/PlayerCollection/PlayerCollection");
+const NameFilter = require("../handlers/PlayerCollection/Filters/NameFilter");
 
 class Distance {
     #player1 = null;
@@ -129,8 +130,12 @@ class Distance {
 
             // Создаем и возвращаем объект Distance
             return new Distance(
-                playerCollection.getPlayerByName(distanceDataObject.player1),
-                playerCollection.getPlayerByName(distanceDataObject.player2),
+                playerCollection
+                    .useFilterClass(NameFilter)
+                    .getPlayerByName(distanceDataObject.player1),
+                playerCollection
+                    .useFilterClass(NameFilter)
+                    .getPlayerByName(distanceDataObject.player2),
                 distanceDataObject.distance
             );
         // } catch (error) {
