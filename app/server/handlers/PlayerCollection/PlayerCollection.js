@@ -9,15 +9,26 @@ class PlayerCollection {
         this.useIncrementalId = useIncrementalId; // Флаг, определяющий, как будет происходить идентификация
     }
 
-    useFilter(filter) {
-        if (!(filter instanceof iFilters)) {
-            throw new ValidatePlayerError("Указан не корректный фильтр.");
+    /**
+     * Использует фильтр по классу, проверяя, наследуется ли он от iFilters.
+     * @param {Function} filterClass - Класс фильтра, который необходимо использовать.
+     * @returns {iFilters} Экземпляр фильтра, если класс наследуется от iFilters.
+     * @throws {ValidatePlayerError} Если переданный класс не наследуется от iFilters.
+     */
+
+    useFilterClass(filterClass) {
+        if (!(filterClass.prototype instanceof iFilters)) {
+            throw new ValidatePlayerError(
+                "Переданный класс не является фильтром, наследующим iFilters."
+            );
         }
 
+        // Создаем и возвращаем экземпляр фильтра
+        const filter = new filterClass(this);
         if (!(filter.playerCollection instanceof PlayerCollection)) {
             filter.playerCollection = this;
         }
-
+    
         return filter;
     }
 

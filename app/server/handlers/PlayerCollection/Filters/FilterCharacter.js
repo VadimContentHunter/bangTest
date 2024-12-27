@@ -60,7 +60,7 @@ class FilterCharacter extends iFilters {
 
     /**
      * Возвращает игрока без персонажа или с картой, указанной в параметре cardsClass.
-     * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
+     * @param {Array<aCard>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
      * @returns {Player|null} Первый игрок без персонажа или с картой из cardsClass, или null, если таких игроков нет.
      */
     getPlayerWithoutCharacter(cardsClass = []) {
@@ -78,21 +78,6 @@ class FilterCharacter extends iFilters {
     }
 
     /**
-     * Возвращает всех игроков без персонажа или с картой, указанной в параметре cardsClass.
-     * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
-     * @returns {Player[]} Массив игроков без персонажа или с картой из cardsClass.
-     */
-    getPlayersWithoutCharacter(cardsClass = []) {
-        return this.playerCollection.getPlayers().filter((player) => {
-            return (
-                !(player.character instanceof aCard) || // Персонаж отсутствует
-                player.character.type !== CardType.CHARACTER || // Некорректный тип карты персонажа
-                cardsClass.some((cardClass) => player.character.constructor.name === cardClass.name) // Персонаж в списке исключений
-            );
-        });
-    }
-
-    /**
      * Возвращает игрока с минимальным id среди всех игроков без персонажа
      * или персонаж находится в списке исключений, игнорируя указанные id.
      *
@@ -100,7 +85,7 @@ class FilterCharacter extends iFilters {
      * или с картой из `cardsClass`, а затем использует метод `getPlayerWithMinId` для нахождения игрока
      * с минимальным id среди этих игроков.
      *
-     * @param {Array<Card>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
+     * @param {Array<aCard>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
      * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
      * @returns {Player|null} Игрок с минимальным id среди тех, кто без персонажа или с картой из cardsClass,
      * или null, если таких игроков нет.
@@ -114,6 +99,25 @@ class FilterCharacter extends iFilters {
             ignoredIds,
             playersWithoutCharacter
         );
+    }
+
+    /**
+     * Возвращает всех игроков без персонажа или с картой, указанной в параметре cardsClass.
+     * @param {Array<aCard>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
+     * @returns {Player[]} Массив игроков без персонажа или с картой из cardsClass.
+     */
+    getPlayersWithoutCharacter(cardsClass = []) {
+        const playersWithoutCharacter = this.playerCollection.getPlayers().filter((player) => {
+            return (
+                !(player.character instanceof aCard) || // Персонаж отсутствует
+                player.character.type !== CardType.CHARACTER || // Некорректный тип карты персонажа
+                cardsClass.some((cardClass) => player.character.constructor.name === cardClass.name) // Персонаж в списке исключений
+            );
+        });
+
+        const playerCollection = new PlayerCollection();
+        playersWithoutCharacter.forEach((player) => playerCollection.addPlayerFromInstance(player)); // Добавляем игроков в коллекцию
+        return playerCollection;
     }
 }
 
