@@ -1,6 +1,7 @@
 const ValidatePlayerError = require("../../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../../interfaces/aCard");
 const Player = require("../../models/Player");
+const BaseFilter = require("./Filters/BaseFilter");
 const CharacterFilter = require("./Filters/CharacterFilter");
 const Filters = require("./Filters/Filters");
 const RoleFilter = require("./Filters/RoleFilter");
@@ -215,20 +216,10 @@ class PlayerCollection {
     /**
      * Возвращает массив всех игроков, которые являются экземплярами Player.
      * @returns {Player[]} Массив игроков.
+     * @throws {ValidatePlayerError} Если коллекция игроков не инициализирована.
      */
     getPlayers() {
-        return this.players.filter((player) => player instanceof Player);
-    }
-
-    /**
-     * Собирает данные всех игроков с помощью их метода getSummaryInfo.
-     * @returns {Array<Object>} Массив данных всех игроков, полученных из getSummaryInfo.
-     * @throws {Error} Если у игрока отсутствует метод getSummaryInfo.
-     */
-    getDataSummaryAllPlayers() {
-        return this.players
-            .filter((player) => typeof player.getSummaryInfo === "function") // Проверяем наличие метода getSummaryInfo
-            .map((player) => player.getSummaryInfo()); // Вызываем метод getSummaryInfo и собираем данные в массив
+        return this.useFilterClass(BaseFilter).getPlayers();
     }
 
     /**
