@@ -5,7 +5,7 @@ const PlayerCollection = require("../PlayerCollection");
 const iFilters = require("./iFilters");
 
 /**
- * Класс для фильтрации игроков по ролям.
+ * Класс для фильтрации игроков по Персонажам.
  * @extends iFilters
  */
 class CharacterFilter extends iFilters {
@@ -78,33 +78,9 @@ class CharacterFilter extends iFilters {
     }
 
     /**
-     * Возвращает игрока с минимальным id среди всех игроков без персонажа
-     * или персонаж находится в списке исключений, игнорируя указанные id.
-     *
-     * Этот метод использует метод `getPlayersWithoutCharacter` для получения списка игроков без персонажа
-     * или с картой из `cardsClass`, а затем использует метод `getPlayerWithMinId` для нахождения игрока
-     * с минимальным id среди этих игроков.
-     *
-     * @param {Array<aCard>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
-     * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
-     * @returns {Player|null} Игрок с минимальным id среди тех, кто без персонажа или с картой из cardsClass,
-     * или null, если таких игроков нет.
-     */
-    getPlayerWithMinIdWithoutCharacter(cardsClass = [], ignoredIds = []) {
-        // Получаем всех игроков без персонажа или с картой из cardsClass
-        const playersWithoutCharacter = this.getPlayersWithoutCharacter(cardsClass);
-
-        // Используем getPlayerWithMinId для поиска игрока с минимальным id среди отфильтрованных игроков
-        return PlayerCollection.findPlayerWithMinIdExcludingIgnored(
-            ignoredIds,
-            playersWithoutCharacter
-        );
-    }
-
-    /**
      * Возвращает всех игроков без персонажа или с картой, указанной в параметре cardsClass.
      * @param {Array<aCard>} cardsClass - Массив классов карт, которые считаются как "отсутствие персонажа".
-     * @returns {Player[]} Массив игроков без персонажа или с картой из cardsClass.
+     * @returns {playerCollection} Массив игроков без персонажа или с картой из cardsClass.
      */
     getPlayersWithoutCharacter(cardsClass = []) {
         const playersWithoutCharacter = this.playerCollection.getPlayers().filter((player) => {

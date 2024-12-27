@@ -92,24 +92,6 @@ class RoleFilter extends iFilters {
     }
 
     /**
-     * Находит игрока с минимальным id среди тех, у которых отсутствует роль
-     * или роль находится в списке исключений, игнорируя указанные id.
-     *
-     * Этот метод комбинирует логику методов `getPlayersWithoutRole` и `getPlayerWithMinId`.
-     *
-     * @param {Array<aCard>} cardsClass - Массив классов карт, которые считаются как "отсутствие роли".
-     * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
-     * @returns {Object|null} Игрок с минимальным id, или null, если подходящий игрок не найден.
-     */
-    // getPlayerWithMinIdWithoutRole(cardsClass = [], ignoredIds = []) {
-    //     // Используем метод getPlayersWithoutRole для получения списка игроков без роли
-    //     const playersWithoutRole = this.getPlayersWithoutRole(cardsClass);
-
-    //     // Теперь используем метод getPlayerWithMinId для поиска игрока с минимальным id среди игроков без роли
-    //     return PlayerCollection.findPlayerWithMinIdExcludingIgnored(ignoredIds, playersWithoutRole);
-    // }
-
-    /**
      * Возвращает игроков с указанной ролью в виде коллекции PlayerCollection.
      * @param {string} roleType - Тип роли, которую нужно найти (например, CardType.ROLE).
      * @returns {PlayerCollection} Коллекция игроков с указанной ролью.

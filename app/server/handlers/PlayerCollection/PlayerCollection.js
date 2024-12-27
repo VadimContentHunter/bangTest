@@ -1,7 +1,9 @@
 const ValidatePlayerError = require("../../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../../interfaces/aCard");
 const Player = require("../../models/Player");
+const CharacterFilter = require("./Filters/CharacterFilter");
 const iFilters = require("./Filters/iFilters");
+const RoleFilter = require("./Filters/RoleFilter");
 
 class PlayerCollection {
     constructor(useIncrementalId = true) {
@@ -10,12 +12,15 @@ class PlayerCollection {
     }
 
     /**
-     * Использует фильтр по классу, проверяя, наследуется ли он от iFilters.
-     * @param {Function} filterClass - Класс фильтра, который необходимо использовать.
-     * @returns {iFilters} Экземпляр фильтра, если класс наследуется от iFilters.
+     * Применяет фильтр к коллекции игроков, создавая экземпляр указанного класса фильтра.
+     * Метод проверяет, наследуется ли переданный класс от iFilters, и создает его экземпляр.
+     *
+     * @template T
+     * @param {new (playerCollection: PlayerCollection) => T} filterClass - Класс фильтра, который необходимо использовать.
+     * Должен быть наследником iFilters.
+     * @returns {T} Экземпляр фильтра, наследующего iFilters.
      * @throws {ValidatePlayerError} Если переданный класс не наследуется от iFilters.
      */
-
     useFilterClass(filterClass) {
         if (!(filterClass.prototype instanceof iFilters)) {
             throw new ValidatePlayerError(
@@ -25,10 +30,12 @@ class PlayerCollection {
 
         // Создаем и возвращаем экземпляр фильтра
         const filter = new filterClass(this);
+
+        // Проверяем и устанавливаем коллекцию игроков, если она отсутствует
         if (!(filter.playerCollection instanceof PlayerCollection)) {
             filter.playerCollection = this;
         }
-    
+
         return filter;
     }
 
@@ -191,19 +198,6 @@ class PlayerCollection {
     }
 
     /**
-     * Получает игрока по его ID.
-     * @param {number} id - ID игрока.
-     * @returns {Player|null} Игрок, если найден; null, если не найден.
-     * @throws {ValidatePlayerError} Если ID не является числом.
-     */
-    getPlayerById(id) {
-        if (typeof id !== "number") {
-            throw new ValidatePlayerError("ID должен быть числом.");
-        }
-        return this.players.find((player) => player.id === id);
-    }
-
-    /**
      * Возвращает всех игроков, отсортированных по ID от меньшего к большему.
      * @returns {Player[]} Массив игроков, отсортированных по ID от меньшего к большему.
      */
@@ -217,27 +211,6 @@ class PlayerCollection {
      */
     getPlayersSortedDesc() {
         return [...this.players].sort((a, b) => b.id - a.id); // Сортировка по ID от большего к меньшему
-    }
-
-    /**
-     * Находит игрока с минимальным id, исключая указанные id.
-     *
-     * Этот метод ищет игрока с минимальным id, при этом игнорируя игроков с id,
-     * которые указаны в параметре `ignoredIds`.
-     *
-     * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
-     * @returns {Object|null} Игрок с минимальным id, или null, если подходящий игрок не найден.
-     */
-    getPlayerWithMinId(ignoredIds = []) {
-        return this.players.reduce((minPlayer, currentPlayer) => {
-            // Проверяем, не нужно ли игнорировать текущего игрока
-            if (ignoredIds.includes(currentPlayer.id)) {
-                return minPlayer; // Пропускаем этого игрока
-            }
-
-            // Если текущий игрок имеет меньший id, чем текущий минимальный
-            return currentPlayer.id < minPlayer.id ? currentPlayer : minPlayer;
-        }, this.players[0] || null); // В случае пустого массива возвращаем null
     }
 
     /**
@@ -494,37 +467,6 @@ class PlayerCollection {
         }
 
         return playerCollection; // Возвращаем заполненную коллекцию
-    }
-
-    /**
-     * Статистический метод для нахождения игрока с минимальным id, исключая указанные id.
-     *
-     * Этот метод принимает массив игроков и находит среди них игрока с минимальным id,
-     * исключая тех игроков, чьи id указаны в массиве ignoredIds.
-     *
-     * @param {Array<number>} [ignoredIds=[]] - Массив id игроков, которых нужно игнорировать.
-     * @param {Array<Player>} players - Массив объектов игроков, в котором нужно искать минимальный id.
-     * @returns {Player|null} Игрок с минимальным id, исключая указанные id, или null, если подходящий игрок не найден.
-     */
-    static findPlayerWithMinIdExcludingIgnored(ignoredIds = [], players = []) {
-        if (!Array.isArray(players) || players.length === 0) {
-            return null; // Возвращаем null, если массив игроков пуст
-        }
-
-        // Инициализируем минимального игрока первым игроком в списке, если он не игнорируется
-        let minPlayer = null;
-
-        for (let player of players) {
-            // Проверяем, что id игрока существует и не игнорируется
-            if (Number.isInteger(player.id) && !ignoredIds.includes(player.id)) {
-                // Если minPlayer еще не найден или текущий игрок имеет меньший id
-                if (minPlayer === null || player.id < minPlayer.id) {
-                    minPlayer = player;
-                }
-            }
-        }
-
-        return minPlayer || null; // Если minPlayer не найден, возвращаем null
     }
 }
 
