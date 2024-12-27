@@ -8,7 +8,7 @@ const iFilters = require("./iFilters");
  * Класс для фильтрации игроков по ролям.
  * @extends iFilters
  */
-class FilterRole extends iFilters {
+class RoleFilter extends iFilters {
     /**
      * @type {PlayerCollection|null} Хранилище коллекции игроков.
      * @private
@@ -16,7 +16,7 @@ class FilterRole extends iFilters {
     _playerCollection = null;
 
     /**
-     * Создает экземпляр FilterRole.
+     * Создает экземпляр RoleFilter.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
@@ -48,13 +48,13 @@ class FilterRole extends iFilters {
     }
 
     /**
-     * Инициализирует экземпляр FilterRole.
+     * Инициализирует экземпляр RoleFilter.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
-     * @returns {FilterRole} Новый экземпляр FilterRole.
+     * @returns {RoleFilter} Новый экземпляр RoleFilter.
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
     static init(playerCollection) {
-        const filter = new FilterRole(playerCollection);
+        const filter = new RoleFilter(playerCollection);
         return filter;
     }
 
@@ -145,4 +145,4 @@ class FilterRole extends iFilters {
     }
 }
 
-module.exports = FilterRole;
+module.exports = RoleFilter;

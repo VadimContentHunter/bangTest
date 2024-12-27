@@ -3,7 +3,7 @@ const EventEmitter = require("events");
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
 const ValidateLoginError = require("../Errors/ValidateLoginError");
 const Player = require("../models/Player");
-const PlayerCollection = require("./PlayerCollection");
+const PlayerCollection = require("./PlayerCollection/PlayerCollection");
 const SessionHandler = require("./SessionHandler");
 const GameSessionHandler = require("./GameSessionHandler");
 const PlayroomHandlerError = require("../Errors/PlayroomHandlerError");
@@ -22,6 +22,7 @@ const SelectionCards = require("../models/SelectionCards");
 const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
 const PlayerActionManager = require("./PlayerActionManager");
+const RoleFilter = require("./PlayerCollection/Filters/RoleFilter");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -103,6 +104,7 @@ class GameHandler extends EventEmitter {
      */
     startGame() {
         this.emit("beforeGameStart");
+        // let a = this.playroomHandler.playerOnline.useFilterClass(FilterRole);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
         this.gameSessionHandler.history.addMove(

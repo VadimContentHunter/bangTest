@@ -8,7 +8,7 @@ const iFilters = require("./iFilters");
  * Класс для фильтрации игроков по ролям.
  * @extends iFilters
  */
-class FilterCharacter extends iFilters {
+class CharacterFilter extends iFilters {
     /**
      * @type {PlayerCollection|null} Хранилище коллекции игроков.
      * @private
@@ -16,7 +16,7 @@ class FilterCharacter extends iFilters {
     _playerCollection = null;
 
     /**
-     * Создает экземпляр FilterCharacter.
+     * Создает экземпляр CharacterFilter.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
@@ -48,13 +48,13 @@ class FilterCharacter extends iFilters {
     }
 
     /**
-     * Инициализирует экземпляр FilterCharacter.
+     * Инициализирует экземпляр CharacterFilter.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
-     * @returns {FilterCharacter} Новый экземпляр FilterCharacter.
+     * @returns {CharacterFilter} Новый экземпляр CharacterFilter.
      * @throws {ValidatePlayerError} Если переданный аргумент не является экземпляром PlayerCollection.
      */
     static init(playerCollection) {
-        const filter = new FilterCharacter(playerCollection);
+        const filter = new CharacterFilter(playerCollection);
         return filter;
     }
 
@@ -121,4 +121,4 @@ class FilterCharacter extends iFilters {
     }
 }
 
-module.exports = FilterCharacter;
+module.exports = CharacterFilter;
