@@ -14,13 +14,14 @@ class CardsCollection {
      */
     static typesCards = [StubCard];
 
-    constructor() {
+    constructor(cards = []) {
         /**
          * Массив карт в коллекции.
          * @type {aCard[]}
          * @private
          */
         this.cards = [];
+        this.setCards(cards);
 
         /**
          * Следующий доступный ID для карты.
@@ -186,6 +187,58 @@ class CardsCollection {
     }
 
     /**
+     * Вытаскивает карту из коллекции по её ID (удаляет её) и возвращает.
+     * @param {number} id - ID карты для вытаскивания.
+     * @returns {aCard} Вытаскиваемая карта.
+     * @throws {CardError} Если карта с указанным ID не найдена.
+     */
+    pullCardById(id) {
+        const cardIndex = this.cards.findIndex((card) => card.id === id);
+        if (cardIndex === -1) {
+            throw new CardError(`Карта с ID ${id} не найдена.`);
+        }
+        return this.cards.splice(cardIndex, 1)[0]; // Удаляем и возвращаем карту.
+    }
+
+    /**
+     * Вытаскивает случайную карту из коллекции (удаляет её) и возвращает.
+     * @returns {aCard} Случайная вытаскиваемая карта.
+     * @throws {CardError} Если в коллекции нет карт.
+     */
+    pullRandomCard() {
+        if (this.cards.length === 0) {
+            throw new CardError("В коллекции нет карт.");
+        }
+        const randomIndex = Math.floor(Math.random() * this.cards.length);
+        return this.cards.splice(randomIndex, 1)[0]; // Удаляем и возвращаем случайную карту.
+    }
+
+    /**
+     * Вытаскивает указанное количество случайных карт из коллекции (удаляет их) и возвращает массив.
+     * @param {number} count - Количество карт для вытаскивания.
+     * @returns {aCard[]} Массив вытаскиваемых карт.
+     * @throws {CardError} Если count не является числом или больше, чем количество карт в коллекции.
+     */
+    pullRandomCards(count) {
+        if (typeof count !== "number" || count <= 0) {
+            throw new CardError("Количество карт должно быть положительным числом.");
+        }
+
+        if (count > this.cards.length) {
+            throw new CardError(
+                "Недостаточно карт в коллекции для вытаскивания указанного количества."
+            );
+        }
+
+        const pulledCards = [];
+        for (let i = 0; i < count; i++) {
+            const randomIndex = Math.floor(Math.random() * this.cards.length);
+            pulledCards.push(this.cards.splice(randomIndex, 1)[0]); // Удаляем и добавляем в результат.
+        }
+        return pulledCards;
+    }
+
+    /**
      * Возвращает JSON-представление коллекции карт.
      * @returns {Object} Объект с массивом карт и их количеством.
      */
@@ -206,7 +259,8 @@ class CardsCollection {
         const cardCollection = new CardsCollection();
 
         try {
-            const cardCollectionArray = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+            const cardCollectionArray =
+                typeof inputData === "string" ? JSON.parse(inputData) : inputData;
             const cardDataArray = cardCollectionArray?.cards;
 
             if (!Array.isArray(cardDataArray)) {
