@@ -104,6 +104,33 @@ class GameHandler extends EventEmitter {
     startGame() {
         this.emit("beforeGameStart");
 
+        this.gameSessionHandler.head.collectionRolesCards = new CardsCollection([
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.ROLE),
+        ]);
+        this.gameSessionHandler.head.collectionCharactersCards = new CardsCollection([
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.WEAPON),
+            new StubCard(CardType.WEAPON),
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.CHARACTER),
+            new StubCard(CardType.CHARACTER),
+        ]);
+        this.gameSessionHandler.head.collectionGameCards = new CardsCollection([
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.WEAPON),
+            new StubCard(CardType.WEAPON),
+            new StubCard(CardType.ROLE),
+            new StubCard(CardType.CHARACTER),
+            new StubCard(CardType.CHARACTER),
+        ]);
+
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
         this.gameSessionHandler.history.addMove(
             new Move({
@@ -115,6 +142,37 @@ class GameHandler extends EventEmitter {
         this.gameSessionHandler.createGameSession();
 
         this.emit("afterGameStart");
+    }
+
+    selectRolesForPlayers() {
+        const lastMove = this.gameSessionHandler.history.getLastMove();
+        const players = lastMove.players.getPlayersWithoutRole();
+        players.forEach((player) => {
+            // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
+
+            const playerMain = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
+                player,
+                player?.name,
+                ["sessionId"]
+            );
+
+            if (playerMain instanceof Player) {
+                playerMain.role = this.gameSessionHandler.head.collectionRolesCards.pullRandomCard();
+                this.gameSessionHandler.history.addMove(
+                    new Move({
+                        description: `Игроку ${player.name} была выдана роль ${playerMain.role.name}`,
+                        players: lastMove.players,
+                        playersDistances: new DistanceHandler(lastMove.players),
+                    })
+                );
+                this.gameSessionHandler.saveData();
+                console.log(`Игроку ${player.name} была выдана роль ${playerMain.role.name}`);
+                // this.saveAndTriggerHook(player, "roleGiven", { playerMain });
+            }
+        });
+
+        console.log("GameHandler: Все игроки получили роль.");
+        this.emit("afterSelectRolesForPlayers", lastMove.players);
     }
 
     /**
@@ -165,6 +223,7 @@ class GameHandler extends EventEmitter {
                 `GameHandler: Игрок ${player.name} выбрал себе персонажа ${selectedCard.name}`
             );
 
+            this.saveAndTriggerHook(player, "selectionEnd", lastMove.players);
             this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
             // } catch (error) {
             //     console.error(
@@ -174,7 +233,7 @@ class GameHandler extends EventEmitter {
             // }
         } else {
             console.log("GameHandler: Все игроки выбрали персонажей.");
-            this.emit("afterSelectCharactersForPlayers");
+            this.emit("afterSelectCharactersForPlayers", lastMove.players);
         }
     }
 

@@ -27,6 +27,7 @@ const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");
 const AdminMenuError = require("../Errors/AdminMenuError");
 const AdminMenuHandler = require("../handlers/AdminMenuHandler");
+const PlayerCollection = require("../handlers/PlayerCollection");
 
 module.exports = function setupWebSocketServer(server, playroomHandler) {
     if (!(playroomHandler instanceof PlayroomHandler)) {
@@ -71,6 +72,27 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JsonRpcFormatter.serializeResponse(result, id));
+            }
+        });
+    });
+
+    serverHook.on("updateFullDataClients", (playerCollection) => {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                if (playerCollection instanceof PlayerCollection) {
+                    client.send(
+                        JsonRpcFormatter.serializeRequest(
+                            "getMyPlayer",
+                            playerCollection.getPlayerBySessionId(client.sessionId).getInfo()
+                        )
+                    );
+                    client.send(
+                        JsonRpcFormatter.serializeRequest(
+                            "createAllGameBoard",
+                            playerCollection.getDataSummaryAllPlayers()
+                        )
+                    );
+                }
             }
         });
     });
@@ -122,7 +144,24 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     // Подписка на Игровые хуки
     gameHandler.on("afterGameStart", () => {
         gameHandler.playerActionManager.clearAll();
+        gameHandler.selectRolesForPlayers();
+    });
+
+    gameHandler.on("afterSelectRolesForPlayers", (playerCollection) => {
+        serverHook.emit("updateFullDataClients", playerCollection);
+        gameHandler.playerActionManager.clearAll();
         gameHandler.selectCharactersForPlayers();
+    });
+
+    gameHandler.on("afterSelectCharactersForPlayers", (playerCollection) => {
+        // serverHook.emit("updateFullDataClients", playerCollection);
+        gameHandler.playerActionManager.clearAll();
+        gameHandler.executeMovesRound();
+    });
+
+    gameHandler.on("afterMovesRound", () => {
+        gameHandler.playerActionManager.clearAll();
+        // gameHandler.executeMovesRound();
     });
 
     gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
@@ -140,12 +179,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         }
     });
 
-    gameHandler.on("afterSelectCharactersForPlayers", () => {
-        gameHandler.executeMovesRound();
-    });
-
-    gameHandler.on("afterMovesRound", () => {
-        // gameHandler.executeMovesRound();
+    gameHandler.on("selectionEnd", (playerCollection) => {
+        serverHook.emit("updateFullDataClients", playerCollection);
     });
 
     // Событие при установлении нового соединения
@@ -163,7 +198,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             if (player instanceof Player) {
                 player.lives.max = 5;
                 player.lives.current = 3;
-                player.role = new StubCard(CardType.ROLE);
+                // player.role = new StubCard(CardType.ROLE);
                 // player.character = new StubCard(CardType.CHARACTER);
                 player.weapon = new StubCard(CardType.WEAPON);
                 player.temporaryCards.setCards([

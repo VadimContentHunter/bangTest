@@ -21,7 +21,6 @@ class CardsCollection {
          * @private
          */
         this.cards = [];
-        this.setCards(cards);
 
         /**
          * Следующий доступный ID для карты.
@@ -29,6 +28,8 @@ class CardsCollection {
          * @private
          */
         this.nextId = 1; // Начальное значение для генерации ID.
+
+        this.setCards(cards);
     }
 
     /**
