@@ -218,24 +218,27 @@ function requestServer(request, data = {}, ws) {
             }
             break;
         case "getMyPlayer":
-            if (data.playerHand instanceof PlayerHand) {
-                data.playerHand.name = request?.params?.name;
-                data.playerHand.lives = request?.params?.lives?.current ?? 0;
-                data.playerHand.maxLives = request?.params?.lives?.max ?? 0;
-                data.playerHand.tempCards = request?.params?.temporaryCards?.cards ?? [];
-                data.playerHand.handCards = request?.params?.hand?.cards ?? [];
-                data.playerHand.quantityAllHandCards = request?.params?.hand?.countCards ?? 0;
+            const playerHand = data.playerHand;
+            if (playerHand instanceof PlayerHand) {
+                playerHand.resetData();
+
+                playerHand.name = request?.params?.name;
+                playerHand.lives = request?.params?.lives?.current ?? 0;
+                playerHand.maxLives = request?.params?.lives?.max ?? 0;
+                playerHand.tempCards = request?.params?.temporaryCards?.cards ?? [];
+                playerHand.handCards = request?.params?.hand?.cards ?? [];
+                playerHand.quantityAllHandCards = request?.params?.hand?.countCards ?? 0;
 
                 if (request?.params?.role != null) {
-                    data.playerHand.role = request?.params?.role;
+                    playerHand.role = request?.params?.role;
                 }
                 if (request?.params?.character != null) {
-                    data.playerHand.character = request?.params?.character;
+                    playerHand.character = request?.params?.character;
                 }
                 if (request?.params?.weapon != null) {
-                    data.playerHand.weapon = request?.params?.weapon;
+                    playerHand.weapon = request?.params?.weapon;
                 }
-                data.playerHand.renderUpdatedData();
+                playerHand.renderUpdatedData();
             } else {
                 console.error("requestServer ('getMyPlayer'): data.playerHand must be PlayerHand");
             }
@@ -305,6 +308,7 @@ function requestServer(request, data = {}, ws) {
 }
 
 function errorHandler(error, notificationsHtml) {
+    throw error;
     if (!(notificationsHtml instanceof NotificationsHtml)) {
         console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
     } else {

@@ -11,6 +11,8 @@ class PlayerHand {
     _selectCard = null;
     _isMyMove = false;
 
+    _listeners = {}; // Хранилище для обработчиков
+
     constructor(selectorMainElement) {
         this.mainElement = document.querySelector(selectorMainElement);
         this.allCardsElement = this.mainElement?.querySelector(
@@ -316,6 +318,73 @@ class PlayerHand {
         this._selectCard = null;
     }
 
+    resetData() {
+        // remove temp cards
+        this.tempCards.forEach((tempCard) => {
+            if (tempCard instanceof CardModel) {
+                tempCard.removeHtml();
+            }
+        });
+
+        // remove hand cards
+        this.handCards.forEach((handCard) => {
+            if (handCard instanceof CardModel) {
+                handCard.removeHtml();
+            }
+        });
+
+        if (typeof this._listeners.cardMouseMove === "function") {
+            document.removeEventListener("card-mousedown", this._listeners.cardMouseDown);
+        }
+
+        if (typeof this._listeners.cardMouseMove === "function") {
+            document.removeEventListener("card-mouseup", this._listeners.cardMouseUp);
+        }
+
+        this._name = "Игрок";
+        this._role = null;
+        this._character = null;
+        this._weapon = null;
+        this._lives = 0;
+        this._maxLives = 5;
+        this._quantityAllHandCards = 0;
+        this._handCards = [];
+        this._tempCards = [];
+        this._selectCard = null;
+        this._isMyMove = false;
+
+        this.playerNameElement.innerText = this.name;
+        this.playerLivesElement.innerHTML = "";
+        this.allCardsValueElement.innerText = this.quantityAllHandCards;
+        this.cardsHandElement.innerHTML = "";
+        this.cardsTempElement.innerHTML = "";
+
+        for (let i = 0; i < this.maxLives; i++) {
+            if (this.lives > i) {
+                this.playerLivesElement.innerHTML += `
+                    <div class="icon-live-bullet">
+                        <i class="icon-bullet"></i>
+                    </div>
+                `;
+            } else {
+                this.playerLivesElement.innerHTML += `
+                    <div class="icon-live-bullet-not">
+                        <i class="icon-bullet-full-fill"></i>
+                    </div>
+                `;
+            }
+        }
+        if (this.roleElement instanceof HTMLElement) {
+            this.roleElement.innerHTML = "";
+        }
+        if (this.characterElement instanceof HTMLElement) {
+            this.characterElement.innerHTML = "";
+        }
+        if (this.weaponElement instanceof HTMLElement) {
+            this.weaponElement.innerHTML = "";
+        }
+    }
+
     checkElements() {
         if (!(this.mainElement instanceof HTMLElement)) {
             throw new Error("Invalid main element selector");
@@ -445,23 +514,26 @@ class PlayerHand {
                 );
                 return;
             }
-
-            const cardElem = handCard.createHtmlShell()?.cardElement;
-            handCard.enableDrag();
-            document.addEventListener("card-mousedown", (e) => {
+            this._listeners.cardMouseDown = (e) => {
                 const { cardModel, mouseEvent } = e.detail;
                 if (cardModel instanceof CardModel && cardModel.isDragging === true) {
                     this.selectCard = cardModel;
                 }
-            });
-            document.addEventListener("card-mouseup", (e) => {
+            };
+            this._listeners.cardMouseUp = (e) => {
                 const { cardModel, mouseEvent } = e.detail;
                 if (cardModel instanceof CardModel) {
                     cardModel.targetName = "";
                     cardModel.updateAttributesHtml();
                     this.resetSelectCard();
                 }
-            });
+            };
+
+            const cardElem = handCard.createHtmlShell()?.cardElement;
+            handCard.enableDrag();
+            document.addEventListener("card-mousedown", this._listeners.cardMouseDown);
+            document.addEventListener("card-mouseup", this._listeners.cardMouseUp);
+
             if (cardElem instanceof HTMLElement) {
                 this.cardsHandElement.append(cardElem); // Добавляем элемент в контейнер
             } else {
@@ -473,7 +545,7 @@ class PlayerHand {
     }
 
     setupFoldListener() {
-        this.foldElement.addEventListener("click", () => {
+        this._listeners.foldListener = (e) => {
             if (this.mainPanelElement.style.display !== "none") {
                 this.mainPanelElement.style.display = "none";
                 this.foldElement.style.rotate = "180deg";
@@ -481,13 +553,14 @@ class PlayerHand {
                 this.mainPanelElement.style.display = "";
                 this.foldElement.style.rotate = "";
             }
-        });
+        };
+
+        this.foldElement.addEventListener("click", this._listeners.foldListener);
     }
 
     setupCollapseListener() {
         let iElement = this.collapseElement?.querySelector("i");
-
-        this.collapseElement.addEventListener("click", () => {
+        this._listeners.collapseListener = (e) => {
             if (this.mainPanelElement.style.maxHeight == "") {
                 this.mainPanelElement.style.maxHeight = "140px";
                 if (iElement instanceof HTMLElement) {
@@ -505,13 +578,14 @@ class PlayerHand {
                     }
                 }
             }
-        });
+        };
+
+        this.collapseElement.addEventListener("click", this._listeners.collapseListener);
     }
 
     setupFullscreenListener() {
         let iElement = this.fullscreenElement?.querySelector("i");
-
-        this.fullscreenElement.addEventListener("click", () => {
+        this._listeners.fullscreenListener = (e) => {
             if (this.mainPanelElement.style.maxHeight !== "none") {
                 this.mainPanelElement.style.maxHeight = "none";
                 if (iElement instanceof HTMLElement) {
@@ -529,6 +603,8 @@ class PlayerHand {
                     }
                 }
             }
-        });
+        };
+
+        this.fullscreenElement.addEventListener("click", this._listeners.fullscreenListener);
     }
 }

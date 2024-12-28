@@ -349,7 +349,7 @@ class CardModel {
     removeHtml() {
         if (this.cardElement) {
             this.cardElement.remove();
-            this.cardElement = null;
+            this._cardElement = null;
         }
     }
 
