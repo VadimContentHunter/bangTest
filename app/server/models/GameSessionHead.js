@@ -9,6 +9,7 @@ class GameSessionHead {
     #statusGame = false;
     #collectionRolesCards = null;
     #collectionCharactersCards = null;
+    #collectionGameCards = null;
 
     constructor() {
         this.#collectionRolesCards =
@@ -20,6 +21,9 @@ class GameSessionHead {
             this.#collectionCharactersCards === null
                 ? new CardsCollection()
                 : this.#collectionCharactersCards;
+
+        this.#collectionGameCards =
+            this.#collectionGameCards === null ? new CardsCollection() : this.#collectionGameCards;
     }
 
     /**
@@ -84,11 +88,32 @@ class GameSessionHead {
         this.#collectionCharactersCards = collection;
     }
 
+    /**
+     * Получить коллекцию игровых карт.
+     * @returns {CardsCollection} Коллекция игровых карт.
+     */
+    get collectionGameCards() {
+        return this.#collectionGameCards;
+    }
+
+    /**
+     * Установить коллекцию игровых карт.
+     * @param {CardsCollection} collection - Новая коллекция игровых карт.
+     * @throws {TypeError} Если передано не значение типа CardsCollection.
+     */
+    set collectionGameCards(collection) {
+        if (!(collection instanceof CardsCollection)) {
+            throw new TypeError("collectionGameCards должен быть экземпляром CardsCollection.");
+        }
+        this.#collectionGameCards = collection;
+    }
+
     toJSON() {
         return {
             statusGame: this.statusGame,
             collectionRolesCards: this.collectionRolesCards, // можно сериализовать, если нужно
             collectionCharactersCards: this.collectionCharactersCards, // можно сериализовать, если нужно
+            collectionGameCards: this.collectionGameCards, // можно сериализовать, если нужно
         };
     }
 
@@ -97,6 +122,7 @@ class GameSessionHead {
         gameSessionHeadHandler.statusGame = json.statusGame;
         gameSessionHeadHandler.collectionRolesCards = json.collectionRolesCards;
         gameSessionHeadHandler.collectionCharactersCards = json.collectionCharactersCards;
+        gameSessionHeadHandler.collectionGameCards = json.collectionGameCards;
         return gameSessionHeadHandler;
     }
 }
