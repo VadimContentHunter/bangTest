@@ -25,19 +25,16 @@ const PlayerActionManager = require("./PlayerActionManager");
 
 /**
  * @event GameHandler#beforeGameStart
- * @type {Object}
  * @description Событие испускается непосредственно перед запуском игры.
  */
 
 /**
  * @event GameHandler#afterGameStart
- * @type {Object}
  * @description Событие испускается сразу после успешного старта игры.
  */
 
 /**
  * @event GameHandler#selectionStarted
- * @type {Object}
  * @description Событие испускается, когда начинается процесс выбора карты.
  * @param {Object} player - Игрок, который должен выбрать карту.
  * @param {Object} selectionCards - Набор карт для выбора.
@@ -45,7 +42,6 @@ const PlayerActionManager = require("./PlayerActionManager");
 
 /**
  * @event GameHandler#playerCardSelected
- * @type {Object}
  * @description Событие испускается, когда игрок выбирает карту.
  * @param {Object} ws - Объект WebSocket для работы с соединением.
  * @param {Object} params - Параметры, содержащие информацию о выбранной карте.
@@ -53,25 +49,35 @@ const PlayerActionManager = require("./PlayerActionManager");
  */
 
 /**
+ * @event GameHandler#afterSelectCharactersForPlayers
+ * @description Событие испускается, когда игроки закончили выбирать карты.
+ * @param {PlayerCollection} playerCollection - Объект PlayerCollection для работы с коллекцией игроков.
+ */
+
+/**
+ * @event GameHandler#selectionEnd
+ * @description Испускается, когда процесс выбора игрока завершён (когда игрок выбрал карту).
+ * @param {PlayerCollection} playerCollection - Объект PlayerCollection для работы с коллекцией игроков.
+ */
+
+/**
  * @event GameHandler#playerStartedMove
- * @type {Object}
  * @description Событие испускается, когда игрок начинает выполнять ход.
  * @param {Object} player - Игрок, который начинает ход.
  */
 
 /**
  * @event GameHandler#playerMoveFinished
- * @type {Object}
  * @description Событие испускается, когда игрок завершает свой ход.
  * @param {Object} player - Игрок, который завершил ход.
  */
 
 /**
- * @event GameHandler#lockPlayersMoves
- * @type {Object}
- * @description Событие испускается, чтобы заблокировать ход всем игрокам.
- * @property {PlayerCollection} players - Коллекция игроков, ходы которых будут заблокированы.
+ * @event GameHandler#afterSelectRolesForPlayers
+ * @description Событие, испускаемое после того, как всем игрокам назначены роли.
+ * @param {PlayerCollection} playerCollection - Объект PlayerCollection для работы с коллекцией игроков.
  */
+
 
 /**
  * Класс GameHandler управляет игровой логикой и испускает события для уведомления об изменениях.
@@ -83,7 +89,9 @@ const PlayerActionManager = require("./PlayerActionManager");
  * @listens GameHandler#playerCardSelected - Слушает событие выбора карты игроком и обрабатывает его.
  * @fires GameHandler#playerStartedMove - Событие, испускаемое при начале выбора карты.
  * @listens GameHandler#playerMoveFinished - Слушает событие когда игрок завершает свой ход.
- * @fires GameHandler#lockPlayersMoves - Событие испускается, чтобы заблокировать ход всем игрокам.
+ * @fires GameHandler#afterSelectCharactersForPlayers - Событие испускается, когда игроки закончили выбирать карты.
+ * @fires GameHandler#selectionEnd - Испускается, когда процесс выбора игрока завершён (когда игрок выбрал карту).
+ * @fires afterSelectRolesForPlayers - Событие, испускаемое после того, как всем игрокам назначены роли.
  */
 class GameHandler extends EventEmitter {
     constructor(playroomHandler) {
@@ -144,6 +152,14 @@ class GameHandler extends EventEmitter {
         this.emit("afterGameStart");
     }
 
+    /**
+     * Выбирает и назначает роли игрокам, которые ещё не имеют роли, в текущей игровой сессии.
+     * После назначения ролей сохраняет изменения в истории и данных игры, а затем вызывает событие.
+     *
+     * @returns {void}
+     *
+     * @fires afterSelectRolesForPlayers - Событие, испускаемое после того, как всем игрокам назначены роли.
+     */
     selectRolesForPlayers() {
         const lastMove = this.gameSessionHandler.history.getLastMove();
         const players = lastMove.players.getPlayersWithoutRole();
@@ -157,7 +173,8 @@ class GameHandler extends EventEmitter {
             );
 
             if (playerMain instanceof Player) {
-                playerMain.role = this.gameSessionHandler.head.collectionRolesCards.pullRandomCard();
+                playerMain.role =
+                    this.gameSessionHandler.head.collectionRolesCards.pullRandomCard();
                 this.gameSessionHandler.history.addMove(
                     new Move({
                         description: `Игроку ${player.name} была выдана роль ${playerMain.role.name}`,
@@ -178,6 +195,8 @@ class GameHandler extends EventEmitter {
     /**
      * Ожидает выбора персонажей от игроков.
      * @fires GameHandler#selectionStarted
+     * @fires GameHandler#afterSelectCharactersForPlayers
+     * @fires GameHandler#selectionEnd
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
@@ -294,7 +313,6 @@ class GameHandler extends EventEmitter {
     /**
      * Выполняет раунд ходов игроков.
      * @fires GameHandler#playerStartedMove - Событие, испускаемое, когда игрок начинает ход.
-     * @fires GameHandler#lockPlayersMoves - Событие испускается, чтобы заблокировать ход всем игрокам.
      * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
      */
     async executeMovesRound() {
