@@ -120,9 +120,18 @@ class GameSessionHead {
     static initFromJSON(json) {
         const gameSessionHeadHandler = new GameSessionHead();
         gameSessionHeadHandler.statusGame = json.statusGame;
-        gameSessionHeadHandler.collectionRolesCards = json.collectionRolesCards;
-        gameSessionHeadHandler.collectionCharactersCards = json.collectionCharactersCards;
-        gameSessionHeadHandler.collectionGameCards = json.collectionGameCards;
+        gameSessionHeadHandler.collectionRolesCards = CardsCollection.initFromJSON(
+            json.collectionRolesCards,
+            false
+        );
+        gameSessionHeadHandler.collectionCharactersCards = CardsCollection.initFromJSON(
+            json.collectionCharactersCards,
+            false
+        );
+        gameSessionHeadHandler.collectionGameCards = CardsCollection.initFromJSON(
+            json.collectionGameCards,
+            false
+        );
         return gameSessionHeadHandler;
     }
 }

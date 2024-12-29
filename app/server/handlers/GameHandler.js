@@ -22,6 +22,10 @@ const SelectionCards = require("../models/SelectionCards");
 const { aCard, CardType } = require("../interfaces/aCard");
 const StubCard = require("../models/cards/StubCard");
 const PlayerActionManager = require("./PlayerActionManager");
+const BanditCard = require("../models/cards/roles/BanditCard");
+const RenegadeCard = require("../models/cards/roles/RenegadeCard");
+const SheriffCard = require("../models/cards/roles/SheriffCard");
+const DeputySheriffCard = require("../models/cards/roles/DeputySheriffCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -113,10 +117,13 @@ class GameHandler extends EventEmitter {
         this.emit("beforeGameStart");
 
         this.gameSessionHandler.head.collectionRolesCards = new CardsCollection([
-            new StubCard(CardType.ROLE),
-            new StubCard(CardType.ROLE),
-            new StubCard(CardType.ROLE),
-            new StubCard(CardType.ROLE),
+            new BanditCard(),
+            new BanditCard(),
+            new BanditCard(),
+            new RenegadeCard(),
+            new SheriffCard(),
+            new DeputySheriffCard(),
+            new DeputySheriffCard(),
         ]);
         this.gameSessionHandler.head.collectionCharactersCards = new CardsCollection([
             new StubCard(CardType.DEFAULT),

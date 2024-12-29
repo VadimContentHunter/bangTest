@@ -2,6 +2,10 @@ const CardError = require("../Errors/CardError");
 const { aCard, CardType } = require("../interfaces/aCard");
 
 const StubCard = require("../models/cards/StubCard");
+const BanditCard = require("../models/cards/roles/BanditCard");
+const RenegadeCard = require("../models/cards/roles/RenegadeCard");
+const SheriffCard = require("../models/cards/roles/SheriffCard");
+const DeputySheriffCard = require("../models/cards/roles/DeputySheriffCard");
 
 /**
  * Класс для управления коллекцией карт.
@@ -12,7 +16,7 @@ class CardsCollection {
      * @type {typeof aCard[]}
      * @static
      */
-    static typesCards = [StubCard];
+    static typesCards = [StubCard, BanditCard, RenegadeCard, SheriffCard, DeputySheriffCard];
 
     constructor(cards = []) {
         /**
@@ -96,7 +100,7 @@ class CardsCollection {
      * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карты на новое.
      */
     addCardFromData(cardData, classCard, overwriteId = true) {
-        this.addCard(aCard.initCard(cardData, [classCard]), overwriteId);
+        this.addCard(aCard.initCard(cardData, classCard), overwriteId);
     }
 
     /**
@@ -259,7 +263,7 @@ class CardsCollection {
     static initFromJSON(inputData, overwriteId = true) {
         const cardCollection = new CardsCollection();
 
-        try {
+        // try {
             const cardCollectionArray =
                 typeof inputData === "string" ? JSON.parse(inputData) : inputData;
             const cardDataArray = cardCollectionArray?.cards;
@@ -271,9 +275,9 @@ class CardsCollection {
             cardDataArray.forEach((cardData) => {
                 cardCollection.addCardFromData(cardData, CardsCollection.typesCards, overwriteId);
             });
-        } catch (error) {
-            throw new CardError("Ошибка при инициализации карт из JSON или массива:", error);
-        }
+        // } catch (error) {
+        //     throw new CardError("Ошибка при инициализации карт из JSON или массива:", error);
+        // }
 
         return cardCollection;
     }
