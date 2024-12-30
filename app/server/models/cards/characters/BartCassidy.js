@@ -10,8 +10,8 @@ class BartCassidy extends aCard {
 
     constructor(lives = null, mainDeck = null, hand = null, ownerName = "") {
         super({
-            name: "Шериф",
-            image: "../resources/imgs/cards/roles/01_sceriffo.png",
+            name: "Bart Cassidy",
+            image: "../resources/imgs/cards/characters/01_bartcassidy.png",
             type: CardType.ROLE,
             ownerName: ownerName,
         });
