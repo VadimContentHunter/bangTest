@@ -277,14 +277,10 @@ class Player {
         }
 
         if (data?.role !== null) {
-            data.role.lives = player.lives;
-            data.role.ownerName = player.name;
             player.role = aCard.initCard(data?.role, CardsCollection.typesCards);
         }
 
         if (data?.character !== null) {
-            player.character.lives = player.lives;
-            player.character.ownerName = player.name;
             player.character = aCard.initCard(data?.character, CardsCollection.typesCards);
         }
 

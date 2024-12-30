@@ -327,6 +327,8 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
      */
     async executeMovesRound() {
+
+        // this.activateCharacterForPlayers(lastMove);
         const playersRound = this.playroomHandler.playerOnline.getPlayersSortedAsc();
         for (const player of playersRound) {
             this.saveAndTriggerHook(player, "playerStartedMove", { player });
@@ -388,6 +390,25 @@ class GameHandler extends EventEmitter {
 
             // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
             // Убедитесь, что он удаляется в любом случае.
+        });
+    }
+
+    activateCharacterForPlayers(lastMove) {
+        if (!(lastMove instanceof Move)) {
+            return;
+        }
+
+        lastMove.players.getPlayers().forEach((player) => {
+            if (
+                player instanceof Player &&
+                player.character instanceof aCard &&
+                player.character.type === CardType.CHARACTER
+            ) {
+                player.character.lives = player.lives;
+                player.character.mainDeck = lastMove.mainDeck;
+                player.character.hand = player.hand;
+                player.character.action();
+            }
         });
     }
 
