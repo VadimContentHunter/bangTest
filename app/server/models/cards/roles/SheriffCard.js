@@ -40,7 +40,7 @@ class SheriffCard extends aCard {
     }
 
     static initFromJSON(data) {
-        return new SheriffCard(data?.lives, data?.ownerName ?? "");
+        return new SheriffCard(data?.lives ?? null, data?.ownerName ?? "");
     }
 
     action() {

@@ -283,6 +283,8 @@ class Player {
         }
 
         if (data?.character !== null) {
+            player.character.lives = player.lives;
+            player.character.ownerName = player.name;
             player.character = aCard.initCard(data?.character, CardsCollection.typesCards);
         }
 

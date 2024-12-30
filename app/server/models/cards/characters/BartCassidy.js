@@ -91,7 +91,12 @@ class BartCassidy extends aCard {
     }
 
     static initFromJSON(data) {
-        return new BartCassidy(data?.lives, data?.mainDeck, data?.hand, data?.ownerName ?? "");
+        return new BartCassidy(
+            data?.lives ?? null,
+            data?.mainDeck ?? null,
+            data?.hand,
+            data?.ownerName ?? ""
+        );
     }
 
     action() {
