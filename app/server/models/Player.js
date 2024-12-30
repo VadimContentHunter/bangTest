@@ -206,7 +206,7 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this.lives,
-            role: null, // TODO: Показывает только шерифа
+            role: this.role instanceof SheriffCard ? this.role : null,
             character: this.character,
             weapon: this.weapon,
             temporaryCards: this.temporaryCards,
@@ -276,6 +276,8 @@ class Player {
         }
 
         if (data?.role !== null) {
+            data?.role.lives = player.lives;
+            data?.role.ownerName = player.name;
             player.role = aCard.initCard(data?.role, CardsCollection.typesCards);
         }
 
