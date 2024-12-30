@@ -152,6 +152,10 @@ class GameHandler extends EventEmitter {
                 description: "Первый ход, инициализация первичных данных",
                 players: tempPlayers,
                 playersDistances: new DistanceHandler(tempPlayers.getPlayers()),
+                mainDeck: new CardsCollection(
+                    this.gameSessionHandler.head.collectionGameCards.getAllCards()
+                ),
+                discardDeck: new CardsCollection(),
             })
         );
         this.gameSessionHandler.createGameSession();

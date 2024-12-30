@@ -3,6 +3,7 @@ const { aCard, CardType } = require("../interfaces/aCard");
 const CardsCollection = require("../handlers/CardsCollection");
 const LivesError = require("../Errors/LivesError");
 const Lives = require("../models/Lives");
+const SheriffCard = require("./cards/roles/SheriffCard");
 
 class Player {
     /**
@@ -276,8 +277,8 @@ class Player {
         }
 
         if (data?.role !== null) {
-            data?.role.lives = player.lives;
-            data?.role.ownerName = player.name;
+            data.role.lives = player.lives;
+            data.role.ownerName = player.name;
             player.role = aCard.initCard(data?.role, CardsCollection.typesCards);
         }
 

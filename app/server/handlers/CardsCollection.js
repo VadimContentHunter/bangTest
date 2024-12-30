@@ -94,6 +94,24 @@ class CardsCollection {
     }
 
     /**
+     * Добавляет массив карт в коллекцию.
+     * @param {aCard[]} cards - Массив карт для добавления.
+     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карт на новые.
+     * @throws {CardError} Если карты не являются экземплярами aCard или передан не массив.
+     */
+    addArrayCards(cards, overwriteId = true) {
+        if (!Array.isArray(cards)) {
+            throw new CardError("Аргумент должен быть массивом.");
+        }
+
+        if (!cards.every((card) => card instanceof aCard)) {
+            throw new CardError("Все элементы массива должны быть экземплярами aCard.");
+        }
+
+        cards.forEach((card) => this.addCard(card, overwriteId));
+    }
+
+    /**
      * Создает карту из данных и добавляет её в коллекцию.
      * @param {Object} cardData - Данные для создания карты.
      * @param {typeof aCard} classCard - Класс карты для создания.
@@ -264,17 +282,17 @@ class CardsCollection {
         const cardCollection = new CardsCollection();
 
         // try {
-            const cardCollectionArray =
-                typeof inputData === "string" ? JSON.parse(inputData) : inputData;
-            const cardDataArray = cardCollectionArray?.cards;
+        const cardCollectionArray =
+            typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+        const cardDataArray = cardCollectionArray?.cards;
 
-            if (!Array.isArray(cardDataArray)) {
-                throw new TypeError("Данные должны быть массивом объектов карт.");
-            }
+        if (!Array.isArray(cardDataArray)) {
+            throw new TypeError("Данные должны быть массивом объектов карт.");
+        }
 
-            cardDataArray.forEach((cardData) => {
-                cardCollection.addCardFromData(cardData, CardsCollection.typesCards, overwriteId);
-            });
+        cardDataArray.forEach((cardData) => {
+            cardCollection.addCardFromData(cardData, CardsCollection.typesCards, overwriteId);
+        });
         // } catch (error) {
         //     throw new CardError("Ошибка при инициализации карт из JSON или массива:", error);
         // }

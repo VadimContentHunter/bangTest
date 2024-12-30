@@ -1,9 +1,20 @@
 const LivesError = require("../Errors/LivesError");
+const EventEmitter = require("events");
+
+/**
+ * @event Lives#lifeLost
+ * @description Событие испускается, когда игрок теряет жизни.
+ * @param {number} oldLives - Количество жизней до изменения.
+ * @param {number} amountLost - Количество потерянных жизней.
+ * @param {number} remainingLives - Оставшееся количество жизней.
+ */
 
 /**
  * Класс Lives представляет количество жизней с ограничением на максимум и проверками.
+ * @extends EventEmitter
+ * @fires Lives#lifeLost - Событие, испускаемое, когда игрок теряет жизни.
  */
-class Lives {
+class Lives extends EventEmitter {
     _max = 0;
     _current = 0;
 
@@ -14,6 +25,7 @@ class Lives {
      * @throws {LivesError} Если max или current невалидны.
      */
     constructor(max = 0, current = 0) {
+        super();
         this.max = max; // Используем сеттер
         this.current = current; // Используем сеттер
     }
@@ -80,14 +92,26 @@ class Lives {
 
     /**
      * Отнимает указанное количество жизней.
+     *
      * @param {number} amount - Количество жизней для отнимания.
      * @throws {LivesError} Если amount не является положительным целым числом.
+     * @fires Lives#lifeLost - Испускается при уменьшении количества жизней.
      */
     removeLives(amount) {
         if (!Number.isInteger(amount) || amount < 0) {
             throw new LivesError("Amount to remove must be a non-negative integer.");
         }
+
+        const oldLives = this._current;
         this.current = Math.max(this._current - amount, 0);
+
+        // if (oldLives > this._current) {
+            this.emit("lifeLost", {
+                oldLives,
+                amountLost: oldLives - this._current,
+                remainingLives: this._current,
+            });
+        // }
     }
 
     /**
