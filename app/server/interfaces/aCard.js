@@ -25,6 +25,13 @@ class aCard {
             throw new TypeError("Нельзя создать экземпляр абстрактного класса");
         }
 
+        // Проверка на переопределение метода action()
+        if (this.action === aCard.prototype.action) {
+            throw new CardError(
+                `Класс-наследник ${this.constructor.name} должен реализовывать метод 'action()'`
+            );
+        }
+
         // Проверка: если статический метод initFromJSON не переопределен, выбрасываем ошибку
         if (this.constructor.initFromJSON === aCard.initFromJSON) {
             throw new TypeError(
@@ -96,6 +103,10 @@ class aCard {
         }
 
         return this._ownerName;
+    }
+
+    action() {
+        throw new CardError("Метод 'action()' должен быть реализован");
     }
 
     toJSON() {

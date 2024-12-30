@@ -13,6 +13,8 @@ class BanditCard extends aCard {
     static initFromJSON(data) {
         return new BanditCard(data?.ownerName ?? "");
     }
+
+    action(){}
 }
 
 module.exports = BanditCard;

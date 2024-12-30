@@ -13,6 +13,8 @@ class RenegadeCard extends aCard {
     static initFromJSON(data) {
         return new RenegadeCard(data?.ownerName ?? "");
     }
+
+    action() {}
 }
 
 module.exports = RenegadeCard;

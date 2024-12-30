@@ -13,6 +13,8 @@ class DeputySheriffCard extends aCard {
     static initFromJSON(data) {
         return new DeputySheriffCard(data?.ownerName ?? "");
     }
+
+    action() {}
 }
 
 module.exports = DeputySheriffCard;

@@ -13,6 +13,8 @@ class StubCard extends aCard {
     static initFromJSON(data) {
         return new StubCard(data.type, data.ownerName);
     }
+
+    action() {}
 }
 
 module.exports = StubCard;
