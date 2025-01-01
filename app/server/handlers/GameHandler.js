@@ -82,7 +82,6 @@ const DeputySheriffCard = require("../models/cards/roles/DeputySheriffCard");
  * @param {PlayerCollection} playerCollection - Объект PlayerCollection для работы с коллекцией игроков.
  */
 
-
 /**
  * Класс GameHandler управляет игровой логикой и испускает события для уведомления об изменениях.
  * @extends EventEmitter
@@ -172,7 +171,7 @@ class GameHandler extends EventEmitter {
      * @fires afterSelectRolesForPlayers - Событие, испускаемое после того, как всем игрокам назначены роли.
      */
     selectRolesForPlayers() {
-        const lastMove = this.gameSessionHandler.history.getLastMove();
+        const lastMove = this.getLastMove();
         const players = lastMove.players.getPlayersWithoutRole();
         players.forEach((player) => {
             // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
@@ -211,8 +210,7 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
-        this.gameSessionHandler.loadData();
-        const lastMove = this.gameSessionHandler.history.getLastMove();
+        const lastMove = this.getLastMove();
         const playerWithMinId = lastMove.players.getPlayerWithMinIdWithoutCharacter();
         const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
             playerWithMinId,
@@ -327,8 +325,8 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
      */
     async executeMovesRound() {
+        const lastMove = this.getLastMove();
 
-        // this.activateCharacterForPlayers(lastMove);
         const playersRound = this.playroomHandler.playerOnline.getPlayersSortedAsc();
         for (const player of playersRound) {
             this.saveAndTriggerHook(player, "playerStartedMove", { player });
@@ -393,7 +391,7 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    activateCharacterForPlayers(lastMove) {
+    initCharacterForPlayers(lastMove) {
         if (!(lastMove instanceof Move)) {
             return;
         }
@@ -404,12 +402,32 @@ class GameHandler extends EventEmitter {
                 player.character instanceof aCard &&
                 player.character.type === CardType.CHARACTER
             ) {
-                player.character.lives = player.lives;
-                player.character.mainDeck = lastMove.mainDeck;
-                player.character.hand = player.hand;
+                if ("lives" in player.character) {
+                    player.character.lives = player.lives;
+                }
+
+                if ("mainDeck" in player.character) {
+                    player.character.mainDeck = lastMove.mainDeck;
+                }
+
+                if ("hand" in player.character) {
+                    player.character.hand = player.hand;
+                }
+
                 player.character.action();
             }
         });
+    }
+
+    /**
+     * @returns {Move} Последний ход.
+     */
+    getLastMove() {
+        this.gameSessionHandler.loadData();
+        const lastMove = this.gameSessionHandler.history.getLastMove();
+        this.initCharacterForPlayers(lastMove);
+
+        return lastMove;
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {
