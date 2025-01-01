@@ -1,5 +1,6 @@
 const ValidatePlayerError = require("../Errors/ValidatePlayerError");
 const { aCard, CardType } = require("../interfaces/aCard");
+const SheriffCard = require("../models/cards/roles/SheriffCard");
 const Player = require("../models/Player");
 
 class PlayerCollection {
@@ -217,16 +218,22 @@ class PlayerCollection {
     }
 
     /**
-     * Возвращает игрока с указанной ролью.
-     * @param {string} roleType - Тип роли, которую нужно найти (например, CardType.ROLE).
-     * @returns {Player|null} Первый игрок с указанной ролью или null, если таких игроков нет.
+     * Возвращает первого игрока с ролью, класс которой соответствует указанному названию.
+     * @param {string} className - Название класса роли, которую нужно найти (например, "SheriffCard").
+     * @returns {Player|null} Первый игрок с ролью соответствующего класса или null, если таких игроков нет.
      */
-    getPlayerWithRole(roleType) {
+    getPlayerByRoleClassName(className) {
+        if (typeof className === "string") {
+        } else if (typeof className === "function" && className.name) {
+            className = className.name;
+        } else {
+            throw new ValidatePlayerError("Не корректное имя класс для поиска роли по классу.");
+        }
+
         return (
             this.players.find((player) => {
                 return (
-                    player.role && // У игрока должна быть роль
-                    player.role.type === roleType // Тип роли должен совпадать с указанным
+                    player.role instanceof aCard && player.role.constructor.name === className // Имя класса роли должно совпадать с указанным
                 );
             }) || null
         );
@@ -553,6 +560,31 @@ class PlayerCollection {
             const j = Math.floor(Math.random() * (i + 1)); // Случайный индекс
             [this.players[i], this.players[j]] = [this.players[j], this.players[i]]; // Меняем местами
         }
+    }
+
+    /**
+     * Перемешивает игроков с учетом того, что Шериф должен быть на первом месте.
+     * Если у хотя бы одного игрока нет роли, выбрасывает ошибку.
+     */
+    shufflePlayersWithSheriffFirst() {
+        // Проверяем, что у всех игроков есть роль
+        const playerWithoutRole = this.getPlayerWithoutRole(); // Находим игроков без роли
+        if (playerWithoutRole) {
+            throw new ValidatePlayerError(`У игрока ${playerWithoutRole.name} нет роли.`);
+        }
+
+        // Перемешиваем ID игроков
+        this.shufflePlayerIds();
+
+        // Находим игрока с ролью "Шериф"
+        const sheriff = this.getPlayerByRoleClassName(SheriffCard);
+        if (!(sheriff instanceof Player)) {
+            throw new ValidatePlayerError("Игрок с ролью 'Шериф' не найден.");
+        }
+
+        // Убираем Шерифа из массива и добавляем его на первое место
+        this.players = this.players.filter((player) => player !== sheriff);
+        this.players.unshift(sheriff);
     }
 
     /**

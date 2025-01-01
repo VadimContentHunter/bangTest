@@ -135,12 +135,12 @@ class GameHandler extends EventEmitter {
 
         this.gameSessionHandler.head.collectionRolesCards = new CardsCollection([
             new BanditCard(),
-            new BanditCard(),
-            new BanditCard(),
-            new RenegadeCard(),
+            // new BanditCard(),
+            // new BanditCard(),
+            // new RenegadeCard(),
             new SheriffCard(),
-            new DeputySheriffCard(),
-            new DeputySheriffCard(),
+            // new DeputySheriffCard(),
+            // new DeputySheriffCard(),
         ]);
         this.gameSessionHandler.head.collectionCharactersCards = new CardsCollection([
             new BartCassidy(),
@@ -206,11 +206,13 @@ class GameHandler extends EventEmitter {
                         playersDistances: new DistanceHandler(lastMove.players),
                     })
                 );
-                this.gameSessionHandler.saveData();
                 console.log(`Игроку ${player.name} была выдана роль ${playerMain.role.name}`);
                 // this.saveAndTriggerHook(player, "roleGiven", { playerMain });
             }
         });
+
+        lastMove.players.shufflePlayersWithSheriffFirst();
+        this.gameSessionHandler.saveData();
 
         console.log("GameHandler: Все игроки получили роль.");
         this.emit("afterSelectRolesForPlayers", lastMove.players);
@@ -225,6 +227,7 @@ class GameHandler extends EventEmitter {
      */
     async selectCharactersForPlayers() {
         const lastMove = this.getLastMove();
+        // const playerSheriffFirst = lastMove.players.getPlayerByRoleClassName(SheriffCard);
         const playerWithMinId = lastMove.players.getPlayerWithMinIdWithoutCharacter();
         const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
             playerWithMinId,
