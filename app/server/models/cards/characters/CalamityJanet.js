@@ -8,7 +8,7 @@ class CalamityJanet extends aCard {
         super({
             name: "Black Jack",
             image: "../resources/imgs/cards/characters/01_calamityjanet.png",
-            type: CardType.ROLE,
+            type: CardType.CHARACTER,
             ownerName: ownerName,
         });
     }

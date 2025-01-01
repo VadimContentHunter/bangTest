@@ -8,7 +8,7 @@ class ElGringo extends aCard {
         super({
             name: "Black Jack",
             image: "../resources/imgs/cards/characters/01_elgringo.png",
-            type: CardType.ROLE,
+            type: CardType.CHARACTER,
             ownerName: ownerName,
         });
     }

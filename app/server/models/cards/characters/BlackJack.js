@@ -8,7 +8,7 @@ class BlackJack extends aCard {
         super({
             name: "Black Jack",
             image: "../resources/imgs/cards/characters/01_blackjack.png",
-            type: CardType.ROLE,
+            type: CardType.CHARACTER,
             ownerName: ownerName,
         });
     }

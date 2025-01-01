@@ -12,7 +12,7 @@ class BartCassidy extends aCard {
         super({
             name: "Bart Cassidy",
             image: "../resources/imgs/cards/characters/01_bartcassidy.png",
-            type: CardType.ROLE,
+            type: CardType.CHARACTER,
             ownerName: ownerName,
         });
 

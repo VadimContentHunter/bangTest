@@ -16,7 +16,7 @@ class CardsCollection {
      * @type {typeof aCard[]}
      * @static
      */
-    static typesCards = [StubCard, BanditCard, RenegadeCard, SheriffCard, DeputySheriffCard];
+    static typesCards = [];
 
     constructor(cards = []) {
         /**
@@ -259,6 +259,48 @@ class CardsCollection {
             pulledCards.push(this.cards.splice(randomIndex, 1)[0]); // Удаляем и добавляем в результат.
         }
         return pulledCards;
+    }
+
+    /**
+     * Возвращает указанное количество случайных уникальных карт из коллекции.
+     * @param {number} count - Количество карт для возвращения.
+     * @returns {aCard[]} Массив случайных уникальных карт.
+     * @throws {CardError} Если count не является числом или больше, чем количество карт в коллекции.
+     */
+    getRandomCards(count) {
+        if (typeof count !== "number" || count <= 0) {
+            throw new CardError("Количество карт должно быть положительным числом.");
+        }
+
+        if (count > this.cards.length) {
+            throw new CardError(
+                "Недостаточно карт в коллекции для возврата указанного количества."
+            );
+        }
+
+        const randomCards = [];
+        const availableCards = [...this.cards]; // Создаем копию массива карт, чтобы не изменять оригинал.
+
+        for (let i = 0; i < count; i++) {
+            const randomIndex = Math.floor(Math.random() * availableCards.length);
+            const selectedCard = availableCards.splice(randomIndex, 1)[0]; // Удаляем карту из массива доступных карт.
+            randomCards.push(selectedCard);
+        }
+
+        return randomCards;
+    }
+
+    /**
+     * Проверяет наличие карты в коллекции по её ID.
+     * @param {number} id - Уникальный идентификатор карты.
+     * @returns {boolean} true, если карта с указанным ID есть в коллекции, иначе false.
+     * @throws {CardError} Если ID не является числом.
+     */
+    hasCardById(id) {
+        if (typeof id !== "number") {
+            throw new CardError("ID должен быть числом.");
+        }
+        return this.cards.some((card) => card.id === id);
     }
 
     /**

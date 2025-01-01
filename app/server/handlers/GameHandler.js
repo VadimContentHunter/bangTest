@@ -20,12 +20,17 @@ const CardsCollection = require("../handlers/CardsCollection");
 const SelectionCardsError = require("../Errors/SelectionCardsError");
 const SelectionCards = require("../models/SelectionCards");
 const { aCard, CardType } = require("../interfaces/aCard");
+
 const StubCard = require("../models/cards/StubCard");
 const PlayerActionManager = require("./PlayerActionManager");
 const BanditCard = require("../models/cards/roles/BanditCard");
 const RenegadeCard = require("../models/cards/roles/RenegadeCard");
 const SheriffCard = require("../models/cards/roles/SheriffCard");
 const DeputySheriffCard = require("../models/cards/roles/DeputySheriffCard");
+const BartCassidy = require("../models/cards/characters/BartCassidy");
+const BlackJack = require("../models/cards/characters/BlackJack");
+const CalamityJanet = require("../models/cards/characters/CalamityJanet");
+const ElGringo = require("../models/cards/characters/ElGringo");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -102,6 +107,19 @@ class GameHandler extends EventEmitter {
         if (!(playroomHandler instanceof PlayroomHandler)) {
             throw new Error("GameHandler: playroomHandler must be an instance of PlayroomHandler");
         }
+
+        CardsCollection.typesCards = [
+            StubCard,
+            BanditCard,
+            RenegadeCard,
+            SheriffCard,
+            DeputySheriffCard,
+            BartCassidy,
+            BlackJack,
+            CalamityJanet,
+            ElGringo,
+        ];
+
         this.playroomHandler = playroomHandler;
         this.gameSessionHandler = new GameSessionHandler(true, 2);
         this.playerActionManager = new PlayerActionManager();
@@ -125,14 +143,10 @@ class GameHandler extends EventEmitter {
             new DeputySheriffCard(),
         ]);
         this.gameSessionHandler.head.collectionCharactersCards = new CardsCollection([
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.ROLE),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.WEAPON),
-            new StubCard(CardType.WEAPON),
-            new StubCard(CardType.ROLE),
-            new StubCard(CardType.CHARACTER),
-            new StubCard(CardType.CHARACTER),
+            new BartCassidy(),
+            new BlackJack(),
+            new CalamityJanet(),
+            new ElGringo(),
         ]);
         this.gameSessionHandler.head.collectionGameCards = new CardsCollection([
             new StubCard(CardType.DEFAULT),
@@ -221,23 +235,26 @@ class GameHandler extends EventEmitter {
         if (player instanceof Player) {
             // try {
             const selectionCards = new SelectionCards({
-                title: "Выбор карты для роли",
-                description: "Выберите карту для роли:",
-                textExtension: `Игрок <i>${player.name}</i> выбирает роль . . .`,
-                collectionCards: [
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                ],
-                selectionCount: 2,
+                title: "Выбор персонажа",
+                description: "Выберите персонажа для игры:",
+                textExtension: `Игрок <i>${player.name}</i> выбирает персонажа . . .`,
+                collectionCards:
+                    this.gameSessionHandler.head.collectionCharactersCards.getRandomCards(3),
+                selectionCount: 1,
                 // selectedIndices: [1, 3],
                 // isWaitingForResponse: false,
             });
 
-            this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
-
-            const selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
+            // Выполняется отображение пользователю выбора карт и обработка выбранной карты
+            // отображение будет повторяться пока пользователь не выберет карту именно персонажа
+            let selectedCard = null;
+            do {
+                this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
+                selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
+            } while (!(selectedCard instanceof aCard) || selectedCard?.type !== CardType.CHARACTER);
             player.character = selectedCard;
+
+            // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
             this.gameSessionHandler.history.addMove(
                 new Move({
                     description: `Игрок ${player.name} выбрал себе персонажа ${selectedCard.name}`,
@@ -268,7 +285,7 @@ class GameHandler extends EventEmitter {
     /**
      * Ожидает выбор карты игроком с таймером.
      * @param {Object} player - Игрок, который должен выбрать карту.
-     * @param {Object} selectionCards - Объект с картами для выбора.
+     * @param {SelectionCards} selectionCards - Объект с картами для выбора.
      * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
      * @returns {Promise<Object>} Возвращает выбранную карту.
      * @throws {SelectionCardsError} В случае ошибки выбора или истечения времени.
@@ -287,14 +304,20 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
 
+                    const selectedIdCard = params[0]?.id;
                     // Здесь можно добавить проверку выбранной карты
-                    // if (params && selectionCards.collectionCards.some((c) => c.id === params.id)) {
-                    //     resolve(params);
-                    // } else {
-                    //     reject(new SelectionCardsError("Выбрана неверная карта."));
-                    // }
-                    // Здесь можно добавить проверку выбранной карты
-                    resolve(new StubCard(CardType.CHARACTER));
+                    if (
+                        params.length === 1 &&
+                        selectionCards.collectionCards.hasCardById(selectedIdCard)
+                    ) {
+                        resolve(
+                            this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
+                                selectedIdCard
+                            )
+                        );
+                    } else {
+                        reject(new SelectionCardsError("Выбрана неверная карта."));
+                    }
 
                     // После того как нужный игрок завершил ход, убираем обработчик
                     this.removeListener("playerCardSelected", playerCardSelected);
