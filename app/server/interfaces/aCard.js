@@ -5,6 +5,7 @@ class CardType {
     static CHARACTER = "character";
     static WEAPON = "weapon";
     static DEFAULT = "default";
+    static CONST = "const";
 }
 
 class aCard {
