@@ -137,7 +137,7 @@ class GameHandler extends EventEmitter {
             new BanditCard(),
             // new BanditCard(),
             // new BanditCard(),
-            // new RenegadeCard(),
+            new RenegadeCard(),
             new SheriffCard(),
             // new DeputySheriffCard(),
             // new DeputySheriffCard(),
@@ -368,9 +368,19 @@ class GameHandler extends EventEmitter {
     async executeMovesRound() {
         const lastMove = this.getLastMove();
 
-        const playersRound = this.playroomHandler.playerOnline.getPlayersSortedAsc();
-        for (const player of playersRound) {
-            this.saveAndTriggerHook(player, "playerStartedMove", { player });
+        const playersRound = lastMove.players.getPlayersSortedAsc();
+        for (const playerRnd of playersRound) {
+            const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
+                playerRnd,
+                playerRnd?.name,
+                ["sessionId"]
+            );
+
+            this.saveAndTriggerHook(player, "playerStartedMove", {
+                player: player,
+                playerCollection: lastMove.players,
+            });
+
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
             try {
                 // Ожидаем завершения хода игрока с таймером

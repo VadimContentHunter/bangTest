@@ -123,7 +123,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         gameHandler.startGame();
     });
 
-    gameHandler.on("playerStartedMove", ({ player }) => {
+    gameHandler.on("playerStartedMove", ({ player, playerCollection }) => {
+        serverHook.emit("updateFullDataClients", playerCollection);
         wss.clients.forEach((client) => {
             if (
                 client.readyState === WebSocket.OPEN &&
