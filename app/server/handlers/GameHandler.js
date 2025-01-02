@@ -185,7 +185,7 @@ class GameHandler extends EventEmitter {
      * @fires afterSelectRolesForPlayers - Событие, испускаемое после того, как всем игрокам назначены роли.
      */
     selectRolesForPlayers() {
-        const lastMove = this.getLastMove();
+        let lastMove = this.getLastMove();
         const players = lastMove.players.getPlayersWithoutRole();
         players.forEach((player) => {
             // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
@@ -203,18 +203,33 @@ class GameHandler extends EventEmitter {
                     new Move({
                         description: `Игроку ${player.name} была выдана роль ${playerMain.role.name}`,
                         players: lastMove.players,
-                        playersDistances: new DistanceHandler(lastMove.players),
+                        playersDistances: lastMove.playersDistances,
+                        mainDeck: lastMove.mainDeck,
+                        discardDeck: lastMove.discardDeck,
                     })
                 );
                 console.log(`Игроку ${player.name} была выдана роль ${playerMain.role.name}`);
                 // this.saveAndTriggerHook(player, "roleGiven", { playerMain });
             }
         });
+        console.log("GameHandler: Все игроки получили роль.");
 
+        lastMove = this.getLastMove();
         lastMove.players.shufflePlayersWithSheriffFirst();
+        this.gameSessionHandler.history.addMove(
+            new Move({
+                description: `Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди.`,
+                players: lastMove.players,
+                playersDistances: new DistanceHandler(lastMove.players),
+                mainDeck: lastMove.mainDeck,
+                discardDeck: lastMove.discardDeck,
+            })
+        );
         this.gameSessionHandler.saveData();
 
-        console.log("GameHandler: Все игроки получили роль.");
+        console.log(
+            "GameHandler: Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди."
+        );
         this.emit("afterSelectRolesForPlayers", lastMove.players);
     }
 

@@ -264,24 +264,28 @@ class CardsCollection {
     /**
      * Возвращает указанное количество случайных уникальных карт из коллекции.
      * @param {number} count - Количество карт для возвращения.
+     * @param {boolean} allowPartial - Если true, возвращает все доступные карты, даже если их меньше, чем count. Если false, выбрасывает ошибку.
      * @returns {aCard[]} Массив случайных уникальных карт.
-     * @throws {CardError} Если count не является числом или больше, чем количество карт в коллекции.
+     * @throws {CardError} Если count не является числом или меньше или равно нулю.
      */
-    getRandomCards(count) {
+    getRandomCards(count, allowPartial = true) {
         if (typeof count !== "number" || count <= 0) {
             throw new CardError("Количество карт должно быть положительным числом.");
         }
 
-        if (count > this.cards.length) {
+        if (!allowPartial && count > this.cards.length) {
             throw new CardError(
                 "Недостаточно карт в коллекции для возврата указанного количества."
             );
         }
 
+        // Если allowPartial включен и count больше, чем доступно, корректируем count
+        const actualCount = Math.min(count, this.cards.length);
+
         const randomCards = [];
         const availableCards = [...this.cards]; // Создаем копию массива карт, чтобы не изменять оригинал.
 
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < actualCount; i++) {
             const randomIndex = Math.floor(Math.random() * availableCards.length);
             const selectedCard = availableCards.splice(randomIndex, 1)[0]; // Удаляем карту из массива доступных карт.
             randomCards.push(selectedCard);

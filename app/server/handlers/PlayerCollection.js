@@ -563,7 +563,8 @@ class PlayerCollection {
     }
 
     /**
-     * Перемешивает игроков с учетом того, что Шериф должен быть на первом месте.
+     * Перемешивает игроков с учетом того, что Шериф должен быть на первом месте
+     * и его id должно быть минимальным.
      * Если у хотя бы одного игрока нет роли, выбрасывает ошибку.
      */
     shufflePlayersWithSheriffFirst() {
@@ -580,6 +581,14 @@ class PlayerCollection {
         const sheriff = this.getPlayerByRoleClassName(SheriffCard);
         if (!(sheriff instanceof Player)) {
             throw new ValidatePlayerError("Игрок с ролью 'Шериф' не найден.");
+        }
+
+        // Находим игрока с минимальным id, игнорируя текущий id Шерифа
+        const minIdPlayer = this.getPlayerWithMinId([sheriff.id]);
+
+        // Если найден игрок с минимальным id, обмениваем id с Шерифом
+        if (minIdPlayer) {
+            [sheriff.id, minIdPlayer.id] = [minIdPlayer.id, sheriff.id];
         }
 
         // Убираем Шерифа из массива и добавляем его на первое место
