@@ -265,25 +265,35 @@ class GameHandler extends EventEmitter {
 
             // Выполняется отображение пользователю выбора карт и обработка выбранной карты
             // отображение будет повторяться пока пользователь не выберет карту именно персонажа
-            let selectedCard = null;
+            let selectedCards = [];
             do {
                 this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
-                selectedCard = await this.waitForPlayerCardSelection(player, selectionCards);
-            } while (!(selectedCard instanceof aCard) || selectedCard?.type !== CardType.CHARACTER);
-            player.character = selectedCard;
+                selectedCards = await this.waitForPlayerCardSelection(player, selectionCards);
+
+                // Проверка: selectedCards — это массив и все карты в нем типа CardType.CHARACTER
+            } while (
+                !Array.isArray(selectedCards) ||
+                !selectedCards.every(
+                    (card) => card instanceof aCard && card.type === CardType.CHARACTER
+                )
+            );
+            this.gameSessionHandler.head.collectionCharactersCards.pullCardById(selectedCards[0].id);
+            player.character = selectedCards[0];
 
             // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
             this.gameSessionHandler.history.addMove(
                 new Move({
-                    description: `Игрок ${player.name} выбрал себе персонажа ${selectedCard.name}`,
+                    description: `Игрок ${player.name} выбрал себе персонажа ${player.character.name}`,
                     players: lastMove.players,
-                    playersDistances: new DistanceHandler(lastMove.players),
+                    playersDistances: lastMove.playersDistances,
+                    mainDeck: lastMove.mainDeck,
+                    discardDeck: lastMove.discardDeck,
                 })
             );
             this.gameSessionHandler.saveData();
             this.playerActionManager.clearHooksByPlayer(player);
             console.log(
-                `GameHandler: Игрок ${player.name} выбрал себе персонажа ${selectedCard.name}`
+                `GameHandler: Игрок ${player.name} выбрал себе персонажа ${player.character.name}`
             );
 
             this.saveAndTriggerHook(player, "selectionEnd", lastMove.players);
@@ -305,7 +315,7 @@ class GameHandler extends EventEmitter {
      * @param {Object} player - Игрок, который должен выбрать карту.
      * @param {SelectionCards} selectionCards - Объект с картами для выбора.
      * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
-     * @returns {Promise<Object>} Возвращает выбранную карту.
+     * @returns {Promise<Object[]>} Возвращает массив выбранных карт.
      * @throws {SelectionCardsError} В случае ошибки выбора или истечения времени.
      * @listens GameHandler#playerCardSelected
      */
@@ -318,19 +328,16 @@ class GameHandler extends EventEmitter {
             // }, timer);
 
             const playerCardSelected = (ws, params, id = null) => {
+                if (!Array.isArray(params)) {
+                    console.log(`Игрок с sessionId ${ws.sessionId} передает не корректные данные.`);
+                }
                 // Проверяем, что sessionId из события совпадает с ожидаемым
                 if (ws.sessionId === player.sessionId) {
-                    // clearTimeout(timeout); // Очищаем таймер, если используем его
-
-                    const selectedIdCard = params[0]?.id;
-                    // Здесь можно добавить проверку выбранной карты
-                    if (
-                        params.length === 1 &&
-                        selectionCards.collectionCards.hasCardById(selectedIdCard)
-                    ) {
+                    const ids = params.map((item) => item?.id).filter(Boolean);
+                    if (params.length > 0 && selectionCards.collectionCards.hasCardsByIds(ids)) {
                         resolve(
-                            this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
-                                selectedIdCard
+                            selectionCards.collectionCards.pullCardsByIds(
+                                ids
                             )
                         );
                     } else {
@@ -367,7 +374,6 @@ class GameHandler extends EventEmitter {
      */
     async executeMovesRound() {
         const lastMove = this.getLastMove();
-
         const playersRound = lastMove.players.getPlayersSortedAsc();
         for (const playerRnd of playersRound) {
             const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
@@ -375,6 +381,7 @@ class GameHandler extends EventEmitter {
                 playerRnd?.name,
                 ["sessionId"]
             );
+            this.playerActionManager.clearHooksByPlayer(player);
 
             this.saveAndTriggerHook(player, "playerStartedMove", {
                 player: player,
@@ -382,16 +389,17 @@ class GameHandler extends EventEmitter {
             });
 
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
-            try {
-                // Ожидаем завершения хода игрока с таймером
-                await this.waitForPlayerMove(player, 30000); // Таймаут на 30 секунд
-                this.playerActionManager.clearHooksByPlayer(player);
-                console.log(`GameHandler: Игрок ${player.name} завершил ход.`);
-            } catch (error) {
-                console.error(
-                    `GameHandler: Ошибка выполнения хода игроком ${player.name}: ${error.message}`
-                );
-            }
+            // try {
+            this.moveDrawTwoCards(player, lastMove);
+            this.movePlayCard(player, lastMove);
+            await this.waitForPlayerMoveFinished(player, lastMove, 30000); //Завершение хода
+            await this.moveDiscardExcessCards(player, lastMove);
+            console.log(`GameHandler: Игрок ${player.name} завершил ход.`);
+            // } catch (error) {
+            //     console.error(
+            //         `GameHandler: Ошибка выполнения хода игроком ${player.name}: ${error.message}`
+            //     );
+            // }
         }
         this.emit("afterMovesRound");
     }
@@ -404,7 +412,7 @@ class GameHandler extends EventEmitter {
      * @throws {MoveError} В случае ошибки или истечения времени.
      * @listens GameHandler#playerMoveFinished
      */
-    async waitForPlayerMove(player, timer = 30000) {
+    async waitForPlayerMoveFinished(player, lastMove, timer = 30000) {
         console.log(`GameHandler: Ожидание завершения хода от игрока: ${player.name}`);
 
         return new Promise((resolve, reject) => {
@@ -417,7 +425,6 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     // Игрок завершил ход, раз разрешение на событие только для этого игрока
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
-                    console.log("Игрок походил --Карта--");
                     resolve();
                     // После того как нужный игрок завершил ход, убираем обработчик
                     this.removeListener("playerMoveFinished", moveFinishedHandler);
@@ -439,6 +446,186 @@ class GameHandler extends EventEmitter {
 
             // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
             // Убедитесь, что он удаляется в любом случае.
+        });
+    }
+
+    /**
+     * Ожидает завершения хода игроком с таймером.
+     * @param {Object} player - Игрок, который должен завершить ход.
+     * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
+     * @returns {Promise} Возвращает промис, который выполняется, когда игрок завершает ход.
+     * @throws {MoveError} В случае ошибки или истечения времени.
+     * @listens GameHandler#playerMoveFinished
+     */
+    async waitForPlayCard(player, timer = 30000) {
+        console.log(`GameHandler: Ожидание карты от игрока: ${player.name}`);
+
+        return new Promise((resolve, reject) => {
+            // const timeout = setTimeout(() => {
+            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
+            // }, timer);
+
+            const movePlayCardHandler = (ws, params, id = null) => {
+                // Проверяем, что sessionId из события совпадает с ожидаемым
+                if (ws.sessionId === player.sessionId) {
+                    // Игрок завершил ход, раз разрешение на событие только для этого игрока
+                    // clearTimeout(timeout); // Очищаем таймер, если используем его
+                    console.log("Игрок походил --Карта--");
+                    resolve();
+                    // После того как нужный игрок завершил ход, убираем обработчик
+                    this.removeListener("movePlayCardHandler", movePlayCardHandler);
+                } else {
+                    console.log(
+                        `Игрок с sessionId ${ws.sessionId} не может завершить ход для ${player.name}`
+                    );
+                }
+            };
+
+            // Подписываемся на событие
+            this.on("movePlayCardHandler", movePlayCardHandler);
+
+            // В случае истечения времени или ошибки, обработчик должен быть удалён
+            // setTimeout(() => {
+            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
+            //     this.removeListener("movePlayCardHandler", moveFinishedHandler); // Убираем обработчик при истечении таймаута
+            // }, timer);
+
+            // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
+            // Убедитесь, что он удаляется в любом случае.
+        });
+    }
+
+    moveDrawTwoCards(player, lastMove) {
+        if (player instanceof Player && lastMove instanceof Move) {
+            let selectedCards = [];
+            if (lastMove.mainDeck.countCards() > 0) {
+                selectedCards = lastMove.mainDeck.pullRandomCards(2);
+                player.hand.addArrayCards(selectedCards);
+            }
+            const cardNames = selectedCards
+                .filter((card) => card.name) // Фильтруем карты без имени
+                .map((card) => card.name)
+                .join(", ");
+
+            this.gameSessionHandler.history.addMove(
+                new Move({
+                    description: `Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`,
+                    players: lastMove.players,
+                    playersDistances: lastMove.playersDistances,
+                    mainDeck: lastMove.mainDeck,
+                    discardDeck: lastMove.discardDeck,
+                })
+            );
+            this.gameSessionHandler.saveData();
+            this.playerActionManager.clearHooksByPlayer(player);
+            console.log(
+                `GameHandler: Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`
+            );
+        } else {
+            throw new Error(
+                "Объекты playerHand и mainDeck должны быть экземплярами CardsCollection"
+            );
+        }
+    }
+
+    movePlayCard(player, lastMove) {
+        if (player instanceof Player && lastMove instanceof Move) {
+            // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
+            this.on("playCard", (ws, params, id = null) => {
+                if (ws.sessionId === player.sessionId) {
+                    console.log(`Игрок походил ${params?.name ?? params?.id ?? "карту"}`);
+                }
+            });
+        } else {
+            throw new Error("Объект player должен быть экземпляром Player");
+        }
+    }
+
+    async moveDiscardExcessCards(player, lastMove) {
+        if (player instanceof Player && lastMove instanceof Move) {
+            const countCardsHand = player.hand.countCards();
+            if (countCardsHand > player.lives.current) {
+                const countDiscardCards = countCardsHand - player.lives.current;
+                const selectionCards = new SelectionCards({
+                    title: `Выбор карт для сброса`,
+                    description: `Выберите карты которые хотите сбросить. <b>Кол-во нужно выбрать [${countDiscardCards}]</b>:`,
+                    textExtension: `Игрок <i>${player.name}</i> выбирает персонажа . . .`,
+                    collectionCards: player.hand.getAllCards(),
+                    selectionCount: countDiscardCards,
+                    // selectedIndices: [1, 3],
+                    // isWaitingForResponse: false,
+                });
+
+                // Выполняется отображение пользователю выбора карт и обработка выбранной карты
+                // отображение будет повторяться пока пользователь не выберет карту именно персонажа
+                let selectedCards = [];
+                do {
+                    this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
+                    selectedCards = await this.waitForPlayerCardSelection(player, selectionCards);
+
+                    // Проверка: selectedCards — это массив и все карты в нем типа CardType.CHARACTER
+                } while (
+                    !Array.isArray(selectedCards) ||
+                    !selectedCards.every(
+                        (card) => card instanceof aCard
+                        //&& card.type !== CardType.ROLE
+                        //&& card.type !== CardType.CHARACTER
+                    )
+                );
+                const playerDiscardCards = player.hand.pullCardsByIds(selectedCards);
+                const cardNames = selectedCards
+                    .filter((card) => card.name) // Фильтруем карты без имени
+                    .map((card) => card.name)
+                    .join(", ");
+
+                // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
+                this.gameSessionHandler.history.addMove(
+                    new Move({
+                        description: `Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`,
+                        players: lastMove.players,
+                        playersDistances: lastMove.playersDistances,
+                        mainDeck: lastMove.mainDeck,
+                        discardDeck: lastMove.discardDeck,
+                    })
+                );
+                this.gameSessionHandler.saveData();
+                this.playerActionManager.clearHooksByPlayer(player);
+                console.log(
+                    `GameHandler: Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`
+                );
+
+                this.saveAndTriggerHook(player, "selectionEnd", lastMove.players);
+            }
+        } else {
+            throw new Error("Объект player должен быть экземпляром Player");
+        }
+    }
+
+    initRoleForPlayers(lastMove) {
+        if (!(lastMove instanceof Move)) {
+            return;
+        }
+
+        lastMove.players.getPlayers().forEach((player) => {
+            if (
+                player instanceof Player &&
+                player.role instanceof aCard &&
+                player.role.type === CardType.ROLE
+            ) {
+                if ("lives" in player.role) {
+                    player.role.lives = player.lives;
+                }
+
+                if ("mainDeck" in player.role) {
+                    player.role.mainDeck = lastMove.mainDeck;
+                }
+
+                if ("hand" in player.role) {
+                    player.role.hand = player.hand;
+                }
+
+                player.role.action();
+            }
         });
     }
 
@@ -476,6 +663,7 @@ class GameHandler extends EventEmitter {
     getLastMove() {
         this.gameSessionHandler.loadData();
         const lastMove = this.gameSessionHandler.history.getLastMove();
+        this.initRoleForPlayers(lastMove);
         this.initCharacterForPlayers(lastMove);
 
         return lastMove;

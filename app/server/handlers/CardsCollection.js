@@ -224,6 +224,36 @@ class CardsCollection {
     }
 
     /**
+     * Вытаскивает карты из коллекции по их ID (удаляет их) и возвращает.
+     * Использует метод pullCardById.
+     * @param {(number|aCard)[]} ids - Массив ID карт или объектов карты с полем id.
+     * @returns {aCard[]} Массив вытаскиваемых карт.
+     * @throws {CardError} Если хотя бы одна карта с указанным ID не найдена.
+     * @throws {TypeError} Если элементы массива не являются числом или объектом с полем id.
+     */
+    pullCardsByIds(ids) {
+        if (!Array.isArray(ids)) {
+            throw new TypeError("Аргумент должен быть массивом ID или объектов карты.");
+        }
+
+        // Преобразуем массив, извлекая id из объектов карты или используя id, если это уже число.
+        const validIds = ids.map((item) => {
+            if (typeof item === "object" && item !== null && "id" in item) {
+                return item.id; // Извлекаем id из объекта
+            } else if (typeof item === "number") {
+                return item; // Используем id, если это число
+            } else {
+                throw new TypeError(
+                    "Все элементы массива должны быть либо числом, либо объектом с полем id."
+                );
+            }
+        });
+
+        // Используем метод pullCardById для каждого id в массиве
+        return validIds.map((id) => this.pullCardById(id));
+    }
+
+    /**
      * Вытаскивает случайную карту из коллекции (удаляет её) и возвращает.
      * @returns {aCard} Случайная вытаскиваемая карта.
      * @throws {CardError} Если в коллекции нет карт.
@@ -305,6 +335,21 @@ class CardsCollection {
             throw new CardError("ID должен быть числом.");
         }
         return this.cards.some((card) => card.id === id);
+    }
+
+    /**
+     * Проверяет наличие всех карт в коллекции по их ID.
+     * @param {number[]} ids - Массив уникальных идентификаторов карт.
+     * @returns {boolean} true, если все карты с указанными ID есть в коллекции, иначе false.
+     * @throws {CardError} Если ids не является массивом или содержит нечисловые элементы.
+     */
+    hasCardsByIds(ids) {
+        if (!Array.isArray(ids)) {
+            throw new CardError("Аргумент должен быть массивом.");
+        }
+
+        // Используем метод hasCardById для проверки каждого ID
+        return ids.every((id) => this.hasCardById(id));
     }
 
     /**
