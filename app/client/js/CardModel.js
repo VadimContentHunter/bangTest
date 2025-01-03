@@ -114,7 +114,7 @@ class CardModel {
     }
 
     get delayDescription() {
-        return 2000;
+        return 500;
     }
 
     get selectorDescriptionCart() {

@@ -137,7 +137,7 @@ class GameHandler extends EventEmitter {
             new BanditCard(),
             // new BanditCard(),
             // new BanditCard(),
-            new RenegadeCard(),
+            // new RenegadeCard(),
             new SheriffCard(),
             // new DeputySheriffCard(),
             // new DeputySheriffCard(),
@@ -507,6 +507,13 @@ class GameHandler extends EventEmitter {
                 );
             });
         }
+    }
+
+    /**
+     * @returns {boolean} Возвращает true, если игра началась, иначе false.
+     */
+    isStartGame() {
+        return this.gameSessionHandler.head.statusGame;
     }
 }
 

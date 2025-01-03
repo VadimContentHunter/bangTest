@@ -199,8 +199,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             if (player instanceof Player) {
                 player.lives.max = 5;
                 player.lives.current = 3;
-                // player.role = new StubCard(CardType.ROLE);
-                // player.character = new StubCard(CardType.CHARACTER);
                 player.weapon = new StubCard(CardType.WEAPON);
                 player.temporaryCards.setCards([
                     new StubCard(CardType.DEFAULT),
@@ -224,12 +222,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 ]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
 
-                serverHook.emit(
-                    "requestAllUser",
-                    "createAllGameBoard",
-                    playroomHandler.getAllPlayersSummaryInfo()
-                );
-
                 const gameTable = new GameTable();
                 gameTable.deckMain.setCards([
                     new StubCard(CardType.DEFAULT),
@@ -251,6 +243,16 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     new StubCard(CardType.WEAPON),
                 ]);
                 serverHook.emit("requestAllUser", "battleZoneUpdate", gameTable);
+
+                if (!gameHandler.isStartGame()) {
+                    serverHook.emit(
+                        "requestAllUser",
+                        "createAllGameBoard",
+                        playroomHandler.getAllPlayersSummaryInfo()
+                    );
+                } else {
+                    serverHook.emit("updateFullDataClients", gameHandler.getLastMove().players);
+                }
 
                 gameHandler.triggerHooksForPlayer(player);
             }
