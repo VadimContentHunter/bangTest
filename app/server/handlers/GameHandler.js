@@ -215,6 +215,7 @@ class GameHandler extends EventEmitter {
         console.log("GameHandler: Все игроки получили роль.");
 
         lastMove = this.getLastMove();
+        this.initRoleForPlayers(lastMove);
         lastMove.players.shufflePlayersWithSheriffFirst();
         this.gameSessionHandler.history.addMove(
             new Move({
@@ -277,7 +278,9 @@ class GameHandler extends EventEmitter {
                     (card) => card instanceof aCard && card.type === CardType.CHARACTER
                 )
             );
-            this.gameSessionHandler.head.collectionCharactersCards.pullCardById(selectedCards[0].id);
+            this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
+                selectedCards[0].id
+            );
             player.character = selectedCards[0];
 
             // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
@@ -335,11 +338,7 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     const ids = params.map((item) => item?.id).filter(Boolean);
                     if (params.length > 0 && selectionCards.collectionCards.hasCardsByIds(ids)) {
-                        resolve(
-                            selectionCards.collectionCards.pullCardsByIds(
-                                ids
-                            )
-                        );
+                        resolve(selectionCards.collectionCards.pullCardsByIds(ids));
                     } else {
                         reject(new SelectionCardsError("Выбрана неверная карта."));
                     }
@@ -449,52 +448,6 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    /**
-     * Ожидает хода картой от игрока, с таймером.
-     * @param {Object} player - Игрок, который должен завершить ход.
-     * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
-     * @returns {Promise} Возвращает промис, который выполняется, когда игрок завершает ход.
-     * @throws {MoveError} В случае ошибки или истечения времени.
-     * @listens GameHandler#playerMoveFinished
-     */
-    async waitForPlayCard(player, timer = 30000) {
-        console.log(`GameHandler: Ожидание карты от игрока: ${player.name}`);
-
-        return new Promise((resolve, reject) => {
-            // const timeout = setTimeout(() => {
-            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
-            // }, timer);
-
-            const movePlayCardHandler = (ws, params, id = null) => {
-                // Проверяем, что sessionId из события совпадает с ожидаемым
-                if (ws.sessionId === player.sessionId) {
-                    // Игрок завершил ход, раз разрешение на событие только для этого игрока
-                    // clearTimeout(timeout); // Очищаем таймер, если используем его
-                    console.log("Игрок походил --Карта--");
-                    resolve();
-                    // После того как нужный игрок завершил ход, убираем обработчик
-                    this.removeListener("movePlayCardHandler", movePlayCardHandler);
-                } else {
-                    console.log(
-                        `Игрок с sessionId ${ws.sessionId} не может завершить ход для ${player.name}`
-                    );
-                }
-            };
-
-            // Подписываемся на событие
-            this.on("movePlayCardHandler", movePlayCardHandler);
-
-            // В случае истечения времени или ошибки, обработчик должен быть удалён
-            // setTimeout(() => {
-            //     reject(new MoveError(`Время на ход игрока ${player.name} истекло.`));
-            //     this.removeListener("movePlayCardHandler", moveFinishedHandler); // Убираем обработчик при истечении таймаута
-            // }, timer);
-
-            // Важно помнить, что после вызова resolve() или reject() обработчик все равно будет оставаться.
-            // Убедитесь, что он удаляется в любом случае.
-        });
-    }
-
     moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
             let selectedCards = [];
@@ -533,7 +486,9 @@ class GameHandler extends EventEmitter {
             // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
             this.on("playCard", (ws, params, id = null) => {
                 if (ws.sessionId === player.sessionId) {
-                    console.log(`Игрок походил ${params?.name ?? params?.id ?? "карту"}`);
+                    const playerDiscardCard = player.hand.pullCardById(params.id);
+
+                    console.log(`Игрок ${player.name} походил ${playerDiscardCard.name}`);
                 }
             });
         } else {
@@ -663,7 +618,7 @@ class GameHandler extends EventEmitter {
     getLastMove() {
         this.gameSessionHandler.loadData();
         const lastMove = this.gameSessionHandler.history.getLastMove();
-        this.initRoleForPlayers(lastMove);
+        // this.initRoleForPlayers(lastMove);
         this.initCharacterForPlayers(lastMove);
 
         return lastMove;
