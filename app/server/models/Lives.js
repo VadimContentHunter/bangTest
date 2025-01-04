@@ -106,11 +106,11 @@ class Lives extends EventEmitter {
         this.current = Math.max(this._current - amount, 0);
 
         // if (oldLives > this._current) {
-            this.emit("lifeLost", {
-                oldLives,
-                amountLost: oldLives - this._current,
-                remainingLives: this._current,
-            });
+            // this.emit("lifeLost", {
+            //     oldLives,
+            //     amountLost: oldLives - this._current,
+            //     remainingLives: this._current,
+            // });
         // }
     }
 

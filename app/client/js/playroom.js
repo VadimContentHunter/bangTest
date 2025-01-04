@@ -209,7 +209,7 @@ function requestServer(request, data = {}, ws) {
                 battleZone.countMainDeck = request?.params?.countDeckMain ?? 0;
                 battleZone.countDiscardPile = request?.params?.countDiscardPile ?? 0;
                 battleZone.timer = request?.params?.timer;
-                battleZone.setCardToContainer(request?.params?.collectionCards ?? []);
+                battleZone.setCardToContainer(request?.params?.collectionCards?.cards ?? []);
                 battleZone.renderUpdatedData();
             } else {
                 console.error(

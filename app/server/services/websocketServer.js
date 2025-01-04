@@ -76,7 +76,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         });
     });
 
-    serverHook.on("updateFullDataClients", (playerCollection) => {
+    serverHook.on("updateFullDataClients", (playerCollection, gameTable) => {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 if (playerCollection instanceof PlayerCollection) {
@@ -93,6 +93,28 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                         )
                     );
                 }
+
+                if (gameTable instanceof GameTable) {
+                    client.send(JsonRpcFormatter.serializeRequest("battleZoneUpdate", gameTable));
+                }
+            }
+        });
+    });
+
+    serverHook.on("lockPlayerMove", (player) => {
+        wss.clients.forEach((client) => {
+            if (
+                client.readyState === WebSocket.OPEN &&
+                player instanceof Player &&
+                player.sessionId === client.sessionId
+            ) {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: true })
+                );
+            } else {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: false })
+                );
             }
         });
     });
@@ -123,23 +145,9 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         gameHandler.startGame();
     });
 
-    gameHandler.on("playerStartedMove", ({ player, playerCollection }) => {
-        serverHook.emit("updateFullDataClients", playerCollection);
-        wss.clients.forEach((client) => {
-            if (
-                client.readyState === WebSocket.OPEN &&
-                player instanceof Player &&
-                player.sessionId === client.sessionId
-            ) {
-                client.send(
-                    JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: true })
-                );
-            } else {
-                client.send(
-                    JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: false })
-                );
-            }
-        });
+    gameHandler.on("playerStartedMove", ({ player, playerCollection, gameTable }) => {
+        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
+        serverHook.emit("lockPlayerMove", player);
     });
 
     // Подписка на Игровые хуки
@@ -148,8 +156,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         gameHandler.selectRolesForPlayers();
     });
 
-    gameHandler.on("afterSelectRolesForPlayers", (playerCollection) => {
-        serverHook.emit("updateFullDataClients", playerCollection);
+    gameHandler.on("afterSelectRolesForPlayers", (playerCollection, gameTable) => {
+        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
         gameHandler.playerActionManager.clearAll();
         gameHandler.selectCharactersForPlayers();
     });
@@ -163,6 +171,21 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     gameHandler.on("afterMovesRound", () => {
         gameHandler.playerActionManager.clearAll();
         // gameHandler.executeMovesRound();
+    });
+
+    gameHandler.on("endDrawCards", ({ player, playerCollection, gameTable }) => {
+        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
+        serverHook.emit("lockPlayerMove", player);
+    });
+
+    gameHandler.on("endCardTurnPlayer", ({ player, playerCollection, gameTable }) => {
+        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
+        serverHook.emit("lockPlayerMove", player);
+    });
+
+    gameHandler.on("endFinishedHandler", ({ player, playerCollection, gameTable }) => {
+        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
+        serverHook.emit("lockPlayerMove", player);
     });
 
     gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
@@ -180,8 +203,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         }
     });
 
-    gameHandler.on("selectionEnd", (playerCollection) => {
-        serverHook.emit("updateFullDataClients", playerCollection);
+    gameHandler.on("selectionEnd", ({ playerCollection, gameTable }) => {
+        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
     });
 
     // Событие при установлении нового соединения
@@ -206,43 +229,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                     new StubCard(CardType.WEAPON),
                     new StubCard(CardType.CHARACTER),
                 ]);
-                player.hand.setCards([
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                ]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
-
-                const gameTable = new GameTable();
-                gameTable.deckMain.setCards([
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                ]);
-                gameTable.discardPile.setCards([
-                    new StubCard(CardType.WEAPON),
-                    new StubCard(CardType.CHARACTER),
-                    new StubCard(CardType.DEFAULT),
-                ]);
-                gameTable.addPlayerCards(player, [
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
-                ]);
-                serverHook.emit("requestAllUser", "battleZoneUpdate", gameTable);
 
                 if (!gameHandler.isStartGame()) {
                     serverHook.emit(
@@ -251,7 +238,11 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                         playroomHandler.getAllPlayersSummaryInfo()
                     );
                 } else {
-                    serverHook.emit("updateFullDataClients", gameHandler.getLastMove().players);
+                    serverHook.emit(
+                        "updateFullDataClients",
+                        gameHandler.getLastMove().players,
+                        gameHandler.getLastMove().gameTable
+                    );
                 }
 
                 gameHandler.triggerHooksForPlayer(player);

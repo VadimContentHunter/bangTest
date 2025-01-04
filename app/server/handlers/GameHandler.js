@@ -150,13 +150,17 @@ class GameHandler extends EventEmitter {
         ]);
         this.gameSessionHandler.head.collectionGameCards = new CardsCollection([
             new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.ROLE),
             new StubCard(CardType.DEFAULT),
             new StubCard(CardType.WEAPON),
             new StubCard(CardType.WEAPON),
-            new StubCard(CardType.ROLE),
-            new StubCard(CardType.CHARACTER),
-            new StubCard(CardType.CHARACTER),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.WEAPON),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.WEAPON),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.DEFAULT),
+            new StubCard(CardType.DEFAULT),
         ]);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
@@ -169,6 +173,7 @@ class GameHandler extends EventEmitter {
                     this.gameSessionHandler.head.collectionGameCards.getAllCards()
                 ),
                 discardDeck: new CardsCollection(),
+                gameTable: new GameTable(),
             })
         );
         this.gameSessionHandler.createGameSession();
@@ -206,6 +211,7 @@ class GameHandler extends EventEmitter {
                         playersDistances: lastMove.playersDistances,
                         mainDeck: lastMove.mainDeck,
                         discardDeck: lastMove.discardDeck,
+                        gameTable: lastMove.gameTable,
                     })
                 );
                 console.log(`Игроку ${player.name} была выдана роль ${playerMain.role.name}`);
@@ -224,6 +230,7 @@ class GameHandler extends EventEmitter {
                 playersDistances: new DistanceHandler(lastMove.players),
                 mainDeck: lastMove.mainDeck,
                 discardDeck: lastMove.discardDeck,
+                gameTable: lastMove.gameTable,
             })
         );
         this.gameSessionHandler.saveData();
@@ -231,7 +238,7 @@ class GameHandler extends EventEmitter {
         console.log(
             "GameHandler: Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди."
         );
-        this.emit("afterSelectRolesForPlayers", lastMove.players);
+        this.emit("afterSelectRolesForPlayers", lastMove.players, lastMove.gameTable);
     }
 
     /**
@@ -291,6 +298,7 @@ class GameHandler extends EventEmitter {
                     playersDistances: lastMove.playersDistances,
                     mainDeck: lastMove.mainDeck,
                     discardDeck: lastMove.discardDeck,
+                    gameTable: lastMove.gameTable,
                 })
             );
             this.gameSessionHandler.saveData();
@@ -299,7 +307,10 @@ class GameHandler extends EventEmitter {
                 `GameHandler: Игрок ${player.name} выбрал себе персонажа ${player.character.name}`
             );
 
-            this.saveAndTriggerHook(player, "selectionEnd", lastMove.players);
+            this.saveAndTriggerHook(player, "selectionEnd", {
+                playerCollection: lastMove.players,
+                gameTable: lastMove.gameTable,
+            });
             this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
             // } catch (error) {
             //     console.error(
@@ -385,13 +396,53 @@ class GameHandler extends EventEmitter {
             this.saveAndTriggerHook(player, "playerStartedMove", {
                 player: player,
                 playerCollection: lastMove.players,
+                gameTable: lastMove.gameTable,
             });
 
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
             // try {
-            this.moveDrawTwoCards(player, lastMove);
-            this.movePlayCard(player, lastMove);
-            await this.waitForPlayerMoveFinished(player, lastMove, 30000); //Завершение хода
+            await this.moveDrawTwoCards(player, lastMove);
+
+            const movePlayCard = (ws, params, id = null) => {
+                // Проверяем, что sessionId из события совпадает с ожидаемым
+                if (ws.sessionId === player.sessionId) {
+                    // Игрок завершил ход, раз разрешение на событие только для этого игрока
+                    // clearTimeout(timeout); // Очищаем таймер, если используем его
+                    const playerDiscardCard = player.hand.pullCardById(params.id);
+                    lastMove.gameTable.addPlayerOneCard(player, playerDiscardCard);
+                    this.emit("endCardTurnPlayer", {
+                        player: player,
+                        playerCollection: lastMove.players,
+                        gameTable: lastMove.gameTable,
+                    });
+                    console.log(`Игрок ${player.name} походил карту ${playerDiscardCard.name}`);
+
+                    // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
+                    this.gameSessionHandler.history.addMove(
+                        new Move({
+                            description: `Этап "Ход": Игрок ${player.name} походил карту ${playerDiscardCard.name}`,
+                            players: lastMove.players,
+                            playersDistances: lastMove.playersDistances,
+                            mainDeck: lastMove.mainDeck,
+                            discardDeck: lastMove.discardDeck,
+                            gameTable: lastMove.gameTable,
+                        })
+                    );
+                    this.gameSessionHandler.saveData();
+
+                    // После того как нужный игрок завершил ход, убираем обработчик
+                    // this.removeListener("playCard", movePlayCard);
+                } else {
+                    console.log(
+                        `Игрок с sessionId ${ws.sessionId} не может завершить ход для ${player.name}`
+                    );
+                }
+            };
+
+            this.on("playCard", movePlayCard);
+            
+            await this.waitForPlayerMoveFinished(player, lastMove, 30000);
+            this.removeListener("playCard", movePlayCard);
             await this.moveDiscardExcessCards(player, lastMove);
             console.log(`GameHandler: Игрок ${player.name} завершил ход.`);
             // } catch (error) {
@@ -405,13 +456,18 @@ class GameHandler extends EventEmitter {
 
     /**
      * Ожидает завершения хода игроком с таймером.
-     * @param {Object} player - Игрок, который должен завершить ход.
+     * @param {Player} player - Игрок, который должен завершить ход.
+     * @param {Move} lastMove
      * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
      * @returns {Promise} Возвращает промис, который выполняется, когда игрок завершает ход.
      * @throws {MoveError} В случае ошибки или истечения времени.
      * @listens GameHandler#playerMoveFinished
      */
     async waitForPlayerMoveFinished(player, lastMove, timer = 30000) {
+        if (!(player instanceof Player) && !(lastMove instanceof Move)) {
+            throw new Error("Переданы некорректные данные.");
+        }
+
         console.log(`GameHandler: Ожидание завершения хода от игрока: ${player.name}`);
 
         return new Promise((resolve, reject) => {
@@ -424,6 +480,18 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     // Игрок завершил ход, раз разрешение на событие только для этого игрока
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
+                    lastMove.discardDeck.addArrayCards(
+                        lastMove.gameTable.playedCards.pullAllCards(),
+                        false
+                    );
+                    lastMove.gameTable.countDiscardPile = lastMove.discardDeck.countCards();
+
+                    this.emit("endFinishedHandler", {
+                        player: player,
+                        playerCollection: lastMove.players,
+                        gameTable: lastMove.gameTable,
+                    });
+
                     resolve();
                     // После того как нужный игрок завершил ход, убираем обработчик
                     this.removeListener("playerMoveFinished", moveFinishedHandler);
@@ -448,13 +516,20 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    moveDrawTwoCards(player, lastMove) {
+    async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
             let selectedCards = [];
             if (lastMove.mainDeck.countCards() > 0) {
                 selectedCards = lastMove.mainDeck.pullRandomCards(2);
-                player.hand.addArrayCards(selectedCards);
+                player.hand.addArrayCards(selectedCards, false);
             }
+
+            this.emit("endDrawCards", {
+                player: player,
+                playerCollection: lastMove.players,
+                gameTable: lastMove.gameTable,
+            });
+
             const cardNames = selectedCards
                 .filter((card) => card.name) // Фильтруем карты без имени
                 .map((card) => card.name)
@@ -467,6 +542,7 @@ class GameHandler extends EventEmitter {
                     playersDistances: lastMove.playersDistances,
                     mainDeck: lastMove.mainDeck,
                     discardDeck: lastMove.discardDeck,
+                    gameTable: lastMove.gameTable,
                 })
             );
             this.gameSessionHandler.saveData();
@@ -478,21 +554,6 @@ class GameHandler extends EventEmitter {
             throw new Error(
                 "Объекты playerHand и mainDeck должны быть экземплярами CardsCollection"
             );
-        }
-    }
-
-    movePlayCard(player, lastMove) {
-        if (player instanceof Player && lastMove instanceof Move) {
-            // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
-            this.on("playCard", (ws, params, id = null) => {
-                if (ws.sessionId === player.sessionId) {
-                    const playerDiscardCard = player.hand.pullCardById(params.id);
-
-                    console.log(`Игрок ${player.name} походил ${playerDiscardCard.name}`);
-                }
-            });
-        } else {
-            throw new Error("Объект player должен быть экземпляром Player");
         }
     }
 
@@ -522,18 +583,22 @@ class GameHandler extends EventEmitter {
                 } while (
                     !Array.isArray(selectedCards) ||
                     !selectedCards.every(
-                        (card) => card instanceof aCard
-                        //&& card.type !== CardType.ROLE
-                        //&& card.type !== CardType.CHARACTER
+                        (card) =>
+                            card instanceof aCard &&
+                            card.type !== CardType.ROLE &&
+                            card.type !== CardType.CHARACTER
                     )
                 );
                 const playerDiscardCards = player.hand.pullCardsByIds(selectedCards);
+                lastMove.discardDeck.addArrayCards(playerDiscardCards, false);
+                lastMove.gameTable.countDiscardPile = lastMove.discardDeck.countCards();
+
+                // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
                 const cardNames = selectedCards
                     .filter((card) => card.name) // Фильтруем карты без имени
                     .map((card) => card.name)
                     .join(", ");
 
-                // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
                 this.gameSessionHandler.history.addMove(
                     new Move({
                         description: `Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`,
@@ -541,6 +606,7 @@ class GameHandler extends EventEmitter {
                         playersDistances: lastMove.playersDistances,
                         mainDeck: lastMove.mainDeck,
                         discardDeck: lastMove.discardDeck,
+                        gameTable: lastMove.gameTable,
                     })
                 );
                 this.gameSessionHandler.saveData();
@@ -549,7 +615,10 @@ class GameHandler extends EventEmitter {
                     `GameHandler: Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`
                 );
 
-                this.saveAndTriggerHook(player, "selectionEnd", lastMove.players);
+                this.saveAndTriggerHook(player, "selectionEnd", {
+                    playerCollection: lastMove.players,
+                    gameTable: lastMove.gameTable,
+                });
             }
         } else {
             throw new Error("Объект player должен быть экземпляром Player");

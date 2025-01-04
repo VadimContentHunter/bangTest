@@ -131,9 +131,26 @@ class GameTable {
 
         // Присваиваем имя владельца каждой карте и добавляем её в playedCards
         for (const card of cards) {
-            card.ownerName = player.name;
-            this.playedCards.addCard(card, false);
+            this.addPlayerOneCard(player, card);
         }
+    }
+
+    /**
+     * Добавляет карту игрока на стол.
+     * @param {Player} player - Экземпляр игрока.
+     * @param {Array<aCard>} cards - Массив карт.
+     * @throws {GameTableError} Если переданы некорректные параметры.
+     */
+    addPlayerOneCard(player, card) {
+        if (!(player instanceof Player)) {
+            throw new GameTableError("Игрок не наследуется от класса Player.");
+        }
+
+        if (!(card instanceof aCard)) {
+            throw new GameTableError("Все элементы массива cards должны быть экземплярами aCard.");
+        }
+        card.ownerName = player.name;
+        this.playedCards.addCard(card, false);
     }
 
     /**
