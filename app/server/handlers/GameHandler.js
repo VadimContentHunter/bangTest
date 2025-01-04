@@ -450,7 +450,7 @@ class GameHandler extends EventEmitter {
     }
 
     /**
-     * Ожидает завершения хода игроком с таймером.
+     * Ожидает хода картой от игрока, с таймером.
      * @param {Object} player - Игрок, который должен завершить ход.
      * @param {number} timer - Таймаут ожидания в миллисекундах (по умолчанию 30000).
      * @returns {Promise} Возвращает промис, который выполняется, когда игрок завершает ход.
@@ -517,7 +517,7 @@ class GameHandler extends EventEmitter {
                 })
             );
             this.gameSessionHandler.saveData();
-            this.playerActionManager.clearHooksByPlayer(player);
+            // this.playerActionManager.clearHooksByPlayer(player);
             console.log(
                 `GameHandler: Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`
             );
@@ -589,7 +589,7 @@ class GameHandler extends EventEmitter {
                     })
                 );
                 this.gameSessionHandler.saveData();
-                this.playerActionManager.clearHooksByPlayer(player);
+                // this.playerActionManager.clearHooksByPlayer(player);
                 console.log(
                     `GameHandler: Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`
                 );
