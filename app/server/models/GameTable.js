@@ -1,54 +1,54 @@
 const Player = require("./Player"); // Подключение модели Player
 const GameTableError = require("../Errors/GameTableError"); // Подключение ошибки для дистанции
-const CardsCollection = require("../handlers/CardsCollection");
 const { aCard } = require("../interfaces/aCard");
+const CardsCollection = require("../handlers/CardsCollection");
 
 class GameTable {
-    /** @type {CardsCollection | null} */
-    #deckMain = null;
+    /** @type {number} */
+    #countDeckMain = 0;
 
-    /** @type {CardsCollection | null} */
-    #discardPile = null;
+    /** @type {number} */
+    #countDiscardPile = 0;
 
     /** @type {number | null} */
     #timer = null;
 
-    /** @type {CardsCollection | null} */
+    /** @type {CardsCollection|null} */
     #playedCards = null;
 
     /**
      * Конструктор класса GameTable.
      */
-    constructor() {
-        this.deckMain = new CardsCollection();
-        this.discardPile = new CardsCollection();
-        this.playedCards = new CardsCollection();
+    constructor(playedCards = null) {
+        this.#countDeckMain = 0;
+        this.#countDiscardPile = 0;
+        this.#playedCards = playedCards ?? new CardsCollection();
     }
 
     // ======== SET методы ========
 
     /**
-     * Устанавливает главную колоду (deckMain).
-     * @param {CardsCollection} value - Экземпляр CardsCollection.
-     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
+     * Устанавливает количество карт в главной колоде (deckMain).
+     * @param {number} value - Количество карт.
+     * @throws {GameTableError} Если значение не является положительным целым числом.
      */
-    set deckMain(value) {
-        if (!(value instanceof CardsCollection)) {
-            throw new GameTableError("deckMain должен быть экземпляром CardsCollection.");
+    set countDeckMain(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new GameTableError("countDeckMain должен быть неотрицательным целым числом.");
         }
-        this.#deckMain = value;
+        this.#countDeckMain = value;
     }
 
     /**
-     * Устанавливает колоду сброса (discardPile).
-     * @param {CardsCollection} value - Экземпляр CardsCollection.
-     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
+     * Устанавливает количество карт в колоде сброса (discardPile).
+     * @param {number} value - Количество карт.
+     * @throws {GameTableError} Если значение не является положительным целым числом.
      */
-    set discardPile(value) {
-        if (!(value instanceof CardsCollection)) {
-            throw new GameTableError("discardPile должен быть экземпляром CardsCollection.");
+    set countDiscardPile(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new GameTableError("countDiscardPile должен быть неотрицательным целым числом.");
         }
-        this.#discardPile = value;
+        this.#countDiscardPile = value;
     }
 
     /**
@@ -63,14 +63,11 @@ class GameTable {
         this.#timer = value;
     }
 
-    /**
-     * Устанавливает карты, сыгранные на стол (playedCards).
-     * @param {CardsCollection} value - Экземпляр CardsCollection.
-     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
-     */
     set playedCards(value) {
-        if (!(value instanceof CardsCollection)) {
-            throw new GameTableError("playedCards должен быть экземпляром CardsCollection.");
+        if (!(value instanceof CardsCollection) && value !== null) {
+            throw new GameTableError(
+                "playedCards должен быть экземпляром CardsCollection или null."
+            );
         }
         this.#playedCards = value;
     }
@@ -78,53 +75,43 @@ class GameTable {
     // ======== GET методы ========
 
     /**
-     * Возвращает главную колоду (deckMain).
-     * @returns {CardsCollection} Экземпляр CardsCollection.
-     * @throws {GameTableError} Если свойство не установлено.
+     * Возвращает количество карт в главной колоде (deckMain).
+     * @returns {number} Количество карт.
      */
-    get deckMain() {
-        if (!this.#deckMain) {
-            throw new GameTableError("deckMain не инициализирован.");
-        }
-        return this.#deckMain;
+    get countDeckMain() {
+        return this.#countDeckMain;
     }
 
     /**
-     * Возвращает колоду сброса (discardPile).
-     * @returns {CardsCollection} Экземпляр CardsCollection.
-     * @throws {GameTableError} Если свойство не установлено.
+     * Возвращает количество карт в колоде сброса (discardPile).
+     * @returns {number} Количество карт.
      */
-    get discardPile() {
-        if (!this.#discardPile) {
-            throw new GameTableError("discardPile не инициализирован.");
-        }
-        return this.#discardPile;
+    get countDiscardPile() {
+        return this.#countDiscardPile;
     }
 
     /**
      * Возвращает значение таймера.
-     * @returns {number} Целое число.
-     * @throws {GameTableError} Если таймер не установлен.
+     * @returns {number | null} Таймер или null, если не установлен.
      */
     get timer() {
-        // if (this.#timer === null) {
-        //     throw new GameTableError("timer не инициализирован.");
-        // }
         return this.#timer;
     }
 
     /**
      * Возвращает карты, сыгранные на стол (playedCards).
-     * @returns {CardsCollection} Экземпляр CardsCollection.
-     * @throws {GameTableError} Если свойство не установлено.
+     * @returns {CardsCollection|null} Массив карт.
      */
     get playedCards() {
-        if (!this.#playedCards) {
-            throw new GameTableError("playedCards не инициализирован.");
-        }
         return this.#playedCards;
     }
 
+    /**
+     * Добавляет карты игрока на стол.
+     * @param {Player} player - Экземпляр игрока.
+     * @param {Array<aCard>} cards - Массив карт.
+     * @throws {GameTableError} Если переданы некорректные параметры.
+     */
     addPlayerCards(player, cards) {
         if (!(player instanceof Player)) {
             throw new GameTableError("Игрок не наследуется от класса Player.");
@@ -145,17 +132,26 @@ class GameTable {
         // Присваиваем имя владельца каждой карте и добавляем её в playedCards
         for (const card of cards) {
             card.ownerName = player.name;
-            this.playedCards.addCard(card);
+            this.playedCards.addCard(card, false);
         }
     }
 
+    /**
+     * Возвращает JSON-представление игрового стола.
+     * @returns {Object} JSON-объект с информацией о состоянии игрового стола.
+     */
     toJSON() {
         return {
-            countDeckMain: this.deckMain.countCards(),
-            countDiscardPile: this.discardPile.countCards(),
+            countDeckMain: this.countDeckMain,
+            countDiscardPile: this.countDiscardPile,
             timer: this.timer,
-            collectionCards: this.playedCards.getAllCards(),
+            collectionCards: this.playedCards,
         };
+    }
+
+    static initFromJSON(inputData) {
+        const procData = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+        return new GameTable(CardsCollection.initFromJSON(procData.collectionCards, false));
     }
 }
 
