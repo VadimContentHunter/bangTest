@@ -471,10 +471,7 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     // Игрок завершил ход, раз разрешение на событие только для этого игрока
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
-                    lastMove.gameTable.discardDeck.addArrayCards(
-                        lastMove.gameTable.playedCards.pullAllCards(),
-                        false
-                    );
+                    lastMove.gameTable.discardAllCardsFromTable();
 
                     this.emit("endFinishedHandler", {
                         player: player,
@@ -509,10 +506,7 @@ class GameHandler extends EventEmitter {
     async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
             let selectedCards = [];
-            if (lastMove.gameTable.deckMain.countCards() > 0) {
-                selectedCards = lastMove.gameTable.deckMain.pullRandomCards(2);
-                player.hand.addArrayCards(selectedCards, false);
-            }
+            lastMove.gameTable.drawCardFromMainDeck(2, player.hand);
 
             this.emit("endDrawCards", {
                 player: player,
@@ -577,8 +571,7 @@ class GameHandler extends EventEmitter {
                             card.type !== CardType.CHARACTER
                     )
                 );
-                const playerDiscardCards = player.hand.pullCardsByIds(selectedCards);
-                lastMove.gameTable.discardDeck.addArrayCards(playerDiscardCards, false);
+                lastMove.gameTable.discardCards(player.hand, selectedCards);
 
                 // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
                 const cardNames = selectedCards

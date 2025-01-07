@@ -180,6 +180,60 @@ class GameTable {
     }
 
     /**
+     * Берет карты из основной колоды и добавляет их в указанную коллекцию или возвращает.
+     * Если карт недостаточно в основной колоде, они перетасовываются из колоды сброса.
+     * @param {number} count - Количество карт для взятия.
+     * @param {CardsCollection|null} collectionCards - Коллекция карт для добавления. Если null, возвращает массив карт.
+     * @returns {Array|void} Массив карт, если collectionCards не передан.
+     */
+    drawCardFromMainDeck(count, collectionCards = null) {
+        // Если карт недостаточно в основной колоде, переносим карты из колоды сброса
+        if (this.deckMain.countCards() < count) {
+            this.transferDiscardToMainDeck();
+        }
+
+        // Проверяем, достаточно ли карт в основной колоде
+        if (this.deckMain.countCards() >= count) {
+            const drawnCards = this.deckMain.pullRandomCards(count);
+
+            // Если передана коллекция карт, добавляем в нее
+            if (collectionCards instanceof CardsCollection) {
+                collectionCards.addArrayCards(drawnCards, false);
+                return;
+            }
+
+            // Если коллекция карт не передана, возвращаем массив карт
+            return drawnCards;
+        }
+
+        // Возвращаем пустой массив, если карт недостаточно
+        return [];
+    }
+
+    /**
+     * Перемещает карты из указанной коллекции в колоду сброса.
+     * @param {CardsCollection} collectionCards - Коллекция карт для сброса.
+     * @param {Array} cardIds - Массив ID карт, которые нужно сбросить.
+     */
+    discardCards(collectionCards, cardIds) {
+        const cardsToDiscard = collectionCards.pullCardsByIds(cardIds);
+        this.discardDeck.addArrayCards(cardsToDiscard, false);
+    }
+
+    /**
+     * Сбрасывает в колоду все карты находящиеся на столе
+     */
+    discardAllCardsFromTable() {
+        this.discardDeck.addArrayCards(this.playedCards.pullAllCards(), false);
+    }
+
+    transferDiscardToMainDeck() {
+        if (this.discardDeck.countCards() > 0) {
+            this.deckMain.addArrayCards(this.discardDeck.pullAllCards(), false);
+        }
+    }
+
+    /**
      * Возвращает JSON-представление игрового стола.
      * @returns {Object} JSON-объект с информацией о состоянии игрового стола.
      */
