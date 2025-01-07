@@ -4,24 +4,167 @@ const CardsCollection = require("../handlers/CardsCollection");
 const LivesError = require("../Errors/LivesError");
 const Lives = require("../models/Lives");
 const SheriffCard = require("./cards/roles/SheriffCard");
+const EventEmitter = require("events");
 
 class Player {
+    /**
+     * @type {number|null}
+     * @private
+     */
+    #id = null;
+
+    /**
+     * @type {string|null}
+     * @private
+     */
+    #name = null;
+
+    /**
+     * @type {string|null}
+     * @private
+     */
+    #sessionId = null;
+
+    /**
+     * @type {EventEmitter|null}
+     * @private
+     */
+    #events = null;
+
+    /**
+     * @type {Lives|null}
+     * @private
+     */
+    #lives = null;
+
+    /**
+     * @type {aCard|null}
+     * @private
+     */
+    #role = null;
+
+    /**
+     * @type {aCard|null}
+     * @private
+     */
+    #character = null;
+
+    /**
+     * @type {aCard|null}
+     * @private
+     */
+    #weapon = null;
+
+    /**
+     * @type {CardsCollection|null}
+     * @private
+     */
+    #temporaryCards = null;
+
+    /**
+     * @type {CardsCollection|null}
+     * @private
+     */
+    #hand = null;
+
     /**
      * Конструктор для создания игрока.
      * @param {number} id - Идентификатор игрока.
      * @param {string} name - Имя игрока.
      * @param {string|null} [sessionId=null] - Идентификатор сессии игрока.
+     * @param {EventEmitter|null} [events=null] - Объект EventEmitter для игрока, хранящий события, привязанные к игроку.
      */
-    constructor(id, name, sessionId = null) {
+    constructor(id, name, sessionId = null, events = null) {
         this.id = id;
         this.name = name;
         this.sessionId = sessionId;
-        this._lives = new Lives();
-        this._role = null;
-        this._character = null;
-        this._weapon = null;
-        this._temporaryCards = new CardsCollection();
-        this._hand = new CardsCollection();
+        this.lives = new Lives();
+        this.role = null;
+        this.character = null;
+        this.weapon = null;
+        this.temporaryCards = new CardsCollection();
+        this.hand = new CardsCollection();
+        this.events = events ?? new EventEmitter();
+
+        this.lives.events = events;
+    }
+
+    /**
+     * Геттер для идентификатора игрока.
+     * @returns {number}
+     */
+    get id() {
+        return this.#id;
+    }
+
+    /**
+     * Сеттер для идентификатора игрока.
+     * @param {number} value
+     * @throws {ValidatePlayerError} Если идентификатор невалидный.
+     */
+    set id(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new ValidatePlayerError("ID must be a positive integer or 0.");
+        }
+        this.#id = value;
+    }
+
+    /**
+     * Геттер для имени игрока.
+     * @returns {string} Имя игрока.
+     */
+    get name() {
+        return this.#name;
+    }
+
+    /**
+     * Сеттер для имени игрока.
+     * @param {string} value - Новое имя игрока.
+     * @throws {ValidatePlayerError} Если имя невалидное.
+     */
+    set name(value) {
+        if (typeof value !== "string" || value.trim() === "") {
+            throw new ValidatePlayerError("Name must be a non-empty string.");
+        }
+        this.#name = value;
+    }
+
+    /**
+     * Геттер для идентификатора сессии игрока.
+     * @returns {string|null} Идентификатор сессии игрока.
+     */
+    get sessionId() {
+        return this.#sessionId;
+    }
+
+    /**
+     * Сеттер для идентификатора сессии игрока.
+     * @param {string|null} value - Новый идентификатор сессии.
+     */
+    set sessionId(value) {
+        if (value !== null && typeof value !== "string") {
+            throw new ValidatePlayerError("Session ID must be a string or null.");
+        }
+        this.#sessionId = value;
+    }
+
+    /**
+     * Геттер для объекта EventEmitter.
+     * @returns {EventEmitter|null} Объект EventEmitter.
+     */
+    get events() {
+        return this.#events;
+    }
+
+    /**
+     * Сеттер для объекта EventEmitter.
+     * @param {EventEmitter|null} value - Новый объект EventEmitter.
+     */
+    set events(value) {
+        if (value !== null && !(value instanceof EventEmitter)) {
+            throw new ValidatePlayerError("events must be an instance of EventEmitter or null.");
+        }
+        this.#events = value;
     }
 
     /**
@@ -34,7 +177,7 @@ class Player {
             throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives или null.");
         }
 
-        this._lives = value;
+        this.#lives = value;
     }
 
     /**
@@ -51,7 +194,7 @@ class Player {
             throw new ValidatePlayerError("Карта для роли должна быть type = ROLE.");
         }
 
-        this._role = card;
+        this.#role = card;
     }
 
     /**
@@ -68,7 +211,7 @@ class Player {
             throw new ValidatePlayerError("Карта для персонажа должна быть type = CHARACTER.");
         }
 
-        this._character = card;
+        this.#character = card;
     }
 
     /**
@@ -85,7 +228,7 @@ class Player {
             throw new ValidatePlayerError("Карта для оружия должна быть type = WEAPON.");
         }
 
-        this._weapon = card;
+        this.#weapon = card;
     }
 
     /**
@@ -100,7 +243,7 @@ class Player {
             );
         }
 
-        this._temporaryCards = collection;
+        this.#temporaryCards = collection;
     }
 
     /**
@@ -115,7 +258,7 @@ class Player {
             );
         }
 
-        this._hand = collection;
+        this.#hand = collection;
     }
 
     /**
@@ -123,7 +266,7 @@ class Player {
      * @returns {Lives|null} - Жизнь игрока.
      */
     get lives() {
-        return this._lives;
+        return this.#lives;
     }
 
     /**
@@ -131,7 +274,7 @@ class Player {
      * @returns {aCard|null} - Роль игрока.
      */
     get role() {
-        return this._role;
+        return this.#role;
     }
 
     /**
@@ -139,7 +282,7 @@ class Player {
      * @returns {aCard|null} - Персонаж игрока.
      */
     get character() {
-        return this._character;
+        return this.#character;
     }
 
     /**
@@ -147,7 +290,7 @@ class Player {
      * @returns {aCard|null} - Оружие игрока.
      */
     get weapon() {
-        return this._weapon;
+        return this.#weapon;
     }
 
     /**
@@ -155,7 +298,7 @@ class Player {
      * @returns {CardsCollection|null} - Коллекция временных карт.
      */
     get temporaryCards() {
-        return this._temporaryCards;
+        return this.#temporaryCards;
     }
 
     /**
@@ -163,7 +306,7 @@ class Player {
      * @returns {CardsCollection|null} - Коллекция карт в руке.
      */
     get hand() {
-        return this._hand;
+        return this.#hand;
     }
 
     /**
@@ -240,7 +383,7 @@ class Player {
             id: this.id,
             name: this.name,
             sessionId: this.sessionId,
-            lives: this._lives,
+            lives: this.lives,
             role: this.role,
             character: this.character,
             weapon: this.weapon,

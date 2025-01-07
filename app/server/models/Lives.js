@@ -2,32 +2,24 @@ const LivesError = require("../Errors/LivesError");
 const EventEmitter = require("events");
 
 /**
- * @event Lives#lifeLost
- * @description Событие испускается, когда игрок теряет жизни.
- * @param {number} oldLives - Количество жизней до изменения.
- * @param {number} amountLost - Количество потерянных жизней.
- * @param {number} remainingLives - Оставшееся количество жизней.
- */
-
-/**
  * Класс Lives представляет количество жизней с ограничением на максимум и проверками.
- * @extends EventEmitter
- * @fires Lives#lifeLost - Событие, испускаемое, когда игрок теряет жизни.
  */
-class Lives extends EventEmitter {
+class Lives {
     _max = 0;
     _current = 0;
+    _events = null;
 
     /**
      * Создаёт новый объект Lives.
      * @param {number} max - Максимальное количество жизней.
      * @param {number} current - Текущее количество жизней.
+     * @param {EventEmitter|null} [events=null] - Объект EventEmitter для вызова событий связанных с жизнями
      * @throws {LivesError} Если max или current невалидны.
      */
-    constructor(max = 0, current = 0) {
-        super();
+    constructor(max = 0, current = 0, events = null) {
         this.max = max; // Используем сеттер
         this.current = current; // Используем сеттер
+        this.events = events ?? new EventEmitter();
     }
 
     /**
@@ -79,6 +71,25 @@ class Lives extends EventEmitter {
     }
 
     /**
+     * Геттер для объекта EventEmitter.
+     * @returns {EventEmitter|null} Объект EventEmitter.
+     */
+    get events() {
+        return this._events;
+    }
+
+    /**
+     * Сеттер для объекта EventEmitter.
+     * @param {EventEmitter|null} value - Новый объект EventEmitter.
+     */
+    set events(value) {
+        if (value !== null && !(value instanceof EventEmitter)) {
+            throw new ValidatePlayerError("events must be an instance of EventEmitter or null.");
+        }
+        this._events = value;
+    }
+
+    /**
      * Добавляет указанное количество жизней.
      * @param {number} amount - Количество жизней для добавления.
      * @throws {LivesError} Если amount не является положительным целым числом.
@@ -92,10 +103,8 @@ class Lives extends EventEmitter {
 
     /**
      * Отнимает указанное количество жизней.
-     *
      * @param {number} amount - Количество жизней для отнимания.
      * @throws {LivesError} Если amount не является положительным целым числом.
-     * @fires Lives#lifeLost - Испускается при уменьшении количества жизней.
      */
     removeLives(amount) {
         if (!Number.isInteger(amount) || amount < 0) {
@@ -104,14 +113,6 @@ class Lives extends EventEmitter {
 
         const oldLives = this._current;
         this.current = Math.max(this._current - amount, 0);
-
-        // if (oldLives > this._current) {
-            // this.emit("lifeLost", {
-            //     oldLives,
-            //     amountLost: oldLives - this._current,
-            //     remainingLives: this._current,
-            // });
-        // }
     }
 
     /**

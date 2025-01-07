@@ -35,6 +35,7 @@ class PlayroomHandler {
      * @throws {PlayroomHandlerError|ValidatePlayerError|ValidateLoginError} Пробрасывает соответствующую ошибку.
      */
     handleError(error) {
+        throw error;
         if (error instanceof ValidatePlayerError) {
             throw error;
         } else if (error instanceof ValidateLoginError) {

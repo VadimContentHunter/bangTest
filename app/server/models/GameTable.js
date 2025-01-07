@@ -2,6 +2,7 @@ const Player = require("./Player"); // Подключение модели Playe
 const GameTableError = require("../Errors/GameTableError"); // Подключение ошибки для дистанции
 const CardsCollection = require("../handlers/CardsCollection");
 const { aCard } = require("../interfaces/aCard");
+const EventEmitter = require("events");
 
 class GameTable {
     /** @type {CardsCollection | null} */
@@ -17,15 +18,33 @@ class GameTable {
     #playedCards = null;
 
     /**
+     * @type {EventEmitter|null}
+     * @private
+     */
+    #events = null;
+
+    /**
      * Конструктор класса GameTable.
      */
-    constructor({ playedCards = null, deckMain = null, discardDeck = null } = {}) {
+    constructor({ playedCards = null, deckMain = null, discardDeck = null, events = null } = {}) {
         this.deckMain = deckMain ?? new CardsCollection();
         this.discardDeck = discardDeck ?? new CardsCollection();
-        this.#playedCards = playedCards ?? new CardsCollection();
+        this.playedCards = playedCards ?? new CardsCollection();
+        this.events = events ?? new EventEmitter();
     }
 
     // ======== SET методы ========
+
+    /**
+     * Сеттер для объекта EventEmitter.
+     * @param {EventEmitter|null} value - Новый объект EventEmitter.
+     */
+    set events(value) {
+        if (value !== null && !(value instanceof EventEmitter)) {
+            throw new ValidatePlayerError("events must be an instance of EventEmitter or null.");
+        }
+        this.#events = value;
+    }
 
     /**
      * Устанавливает главную колоду (deckMain).
@@ -76,6 +95,14 @@ class GameTable {
     }
 
     // ======== GET методы ========
+
+    /**
+     * Геттер для объекта EventEmitter.
+     * @returns {EventEmitter|null} Объект EventEmitter.
+     */
+    get events() {
+        return this.#events;
+    }
 
     /**
      * Возвращает главную колоду (deckMain).
