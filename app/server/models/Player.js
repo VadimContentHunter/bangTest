@@ -75,6 +75,8 @@ class Player {
      * @param {EventEmitter|null} [events=null] - Объект EventEmitter для игрока, хранящий события, привязанные к игроку.
      */
     constructor(id, name, sessionId = null, events = null) {
+        this.events = events ?? new EventEmitter();
+
         this.id = id;
         this.name = name;
         this.sessionId = sessionId;
@@ -84,9 +86,6 @@ class Player {
         this.weapon = null;
         this.temporaryCards = new CardsCollection();
         this.hand = new CardsCollection();
-        this.events = events ?? new EventEmitter();
-
-        this.lives.events = events;
     }
 
     /**
@@ -177,6 +176,10 @@ class Player {
             throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives или null.");
         }
 
+        if (value instanceof Lives) {
+            this.value.events = this.events;
+        }
+
         this.#lives = value;
     }
 
@@ -195,6 +198,7 @@ class Player {
         }
 
         this.#role = card;
+        this.events?.emit("roleInstalled", { card, player: this });
     }
 
     /**
@@ -212,6 +216,7 @@ class Player {
         }
 
         this.#character = card;
+        this.events?.emit("characterInstalled", { card, player: this });
     }
 
     /**

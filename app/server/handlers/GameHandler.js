@@ -164,6 +164,11 @@ class GameHandler extends EventEmitter {
         ]);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
+        tempPlayers.forEach((player) => {
+            player.events.on("roleInstalled", this.initRoleForPlayers);
+            player.events.on("characterInstalled", this.initRoleForPlayers);
+        });
+
         this.gameSessionHandler.history.addMove(
             new Move({
                 description: "Первый ход, инициализация первичных данных",
@@ -219,7 +224,6 @@ class GameHandler extends EventEmitter {
         console.log("GameHandler: Все игроки получили роль.");
 
         lastMove = this.getLastMove();
-        this.initRoleForPlayers(lastMove);
         lastMove.players.shufflePlayersWithSheriffFirst();
         this.gameSessionHandler.history.addMove(
             new Move({
@@ -431,7 +435,7 @@ class GameHandler extends EventEmitter {
             };
 
             this.on("playCard", movePlayCard);
-            
+
             await this.waitForPlayerMoveFinished(player, lastMove, 30000);
             this.removeListener("playCard", movePlayCard);
             await this.moveDiscardExcessCards(player, lastMove);
@@ -603,60 +607,42 @@ class GameHandler extends EventEmitter {
         }
     }
 
-    initRoleForPlayers(lastMove) {
-        if (!(lastMove instanceof Move)) {
-            return;
+    initRoleForPlayers({ card, player }) {
+        if (player instanceof Player && card instanceof aCard && card.type === CardType.ROLE) {
+            card.lives = player.lives;
+            card.action();
+        } else {
+            throw new Error(
+                "GameHandler: Role card must be instance of a Card and type must be ROLE"
+            );
         }
-
-        lastMove.players.getPlayers().forEach((player) => {
-            if (
-                player instanceof Player &&
-                player.role instanceof aCard &&
-                player.role.type === CardType.ROLE
-            ) {
-                if ("lives" in player.role) {
-                    player.role.lives = player.lives;
-                }
-
-                if ("gameTable" in player.role) {
-                    player.role.gameTable = lastMove.gameTable;
-                }
-
-                if ("hand" in player.role) {
-                    player.role.hand = player.hand;
-                }
-
-                player.role.action();
-            }
-        });
     }
 
-    initCharacterForPlayers(lastMove) {
-        if (!(lastMove instanceof Move)) {
-            return;
+    initCharacterForPlayers({ card, player }) {
+        if (!(player instanceof Player)) {
+            throw new Error("GameHandler: Player must be an instance of Player.");
         }
 
-        lastMove.players.getPlayers().forEach((player) => {
-            if (
-                player instanceof Player &&
-                player.character instanceof aCard &&
-                player.character.type === CardType.CHARACTER
-            ) {
-                if ("lives" in player.character) {
-                    player.character.lives = player.lives;
-                }
+        if (!(card instanceof aCard) || card.type !== CardType.ROLE) {
+            throw new Error(
+                "GameHandler: Character card must be an instance of aCard and type must be CHARACTER."
+            );
+        }
 
-                if ("gameTable" in player.character) {
-                    player.character.gameTable = lastMove.gameTable;
-                }
+        const propertyMappings = {
+            lives: player.lives,
+            gameTable: this.getLastMove()?.gameTable,
+            hand: player.hand,
+        };
 
-                if ("hand" in player.character) {
-                    player.character.hand = player.hand;
-                }
-
-                player.character.action();
+        // Динамическое присваивание свойств
+        Object.keys(propertyMappings).forEach((key) => {
+            if (key in card) {
+                card[key] = propertyMappings[key];
             }
         });
+
+        card.action();
     }
 
     /**
@@ -664,11 +650,7 @@ class GameHandler extends EventEmitter {
      */
     getLastMove() {
         this.gameSessionHandler.loadData();
-        const lastMove = this.gameSessionHandler.history.getLastMove();
-        // this.initRoleForPlayers(lastMove);
-        this.initCharacterForPlayers(lastMove);
-
-        return lastMove;
+        return this.gameSessionHandler.history.getLastMove();
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {
