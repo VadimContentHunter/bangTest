@@ -100,29 +100,29 @@ class BartCassidy extends aCard {
     }
 
     action() {
-        if (this.lives instanceof Lives) {
-            this.lives.on("lifeLost", ({ oldLives, amountLost, remainingLives }) => {
-                // Проверка на наличие параметров
-                // if (typeof oldLives !== "number" || oldLives < 0) {
-                //     throw new CardError("Invalid 'oldLives' parameter:", oldLives);
-                // }
-                if (typeof amountLost !== "number" || amountLost <= 0) {
-                    throw new CardError("Invalid 'amountLost' parameter:", amountLost);
-                }
-                // if (typeof remainingLives !== "number" || remainingLives < 0) {
-                //     throw new CardError("Invalid 'remainingLives' parameter:", remainingLives);
-                // }
+        // if (this.lives instanceof Lives) {
+        //     this.lives.on("lifeLost", ({ oldLives, amountLost, remainingLives }) => {
+        //         // Проверка на наличие параметров
+        //         // if (typeof oldLives !== "number" || oldLives < 0) {
+        //         //     throw new CardError("Invalid 'oldLives' parameter:", oldLives);
+        //         // }
+        //         if (typeof amountLost !== "number" || amountLost <= 0) {
+        //             throw new CardError("Invalid 'amountLost' parameter:", amountLost);
+        //         }
+        //         // if (typeof remainingLives !== "number" || remainingLives < 0) {
+        //         //     throw new CardError("Invalid 'remainingLives' parameter:", remainingLives);
+        //         // }
 
-                if (
-                    this.mainDeck instanceof CardsCollection &&
-                    this.hand instanceof CardsCollection
-                ) {
-                    this.hand.addArrayCards(this.mainDeck.pullRandomCards(amountLost));
-                }
-            });
-        } else {
-            throw new CardError("BartCassidy: Invalid lives provided");
-        }
+        //         if (
+        //             this.mainDeck instanceof CardsCollection &&
+        //             this.hand instanceof CardsCollection
+        //         ) {
+        //             this.hand.addArrayCards(this.mainDeck.pullRandomCards(amountLost));
+        //         }
+        //     });
+        // } else {
+        //     throw new CardError("BartCassidy: Invalid lives provided");
+        // }
     }
 }
 

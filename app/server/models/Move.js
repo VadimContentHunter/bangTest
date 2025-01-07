@@ -1,6 +1,5 @@
 const MoveError = require("../Errors/MoveError");
 const PlayerCollection = require("../handlers/PlayerCollection");
-const CardsCollection = require("../handlers/CardsCollection");
 const DistanceError = require("../Errors/DistanceError");
 const DistanceHandler = require("../handlers/DistanceHandler");
 const GameTable = require("../models/GameTable");
@@ -10,8 +9,6 @@ class Move {
     #players = null;
     #dateTime = null;
     #description = null;
-    #mainDeck = null; // Главная колода
-    #discardDeck = null; // Колода сброса
     #playersDistances = null;
     #gameTable = null;
 
@@ -22,8 +19,6 @@ class Move {
      * @param {string} [params.description=""] - Описание хода.
      * @param {PlayerCollection} [params.players=null] - Коллекция игроков после хода.
      * @param {Date} [params.dateTime=null] - Дата и время хода.
-     * @param {CardsCollection} [params.mainDeck=null] - Главная колода.
-     * @param {CardsCollection} [params.discardDeck=null] - Колода сброса.
      * @param {DistanceHandler} [params.playersDistances=null] - Расстояния между игроками.
      * @param {GameTable} [params.gameTable=null] - Игровая таблица.
      */
@@ -32,8 +27,6 @@ class Move {
         description = "",
         players = null,
         dateTime = null,
-        mainDeck = null,
-        discardDeck = null,
         playersDistances = null,
         gameTable = null,
     }) {
@@ -41,8 +34,6 @@ class Move {
         this.players = players ?? new PlayerCollection();
         this.dateTime = dateTime ?? new Date();
         this.description = description;
-        this.mainDeck = mainDeck ?? new CardsCollection();
-        this.discardDeck = discardDeck ?? new CardsCollection();
         this.playersDistances = playersDistances ?? new DistanceHandler();
         this.gameTable = gameTable ?? new GameTable();
     }
@@ -93,8 +84,6 @@ class Move {
             dateTime: this.dateTime.toISOString(),
             formattedDateTime: this.getFormattedDateTime(),
             players: this.players,
-            mainDeck: this.mainDeck,
-            discardDeck: this.discardDeck,
             playersDistances: this.playersDistances,
             gameTable: this.gameTable,
         };
@@ -122,8 +111,6 @@ class Move {
             description: data.description,
             players: players,
             dateTime: new Date(data.dateTime),
-            mainDeck: CardsCollection.initFromJSON(data.mainDeck, false),
-            discardDeck: CardsCollection.initFromJSON(data.discardDeck, false),
             playersDistances: DistanceHandler.initFromJSON(data.playersDistances, players),
             gameTable: GameTable.initFromJSON(data.gameTable),
         });

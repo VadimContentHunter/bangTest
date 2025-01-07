@@ -169,11 +169,11 @@ class GameHandler extends EventEmitter {
                 description: "Первый ход, инициализация первичных данных",
                 players: tempPlayers,
                 playersDistances: new DistanceHandler(tempPlayers.getPlayers()),
-                mainDeck: new CardsCollection(
-                    this.gameSessionHandler.head.collectionGameCards.getAllCards()
-                ),
-                discardDeck: new CardsCollection(),
-                gameTable: new GameTable(),
+                gameTable: new GameTable({
+                    deckMain: new CardsCollection(
+                        this.gameSessionHandler.head.collectionGameCards.getAllCards()
+                    ),
+                }),
             })
         );
         this.gameSessionHandler.createGameSession();
@@ -209,8 +209,6 @@ class GameHandler extends EventEmitter {
                         description: `Игроку ${player.name} была выдана роль ${playerMain.role.name}`,
                         players: lastMove.players,
                         playersDistances: lastMove.playersDistances,
-                        mainDeck: lastMove.mainDeck,
-                        discardDeck: lastMove.discardDeck,
                         gameTable: lastMove.gameTable,
                     })
                 );
@@ -228,8 +226,6 @@ class GameHandler extends EventEmitter {
                 description: `Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди.`,
                 players: lastMove.players,
                 playersDistances: new DistanceHandler(lastMove.players),
-                mainDeck: lastMove.mainDeck,
-                discardDeck: lastMove.discardDeck,
                 gameTable: lastMove.gameTable,
             })
         );
@@ -285,10 +281,9 @@ class GameHandler extends EventEmitter {
                     (card) => card instanceof aCard && card.type === CardType.CHARACTER
                 )
             );
-            this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
+            player.character = this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
                 selectedCards[0].id
             );
-            player.character = selectedCards[0];
 
             // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
             this.gameSessionHandler.history.addMove(
@@ -296,8 +291,6 @@ class GameHandler extends EventEmitter {
                     description: `Игрок ${player.name} выбрал себе персонажа ${player.character.name}`,
                     players: lastMove.players,
                     playersDistances: lastMove.playersDistances,
-                    mainDeck: lastMove.mainDeck,
-                    discardDeck: lastMove.discardDeck,
                     gameTable: lastMove.gameTable,
                 })
             );
@@ -423,8 +416,6 @@ class GameHandler extends EventEmitter {
                             description: `Этап "Ход": Игрок ${player.name} походил карту ${playerDiscardCard.name}`,
                             players: lastMove.players,
                             playersDistances: lastMove.playersDistances,
-                            mainDeck: lastMove.mainDeck,
-                            discardDeck: lastMove.discardDeck,
                             gameTable: lastMove.gameTable,
                         })
                     );
@@ -480,11 +471,10 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     // Игрок завершил ход, раз разрешение на событие только для этого игрока
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
-                    lastMove.discardDeck.addArrayCards(
+                    lastMove.gameTable.discardDeck.addArrayCards(
                         lastMove.gameTable.playedCards.pullAllCards(),
                         false
                     );
-                    lastMove.gameTable.countDiscardPile = lastMove.discardDeck.countCards();
 
                     this.emit("endFinishedHandler", {
                         player: player,
@@ -519,8 +509,8 @@ class GameHandler extends EventEmitter {
     async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
             let selectedCards = [];
-            if (lastMove.mainDeck.countCards() > 0) {
-                selectedCards = lastMove.mainDeck.pullRandomCards(2);
+            if (lastMove.gameTable.deckMain.countCards() > 0) {
+                selectedCards = lastMove.gameTable.deckMain.pullRandomCards(2);
                 player.hand.addArrayCards(selectedCards, false);
             }
 
@@ -540,8 +530,6 @@ class GameHandler extends EventEmitter {
                     description: `Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`,
                     players: lastMove.players,
                     playersDistances: lastMove.playersDistances,
-                    mainDeck: lastMove.mainDeck,
-                    discardDeck: lastMove.discardDeck,
                     gameTable: lastMove.gameTable,
                 })
             );
@@ -552,7 +540,7 @@ class GameHandler extends EventEmitter {
             );
         } else {
             throw new Error(
-                "Объекты playerHand и mainDeck должны быть экземплярами CardsCollection"
+                "Объект player должны быть экземпляром Player или объект lastMove должен быть экземпляром класса Move"
             );
         }
     }
@@ -590,8 +578,7 @@ class GameHandler extends EventEmitter {
                     )
                 );
                 const playerDiscardCards = player.hand.pullCardsByIds(selectedCards);
-                lastMove.discardDeck.addArrayCards(playerDiscardCards, false);
-                lastMove.gameTable.countDiscardPile = lastMove.discardDeck.countCards();
+                lastMove.gameTable.discardDeck.addArrayCards(playerDiscardCards, false);
 
                 // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
                 const cardNames = selectedCards
@@ -604,8 +591,6 @@ class GameHandler extends EventEmitter {
                         description: `Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`,
                         players: lastMove.players,
                         playersDistances: lastMove.playersDistances,
-                        mainDeck: lastMove.mainDeck,
-                        discardDeck: lastMove.discardDeck,
                         gameTable: lastMove.gameTable,
                     })
                 );
@@ -640,8 +625,8 @@ class GameHandler extends EventEmitter {
                     player.role.lives = player.lives;
                 }
 
-                if ("mainDeck" in player.role) {
-                    player.role.mainDeck = lastMove.mainDeck;
+                if ("gameTable" in player.role) {
+                    player.role.gameTable = lastMove.gameTable;
                 }
 
                 if ("hand" in player.role) {
@@ -668,8 +653,8 @@ class GameHandler extends EventEmitter {
                     player.character.lives = player.lives;
                 }
 
-                if ("mainDeck" in player.character) {
-                    player.character.mainDeck = lastMove.mainDeck;
+                if ("gameTable" in player.character) {
+                    player.character.gameTable = lastMove.gameTable;
                 }
 
                 if ("hand" in player.character) {

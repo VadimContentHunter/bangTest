@@ -1,54 +1,54 @@
 const Player = require("./Player"); // Подключение модели Player
 const GameTableError = require("../Errors/GameTableError"); // Подключение ошибки для дистанции
-const { aCard } = require("../interfaces/aCard");
 const CardsCollection = require("../handlers/CardsCollection");
+const { aCard } = require("../interfaces/aCard");
 
 class GameTable {
-    /** @type {number} */
-    #countDeckMain = 0;
+    /** @type {CardsCollection | null} */
+    #deckMain = null;
 
-    /** @type {number} */
-    #countDiscardPile = 0;
+    /** @type {CardsCollection | null} */
+    #discardDeck = null;
 
     /** @type {number | null} */
     #timer = null;
 
-    /** @type {CardsCollection|null} */
+    /** @type {CardsCollection | null} */
     #playedCards = null;
 
     /**
      * Конструктор класса GameTable.
      */
-    constructor(playedCards = null) {
-        this.#countDeckMain = 0;
-        this.#countDiscardPile = 0;
+    constructor({ playedCards = null, deckMain = null, discardDeck = null } = {}) {
+        this.deckMain = deckMain ?? new CardsCollection();
+        this.discardDeck = discardDeck ?? new CardsCollection();
         this.#playedCards = playedCards ?? new CardsCollection();
     }
 
     // ======== SET методы ========
 
     /**
-     * Устанавливает количество карт в главной колоде (deckMain).
-     * @param {number} value - Количество карт.
-     * @throws {GameTableError} Если значение не является положительным целым числом.
+     * Устанавливает главную колоду (deckMain).
+     * @param {CardsCollection} value - Экземпляр CardsCollection.
+     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
      */
-    set countDeckMain(value) {
-        if (!Number.isInteger(value) || value < 0) {
-            throw new GameTableError("countDeckMain должен быть неотрицательным целым числом.");
+    set deckMain(value) {
+        if (!(value instanceof CardsCollection)) {
+            throw new GameTableError("deckMain должен быть экземпляром CardsCollection.");
         }
-        this.#countDeckMain = value;
+        this.#deckMain = value;
     }
 
     /**
-     * Устанавливает количество карт в колоде сброса (discardPile).
-     * @param {number} value - Количество карт.
-     * @throws {GameTableError} Если значение не является положительным целым числом.
+     * Устанавливает колоду сброса (discardDeck).
+     * @param {CardsCollection} value - Экземпляр CardsCollection.
+     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
      */
-    set countDiscardPile(value) {
-        if (!Number.isInteger(value) || value < 0) {
-            throw new GameTableError("countDiscardPile должен быть неотрицательным целым числом.");
+    set discardDeck(value) {
+        if (!(value instanceof CardsCollection)) {
+            throw new GameTableError("discardDeck должен быть экземпляром CardsCollection.");
         }
-        this.#countDiscardPile = value;
+        this.#discardDeck = value;
     }
 
     /**
@@ -63,11 +63,14 @@ class GameTable {
         this.#timer = value;
     }
 
+    /**
+     * Устанавливает карты, сыгранные на стол (playedCards).
+     * @param {CardsCollection} value - Экземпляр CardsCollection.
+     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
+     */
     set playedCards(value) {
-        if (!(value instanceof CardsCollection) && value !== null) {
-            throw new GameTableError(
-                "playedCards должен быть экземпляром CardsCollection или null."
-            );
+        if (!(value instanceof CardsCollection)) {
+            throw new GameTableError("playedCards должен быть экземпляром CardsCollection.");
         }
         this.#playedCards = value;
     }
@@ -75,19 +78,27 @@ class GameTable {
     // ======== GET методы ========
 
     /**
-     * Возвращает количество карт в главной колоде (deckMain).
-     * @returns {number} Количество карт.
+     * Возвращает главную колоду (deckMain).
+     * @returns {CardsCollection} Экземпляр CardsCollection.
+     * @throws {GameTableError} Если свойство не установлено.
      */
-    get countDeckMain() {
-        return this.#countDeckMain;
+    get deckMain() {
+        if (!this.#deckMain) {
+            throw new GameTableError("deckMain не инициализирован.");
+        }
+        return this.#deckMain;
     }
 
     /**
-     * Возвращает количество карт в колоде сброса (discardPile).
-     * @returns {number} Количество карт.
+     * Возвращает колоду сброса (discardDeck).
+     * @returns {CardsCollection} Экземпляр CardsCollection.
+     * @throws {GameTableError} Если свойство не установлено.
      */
-    get countDiscardPile() {
-        return this.#countDiscardPile;
+    get discardDeck() {
+        if (!this.#discardDeck) {
+            throw new GameTableError("discardDeck не инициализирован.");
+        }
+        return this.#discardDeck;
     }
 
     /**
@@ -95,6 +106,9 @@ class GameTable {
      * @returns {number | null} Таймер или null, если не установлен.
      */
     get timer() {
+        // if (this.#timer === null) {
+        //     throw new GameTableError("timer не инициализирован.");
+        // }
         return this.#timer;
     }
 
@@ -103,6 +117,9 @@ class GameTable {
      * @returns {CardsCollection|null} Массив карт.
      */
     get playedCards() {
+        if (!this.#playedCards) {
+            throw new GameTableError("playedCards не инициализирован.");
+        }
         return this.#playedCards;
     }
 
@@ -153,14 +170,23 @@ class GameTable {
         this.playedCards.addCard(card, false);
     }
 
+    getDataSummary() {
+        return {
+            countDeckMain: this.deckMain.countCards(),
+            countDiscardDeck: this.discardDeck.countCards(),
+            timer: this.timer,
+            collectionCards: this.playedCards.getAllCards(),
+        };
+    }
+
     /**
      * Возвращает JSON-представление игрового стола.
      * @returns {Object} JSON-объект с информацией о состоянии игрового стола.
      */
     toJSON() {
         return {
-            countDeckMain: this.countDeckMain,
-            countDiscardPile: this.countDiscardPile,
+            deckMain: this.deckMain,
+            discardDeck: this.discardDeck,
             timer: this.timer,
             collectionCards: this.playedCards,
         };
@@ -168,7 +194,17 @@ class GameTable {
 
     static initFromJSON(inputData) {
         const procData = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
-        return new GameTable(CardsCollection.initFromJSON(procData.collectionCards, false));
+        return new GameTable({
+            playedCards: CardsCollection.initFromJSON(procData.collectionCards, false),
+            deckMain:
+                procData.deckMain != null
+                    ? CardsCollection.initFromJSON(procData.deckMain, false)
+                    : null,
+            discardDeck:
+                procData.deckMain != null
+                    ? CardsCollection.initFromJSON(procData.discardDeck, false)
+                    : null,
+        });
     }
 }
 
