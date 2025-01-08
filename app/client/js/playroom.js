@@ -192,7 +192,7 @@ function requestServer(request, data = {}, ws) {
                 cardSelection.selectionCount = 0;
                 cardSelection.selectedIndices = [];
                 cardSelection.isWaitingForResponse = true;
-                // cardSelection.timer = request?.params?.timer;
+                cardSelection.timer = request?.params?.timer;
                 cardSelection.setCardToContainer([]);
 
                 cardSelection.renderUpdatedData();

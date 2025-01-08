@@ -151,34 +151,19 @@ class GameHandler extends EventEmitter {
         this.gameSessionHandler.head.collectionGameCards = new CardsCollection([
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.WEAPON, suit: CardSuit.CLUBS }),
-            new StubCard({ type: CardType.WEAPON, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.SPADES }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.CLUBS }),
             new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.CLUBS }),
+            new StubCard({ type: CardType.WEAPON, suit: CardSuit.DIAMONDS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
             new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.CLUBS }),
+            new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
         ]);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
-        tempPlayers.getPlayers().forEach((player) => {
-            player.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
-            player.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
-            player.events.on("showCards", (cards) => {
-                /**
-                 * Событие, которое вызывает отображение карт.
-                 * @event GameTable#showCards
-                 * @type {Object}
-                 * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
-                 * @property {Player} player - игрок с которым связано событие
-                 */
-                this.emit("showCards", this.showCards({ cards: cards, player }).bind(this));
-            });
-        });
-
         this.gameSessionHandler.history.addMove(
             new Move({
                 description: "Первый ход, инициализация первичных данных",
@@ -298,6 +283,7 @@ class GameHandler extends EventEmitter {
             player.character = this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
                 selectedCards[0].id
             );
+            this.saveAndTriggerHook(player, "selectionHide", { player });
 
             // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
             this.gameSessionHandler.history.addMove(
@@ -520,7 +506,7 @@ class GameHandler extends EventEmitter {
     async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
             let selectedCards = [];
-            lastMove.gameTable.drawCardFromMainDeck(2, player.hand);
+            lastMove.gameTable.drawCardsForPlayer(player, 2);
 
             this.emit("endDrawCards", {
                 player: player,
@@ -585,7 +571,7 @@ class GameHandler extends EventEmitter {
                             card.type !== CardType.CHARACTER
                     )
                 );
-                lastMove.gameTable.discardCards(player.hand, selectedCards);
+                lastMove.gameTable.discardPlayerCards(player, selectedCards);
 
                 // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
                 const cardNames = selectedCards
@@ -617,32 +603,17 @@ class GameHandler extends EventEmitter {
         }
     }
 
-    showCards({ cards, player }) {
-        // Проверка, что cards является массивом
-        if (!Array.isArray(cards)) {
-            throw new Error("Параметр 'cards' должен быть массивом");
+    showCards({ selectionCards, player = null }) {
+        if (!(selectionCards instanceof SelectionCards)) {
+            return;
         }
-
-        if (!cards.every((card) => card instanceof aCard)) {
-            throw new Error("Не все элементы массива являются экземплярами aCard");
-        }
-
-        const selectionCards = new SelectionCards({
-            title: "Выбор персонажа",
-            description: "Выберите персонажа для игры:",
-            textExtension: `Игрок <i>${player.name}</i> выбирает персонажа . . .`,
-            collectionCards:
-                this.gameSessionHandler.head.collectionCharactersCards.getRandomCards(3),
-            selectionCount: 1,
-            // selectedIndices: [1, 3],
-            // isWaitingForResponse: false,
-        });
-
-        this.saveAndTriggerHook(player, "selectionStarted", { player: null, selectionCards });
+        // this.saveAndTriggerHook(player, "selectionStarted", { player: null, selectionCards });
+        this.emit("selectionStarted", { player: null, selectionCards });
 
         // Отложенное событие для скрытия карт через 3 секунды
         setTimeout(() => {
-            this.gameTable.events.emit("selectionHide", { player: null });
+            // this.saveAndTriggerHook(player, "selectionHide", { player: null });
+            this.emit("selectionHide", { player: null });
         }, 3000); // 3000 миллисекунд = 3 секунды
     }
 
@@ -669,6 +640,7 @@ class GameHandler extends EventEmitter {
         }
 
         const propertyMappings = {
+            player: player,
             lives: player.lives,
             gameTable: this.getLastMove()?.gameTable,
             hand: player.hand,
@@ -689,7 +661,23 @@ class GameHandler extends EventEmitter {
      */
     getLastMove() {
         this.gameSessionHandler.loadData();
-        return this.gameSessionHandler.history.getLastMove();
+        const lastMove = this.gameSessionHandler.history.getLastMove();
+
+        lastMove.players.getPlayers().forEach((player) => {
+            if (player.events.listenerCount("roleInstalled") === 0) {
+                player.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
+            }
+
+            if (player.events.listenerCount("characterInstalled") === 0) {
+                player.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
+            }
+        });
+
+        if (lastMove.gameTable.events.listenerCount("showCards") === 0) {
+            lastMove.gameTable.events.on("showCards", this.showCards.bind(this));
+        }
+
+        return lastMove;
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {

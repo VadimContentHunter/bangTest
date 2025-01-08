@@ -219,7 +219,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 (player === null || client?.sessionId === player.sessionId)
             ) {
                 client.send(
-                    JsonRpcFormatter.serializeRequest("selectionCardsMenu", { hide: true })
+                    JsonRpcFormatter.serializeRequest("closeSelectionCardsMenu", { hide: true })
                 );
             }
         });

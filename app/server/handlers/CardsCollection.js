@@ -306,7 +306,7 @@ class CardsCollection {
      * @throws {CardError} Если count не является числом или больше, чем количество карт в коллекции.
      */
     pullRandomCards(count) {
-        if (typeof count !== "number" || count <= 0) {
+        if (typeof count !== "number" || count < 0) {
             throw new CardError("Количество карт должно быть положительным числом.");
         }
 

@@ -204,15 +204,19 @@ class GameTable {
     }
 
     /**
-     * Берет карты из основной колоды и добавляет их в указанную коллекцию или возвращает.
+     * Берет карты из основной колоды и добавляет их в коллекцию игрока.
      * Если карт недостаточно в основной колоде, они перетасовываются из колоды сброса.
+     * @param {Player} player - Игрок, которому добавляются карты.
      * @param {number} count - Количество карт для взятия.
-     * @param {CardsCollection|null} collectionCards - Коллекция карт для добавления. Если null, возвращает массив карт.
      * @param {boolean} ignoredEvent - Флаг для игнорирования события, если true, тогда событие игнорируется (по умолчанию false).
-     * @returns {Array|void} Массив карт, если collectionCards не передан.
-     * @fires GameTable#cardDrawn  Событие, что карты были взяты из основной колоды.
+     * @throws {TypeError} Если player не является экземпляром класса Player.
+     * @fires GameTable#cardDrawn Событие, что карты были взяты из основной колоды.
      */
-    drawCardFromMainDeck(count, collectionCards = null, ignoredEvent = false) {
+    drawCardsForPlayer(player, count, ignoredEvent = false) {
+        if (!(player instanceof Player)) {
+            throw new TypeError("Параметр 'player' должен быть экземпляром класса Player.");
+        }
+
         // Если карт недостаточно в основной колоде, переносим карты из колоды сброса
         if (this.deckMain.countCards() < count) {
             this.transferDiscardToMainDeck();
@@ -222,6 +226,9 @@ class GameTable {
         if (this.deckMain.countCards() >= count) {
             const drawnCards = this.deckMain.pullRandomCards(count);
 
+            // Добавляем карты в руку игрока
+            player.hand.addArrayCards(drawnCards, false);
+
             // Если событие не нужно игнорировать, эмитируем его
             if (!ignoredEvent) {
                 /**
@@ -230,35 +237,36 @@ class GameTable {
                  * @type {Object}
                  * @property {Array<aCard>} drawnCards - Массив карт, которые были взяты из основной колоды.
                  * @property {number} remainingInDeck - Количество оставшихся карт в основной колоде.
+                 * @property {Player} drawingPlayer - Игрок, который взял карты.
                  */
                 this.events?.emit("cardDrawn", {
                     drawnCards,
                     remainingInDeck: this.deckMain.countCards(),
+                    drawingPlayer: player,
                 });
             }
-
-            // Если передана коллекция карт, добавляем в нее
-            if (collectionCards instanceof CardsCollection) {
-                collectionCards.addArrayCards(drawnCards, false);
-                return;
-            }
-
-            // Если коллекция карт не передана, возвращаем массив карт
-            return drawnCards;
+        } else {
+            // Если карт недостаточно даже после переноса, выбрасываем исключение
+            throw new Error("В основной колоде недостаточно карт для выполнения операции.");
         }
-
-        // Возвращаем пустой массив, если карт недостаточно
-        return [];
     }
 
     /**
-     * Перемещает карты из указанной коллекции в колоду сброса.
-     * @param {CardsCollection} collectionCards - Коллекция карт для сброса.
+     * Перемещает карты из руки игрока в колоду сброса.
+     * @param {Player} player - Игрок, чьи карты нужно сбросить.
      * @param {Array} cardIds - Массив ID карт, которые нужно сбросить.
+     * @throws {TypeError} Если player не является экземпляром класса Player.
      * @fires GameTable#cardDiscarded Событие, что карты были сброшены в discardDeck.
      */
-    discardCards(collectionCards, cardIds) {
-        const cardsToDiscard = collectionCards.pullCardsByIds(cardIds);
+    discardPlayerCards(player, cardIds) {
+        if (!(player instanceof Player)) {
+            throw new TypeError("Параметр 'player' должен быть экземпляром класса Player.");
+        }
+
+        // Получаем карты из руки игрока
+        const cardsToDiscard = player.hand.pullCardsByIds(cardIds);
+
+        // Добавляем карты в колоду сброса
         this.discardDeck.addArrayCards(cardsToDiscard, false);
 
         /**
@@ -267,10 +275,12 @@ class GameTable {
          * @type {Object}
          * @property {Array<aCard>} discardedCards - Массив карт, которые были сброшены в колоду discardDeck.
          * @property {number} remainingInDiscardDeck - Количество оставшихся карт в колоде сброса.
+         * @property {Player} discardingPlayer - Игрок, который сбросил карты.
          */
         this.events?.emit("cardDiscarded", {
             discardedCards: cardsToDiscard,
             remainingInDiscardDeck: this.discardDeck.countCards(),
+            discardingPlayer: player,
         });
     }
 
@@ -297,6 +307,34 @@ class GameTable {
             discardDeckCount: this.discardDeck.countCards(),
             playedCardsCount: this.playedCards.countCards(),
         };
+    }
+
+    /**
+     * Возвращает JSON-представление игрового стола.
+     * @returns {Object} JSON-объект с информацией о состоянии игрового стола.
+     */
+    toJSON() {
+        return {
+            deckMain: this.deckMain,
+            discardDeck: this.discardDeck,
+            timer: this.timer,
+            collectionCards: this.playedCards,
+        };
+    }
+
+    static initFromJSON(inputData) {
+        const procData = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
+        return new GameTable({
+            playedCards: CardsCollection.initFromJSON(procData.collectionCards, false),
+            deckMain:
+                procData.deckMain != null
+                    ? CardsCollection.initFromJSON(procData.deckMain, false)
+                    : null,
+            discardDeck:
+                procData.deckMain != null
+                    ? CardsCollection.initFromJSON(procData.discardDeck, false)
+                    : null,
+        });
     }
 }
 
