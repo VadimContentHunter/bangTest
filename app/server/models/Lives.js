@@ -13,7 +13,7 @@ class Lives {
      * Создаёт новый объект Lives.
      * @param {number} max - Максимальное количество жизней.
      * @param {number} current - Текущее количество жизней.
-     * @param {EventEmitter|null} [events=null] - Объект EventEmitter для вызова событий связанных с жизнями
+     * @param {EventEmitter|null} [events=null] - Объект EventEmitter для вызова событий связанных с жизнями.
      * @throws {LivesError} Если max или current невалидны.
      */
     constructor(max = 0, current = 0, events = null) {
@@ -81,38 +81,75 @@ class Lives {
     /**
      * Сеттер для объекта EventEmitter.
      * @param {EventEmitter|null} value - Новый объект EventEmitter.
+     * @throws {LivesError} Если value не является экземпляром EventEmitter или null.
      */
     set events(value) {
         if (value !== null && !(value instanceof EventEmitter)) {
-            throw new ValidatePlayerError("events must be an instance of EventEmitter or null.");
+            throw new LivesError("events must be an instance of EventEmitter or null.");
         }
         this._events = value;
     }
 
     /**
      * Добавляет указанное количество жизней.
+     * Генерирует событие "lifeAdded".
      * @param {number} amount - Количество жизней для добавления.
      * @throws {LivesError} Если amount не является положительным целым числом.
+     * @fires Lives#lifeAdded
      */
     addLives(amount) {
         if (!Number.isInteger(amount) || amount < 0) {
             throw new LivesError("Amount to add must be a non-negative integer.");
         }
+        const oldLives = this._current;
         this.current = Math.min(this._current + amount, this._max);
+
+        if (this.current > oldLives) {
+            /**
+             * Событие, вызываемое при добавлении жизней.
+             * @event Lives#lifeAdded
+             * @type {Object}
+             * @property {number} oldLives - Количество жизней до изменения.
+             * @property {number} newLives - Количество жизней после изменения.
+             * @property {number} added - Количество добавленных жизней.
+             */
+            this.events?.emit("lifeAdded", {
+                oldLives,
+                newLives: this.current,
+                added: this.current - oldLives,
+            });
+        }
     }
 
     /**
      * Отнимает указанное количество жизней.
+     * Генерирует событие "lifeRemoved".
      * @param {number} amount - Количество жизней для отнимания.
      * @throws {LivesError} Если amount не является положительным целым числом.
+     * @fires Lives#lifeRemoved
      */
     removeLives(amount) {
         if (!Number.isInteger(amount) || amount < 0) {
             throw new LivesError("Amount to remove must be a non-negative integer.");
         }
-
         const oldLives = this._current;
         this.current = Math.max(this._current - amount, 0);
+
+        if (this.current < oldLives) {
+            /**
+             * Событие, вызываемое при удалении жизней.
+             * @event Lives#lifeRemoved
+             * @type {Object}
+             * @property {number} oldLives - Количество жизней до изменения.
+             * @property {number} newLives - Количество жизней после изменения.
+             * @property {number} removed - Количество удалённых жизней.
+             */
+            this.events?.emit("lifeRemoved", {
+                oldLives,
+                newLives: this.current,
+                removed: oldLives - this.current,
+            });
+        }
     }
 
     /**
@@ -130,7 +167,8 @@ class Lives {
     }
 
     /**
-     * @returns {Object} JSON-представление дистанции
+     * Возвращает JSON-представление объекта Lives.
+     * @returns {Object} JSON-представление объекта Lives.
      */
     toJSON() {
         return {
