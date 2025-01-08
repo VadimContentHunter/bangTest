@@ -1,5 +1,8 @@
 const CardError = require("../Errors/CardError");
 
+/**
+ * Класс типов карт.
+ */
 class CardType {
     static ROLE = "role";
     static CHARACTER = "character";
@@ -8,19 +11,53 @@ class CardType {
     static CONST = "const";
 }
 
-class aCard {
-    _id = 0;
-    _name = null;
-    _image = null;
-    _type = CardType.DEFAULT;
-    _ownerName = "";
+/**
+ * Класс мастей для карт.
+ */
+class CardSuit {
+    static HEARTS = "черва"; // Масть червей
+    static DIAMONDS = "бубна"; // Масть бубен
+    static CLUBS = "креста"; // Масть крестов
+    static SPADES = "пика"; // Масть пик
+    static NONE = "none"; // Масть пик
+}
 
-    constructor({ name, image, type = CardType.DEFAULT, id = 0, ownerName = "" }) {
+/**
+ * Абстрактный класс для карты.
+ */
+class aCard {
+    #id = 0;
+    #name = null;
+    #image = null;
+    #type = CardType.DEFAULT;
+    #ownerName = "";
+    #suit = null;
+
+    /**
+     * Конструктор для создания карты.
+     * @param {Object} params - Параметры карты.
+     * @param {string} params.name - Название карты.
+     * @param {string} params.image - Путь к изображению карты.
+     * @param {string} [params.type=CardType.DEFAULT] - Тип карты.
+     * @param {number} [params.id=0] - ID карты.
+     * @param {string} [params.ownerName=""] - Имя владельца карты.
+     * @throws {TypeError} Если пытаются создать экземпляр абстрактного класса.
+     * @throws {CardError} Если не переопределен метод action() или initFromJSON().
+     */
+    constructor({
+        name,
+        image,
+        type = CardType.DEFAULT,
+        id = 0,
+        ownerName = "",
+        suit = CardSuit.NONE,
+    }) {
         this.id = id;
         this.name = name;
         this.image = image;
         this.type = type;
         this.ownerName = ownerName;
+        this.suit = suit;
 
         if (new.target === aCard) {
             throw new TypeError("Нельзя создать экземпляр абстрактного класса");
@@ -41,75 +78,139 @@ class aCard {
         }
     }
 
+    /**
+     * Устанавливает ID карты.
+     * @param {number} value - Значение ID карты.
+     * @throws {CardError} Если ID не является положительным числом.
+     */
     set id(value) {
-        if (typeof value !== "number" && value < 0) {
-            throw new CardError("Имя должно быть строкой.");
+        if (typeof value !== "number" || value < 0) {
+            throw new CardError("ID должен быть положительным числом.");
         }
-
-        this._id = value;
+        this.#id = value;
     }
 
+    /**
+     * Устанавливает имя карты.
+     * @param {string} value - Имя карты.
+     * @throws {CardError} Если имя не является строкой.
+     */
     set name(value) {
         if (typeof value !== "string") {
             throw new CardError("Имя должно быть строкой.");
         }
-
-        this._name = value;
+        this.#name = value;
     }
 
+    /**
+     * Устанавливает путь к изображению карты.
+     * @param {string} imagePath - Путь к изображению.
+     */
     set image(imagePath) {
-        // const fullPath = path.resolve(imagePath); // Полный путь к изображению
-        // if (!fs.existsSync(fullPath)) {
-        //     throw new CardError(`Файл ${fullPath} не существует.`, 3);
-        // }
-
-        this._image = imagePath;
+        this.#image = imagePath;
     }
 
+    /**
+     * Устанавливает тип карты.
+     * @param {string} value - Тип карты.
+     * @throws {CardError} Если тип карты неверен.
+     */
     set type(value) {
-        // let l = value.toUpperCase();
         if (!Object.values(CardType).includes(value)) {
-            throw new CardError("Неверный тип карты.", 4);
+            throw new CardError("Неверный тип карты.");
         }
-        this._type = value;
+        this.#type = value;
     }
 
+    /**
+     * Устанавливает имя владельца карты.
+     * @param {string} value - Имя владельца.
+     * @throws {CardError} Если имя владельца не является строкой.
+     */
     set ownerName(value) {
         if (typeof value !== "string") {
             throw new CardError("Имя владельца должно быть строкой.");
         }
-
-        this._ownerName = value;
+        this.#ownerName = value;
     }
 
+    /**
+     * Устанавливает масть карты.
+     * @param {string} value - Масть карты или null.
+     * @throws {CardError} Если масть не является строкой или null.
+     */
+    set suit(value) {
+        if (!Object.values(CardSuit).includes(value)) {
+            throw new CardError("Неверный тип карты.");
+        }
+        this.#suit = value;
+    }
+
+    /**
+     * Получает ID карты.
+     * @returns {number} ID карты.
+     */
     get id() {
-        return this._id;
+        return this.#id;
     }
 
+    /**
+     * Получает имя карты.
+     * @returns {string} Имя карты.
+     */
     get name() {
-        return this._name;
+        return this.#name;
     }
 
+    /**
+     * Получает путь к изображению карты.
+     * @returns {string} Путь к изображению.
+     */
     get image() {
-        return this._image;
+        return this.#image;
     }
 
+    /**
+     * Получает тип карты.
+     * @returns {string} Тип карты.
+     */
     get type() {
-        return this._type;
+        return this.#type;
     }
 
+    /**
+     * Получает имя владельца карты.
+     * @returns {string} Имя владельца карты.
+     * @throws {CardError} Если имя владельца не является строкой.
+     */
     get ownerName() {
-        if (typeof this._ownerName !== "string") {
+        if (typeof this.#ownerName !== "string") {
             throw new CardError("Имя владельца должно быть строкой.");
         }
-
-        return this._ownerName;
+        return this.#ownerName;
     }
 
+    /**
+     * Получает масть карты.
+     * @returns {string|null} Масть карты.
+     */
+    get suit() {
+        return this.#suit;
+    }
+
+    /**
+     * Абстрактный метод для действия карты.
+     * Этот метод должен быть реализован в дочерних классах.
+     * @throws {CardError} Если метод не переопределен в дочернем классе.
+     */
     action() {
         throw new CardError("Метод 'action()' должен быть реализован");
     }
 
+    /**
+     * Преобразует объект карты в формат JSON.
+     * @returns {Object} Объект карты в формате JSON.
+     */
     toJSON() {
         return {
             id: this.id,
@@ -117,12 +218,20 @@ class aCard {
             image: this.image,
             type: this.type,
             ownerName: this.ownerName,
+            suit: this.suit,
             className: this.constructor.name,
         };
     }
 
+    /**
+     * Инициализирует карту из JSON-данных.
+     * @param {Object} data - Данные карты в формате JSON.
+     * @param {Array} classCards - Массив классов карт.
+     * @returns {aCard} Экземпляр карты.
+     * @throws {CardError} Если не найдено имя класса карты или класс не является наследником aCard.
+     */
     static initCard(data, classCards) {
-        const classNameCard = data?.className; // Извлекаем имя класса карты из данных
+        const classNameCard = data?.className;
 
         if (!classNameCard) {
             throw new CardError("Имя Класса карты не указано в данных.");
@@ -132,7 +241,6 @@ class aCard {
             throw new CardError("Переданное значение не является массивом.");
         }
 
-        // Проверка, что все элементы массива являются экземплярами aCard
         for (const card of classCards) {
             if (typeof card !== "function" || !(card.prototype instanceof aCard)) {
                 throw new CardError(
@@ -143,32 +251,31 @@ class aCard {
             }
         }
 
-        // Найти нужный объект карты по имени его конструктора
         const cardTemplate = classCards.find((card) => card.name === classNameCard);
 
         if (!cardTemplate) {
             throw new CardError(`Карта с именем класса '${classNameCard}' не найдена.`);
         }
 
-        // Проверяем, что класс реализует метод initFromJSON
         if (!(cardTemplate.prototype instanceof aCard)) {
             throw new CardError(
                 `Класс '${cardTemplate.name}' не является наследником класса 'aCard'`
             );
         }
 
-        // Создаем и возвращаем экземпляр карты
         return cardTemplate.initFromJSON(data);
     }
 
     /**
-     * Инициализирует экземпляр из JSON-данных.
-     * @param {Object} data - Данные в формате JSON.
-     * @returns {aCard} Новый экземпляр.
+     * Статический метод для инициализации карты из JSON-данных.
+     * Этот метод должен быть переопределен в дочерних классах.
+     * @param {Object} data - Данные карты в формате JSON.
+     * @returns {aCard} Новый экземпляр карты.
+     * @throws {CardError} Если метод не переопределен в дочернем классе.
      */
     static initFromJSON(data) {
         throw new CardError("Метод 'static initFromJSON(data)' должен быть реализован");
     }
 }
 
-module.exports = { aCard, CardType };
+module.exports = { aCard, CardType, CardSuit };

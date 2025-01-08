@@ -1,17 +1,21 @@
-const {aCard, CardType} = require("../../interfaces/aCard");
+const { aCard, CardType, CardSuit } = require("../../interfaces/aCard");
 
 class StubCard extends aCard {
-    constructor(type = CardType.DEFAULT, ownerName = "") {
+    constructor({ type = CardType.DEFAULT, ownerName = "", suit = CardSuit.NONE } = {}) {
         super({
             name: "Stub Card",
             image: "../resources/imgs/cards/cardBacks/girl.png",
             type: type,
             ownerName: ownerName,
+            suit: suit,
         });
     }
 
     static initFromJSON(data) {
-        return new StubCard(data.type, data.ownerName);
+        return new StubCard({
+            type: data.type,
+            ownerName: data.ownerName,
+        });
     }
 
     action() {}

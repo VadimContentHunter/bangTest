@@ -41,7 +41,7 @@ class GameTable {
      */
     set events(value) {
         if (value !== null && !(value instanceof EventEmitter)) {
-            throw new ValidatePlayerError("events must be an instance of EventEmitter or null.");
+            throw new GameTableError("events must be an instance of EventEmitter or null.");
         }
         this.#events = value;
     }
@@ -133,9 +133,6 @@ class GameTable {
      * @returns {number | null} Таймер или null, если не установлен.
      */
     get timer() {
-        // if (this.#timer === null) {
-        //     throw new GameTableError("timer не инициализирован.");
-        // }
         return this.#timer;
     }
 
@@ -182,7 +179,7 @@ class GameTable {
     /**
      * Добавляет карту игрока на стол.
      * @param {Player} player - Экземпляр игрока.
-     * @param {Array<aCard>} cards - Массив карт.
+     * @param {aCard} card - Карта игрока.
      * @throws {GameTableError} Если переданы некорректные параметры.
      */
     addPlayerOneCard(player, card) {
@@ -191,7 +188,7 @@ class GameTable {
         }
 
         if (!(card instanceof aCard)) {
-            throw new GameTableError("Все элементы массива cards должны быть экземплярами aCard.");
+            throw new GameTableError("card должен быть экземпляром aCard.");
         }
         card.ownerName = player.name;
         this.playedCards.addCard(card, false);
@@ -211,9 +208,11 @@ class GameTable {
      * Если карт недостаточно в основной колоде, они перетасовываются из колоды сброса.
      * @param {number} count - Количество карт для взятия.
      * @param {CardsCollection|null} collectionCards - Коллекция карт для добавления. Если null, возвращает массив карт.
+     * @param {boolean} ignoredEvent - Флаг для игнорирования события, если true, тогда событие игнорируется (по умолчанию false).
      * @returns {Array|void} Массив карт, если collectionCards не передан.
+     * @fires GameTable#cardDrawn  Событие, что карты были взяты из основной колоды.
      */
-    drawCardFromMainDeck(count, collectionCards = null) {
+    drawCardFromMainDeck(count, collectionCards = null, ignoredEvent = false) {
         // Если карт недостаточно в основной колоде, переносим карты из колоды сброса
         if (this.deckMain.countCards() < count) {
             this.transferDiscardToMainDeck();
@@ -222,6 +221,21 @@ class GameTable {
         // Проверяем, достаточно ли карт в основной колоде
         if (this.deckMain.countCards() >= count) {
             const drawnCards = this.deckMain.pullRandomCards(count);
+
+            // Если событие не нужно игнорировать, эмитируем его
+            if (!ignoredEvent) {
+                /**
+                 * Событие, что карты были взяты из основной колоды.
+                 * @event GameTable#cardDrawn
+                 * @type {Object}
+                 * @property {Array<aCard>} drawnCards - Массив карт, которые были взяты из основной колоды.
+                 * @property {number} remainingInDeck - Количество оставшихся карт в основной колоде.
+                 */
+                this.events?.emit("cardDrawn", {
+                    drawnCards,
+                    remainingInDeck: this.deckMain.countCards(),
+                });
+            }
 
             // Если передана коллекция карт, добавляем в нее
             if (collectionCards instanceof CardsCollection) {
@@ -241,10 +255,23 @@ class GameTable {
      * Перемещает карты из указанной коллекции в колоду сброса.
      * @param {CardsCollection} collectionCards - Коллекция карт для сброса.
      * @param {Array} cardIds - Массив ID карт, которые нужно сбросить.
+     * @fires GameTable#cardDiscarded Событие, что карты были сброшены в discardDeck.
      */
     discardCards(collectionCards, cardIds) {
         const cardsToDiscard = collectionCards.pullCardsByIds(cardIds);
         this.discardDeck.addArrayCards(cardsToDiscard, false);
+
+        /**
+         * Событие, что карты были сброшены в discardDeck.
+         * @event GameTable#cardDiscarded
+         * @type {Object}
+         * @property {Array<aCard>} discardedCards - Массив карт, которые были сброшены в колоду discardDeck.
+         * @property {number} remainingInDiscardDeck - Количество оставшихся карт в колоде сброса.
+         */
+        this.events?.emit("cardDiscarded", {
+            discardedCards: cardsToDiscard,
+            remainingInDiscardDeck: this.discardDeck.countCards(),
+        });
     }
 
     /**
@@ -261,31 +288,15 @@ class GameTable {
     }
 
     /**
-     * Возвращает JSON-представление игрового стола.
-     * @returns {Object} JSON-объект с информацией о состоянии игрового стола.
+     * Возвращает JSON-представление данных игры
+     * @returns {Object} Данные игры в формате JSON.
      */
-    toJSON() {
+    getGameData() {
         return {
-            deckMain: this.deckMain,
-            discardDeck: this.discardDeck,
-            timer: this.timer,
-            collectionCards: this.playedCards,
+            deckMainCount: this.deckMain.countCards(),
+            discardDeckCount: this.discardDeck.countCards(),
+            playedCardsCount: this.playedCards.countCards(),
         };
-    }
-
-    static initFromJSON(inputData) {
-        const procData = typeof inputData === "string" ? JSON.parse(inputData) : inputData;
-        return new GameTable({
-            playedCards: CardsCollection.initFromJSON(procData.collectionCards, false),
-            deckMain:
-                procData.deckMain != null
-                    ? CardsCollection.initFromJSON(procData.deckMain, false)
-                    : null,
-            discardDeck:
-                procData.deckMain != null
-                    ? CardsCollection.initFromJSON(procData.discardDeck, false)
-                    : null,
-        });
     }
 }
 

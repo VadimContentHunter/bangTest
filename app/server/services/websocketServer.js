@@ -189,18 +189,40 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     });
 
     gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
-        if (player instanceof Player && selectionCards instanceof SelectionCards) {
-            wss.clients.forEach((client) => {
-                if (
-                    client.readyState === WebSocket.OPEN &&
-                    client?.sessionId === player.sessionId
-                ) {
-                    client.send(
-                        JsonRpcFormatter.serializeRequest("selectionCardsMenu", selectionCards)
-                    );
-                }
-            });
+        if (
+            !(player instanceof Player || player === null) ||
+            !(selectionCards instanceof SelectionCards)
+        ) {
+            return; // Если проверки не прошли, прерываем выполнение
         }
+
+        wss.clients.forEach((client) => {
+            if (
+                client.readyState === WebSocket.OPEN &&
+                (player === null || client?.sessionId === player.sessionId)
+            ) {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("selectionCardsMenu", selectionCards)
+                );
+            }
+        });
+    });
+
+    gameHandler.on("selectionHide", ({ player }) => {
+        if (!(player instanceof Player) && player !== null) {
+            return;
+        }
+
+        wss.clients.forEach((client) => {
+            if (
+                client.readyState === WebSocket.OPEN &&
+                (player === null || client?.sessionId === player.sessionId)
+            ) {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("selectionCardsMenu", { hide: true })
+                );
+            }
+        });
     });
 
     gameHandler.on("selectionEnd", ({ playerCollection, gameTable }) => {
@@ -222,11 +244,11 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             if (player instanceof Player) {
                 player.lives.max = 5;
                 player.lives.current = 3;
-                player.weapon = new StubCard(CardType.WEAPON);
+                player.weapon = new StubCard({ type: CardType.WEAPON });
                 player.temporaryCards.setCards([
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.DEFAULT),
-                    new StubCard(CardType.WEAPON),
+                    new StubCard({ type: CardType.DEFAULT }),
+                    new StubCard({ type: CardType.DEFAULT }),
+                    new StubCard({ type: CardType.WEAPON }),
                     new StubCard(CardType.CHARACTER),
                 ]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));

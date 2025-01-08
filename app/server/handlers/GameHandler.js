@@ -19,7 +19,7 @@ const Move = require("../models/Move");
 const CardsCollection = require("../handlers/CardsCollection");
 const SelectionCardsError = require("../Errors/SelectionCardsError");
 const SelectionCards = require("../models/SelectionCards");
-const { aCard, CardType } = require("../interfaces/aCard");
+const { aCard, CardType, CardSuit } = require("../interfaces/aCard");
 
 const StubCard = require("../models/cards/StubCard");
 const PlayerActionManager = require("./PlayerActionManager");
@@ -149,24 +149,34 @@ class GameHandler extends EventEmitter {
             new ElGringo(),
         ]);
         this.gameSessionHandler.head.collectionGameCards = new CardsCollection([
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.WEAPON),
-            new StubCard(CardType.WEAPON),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.WEAPON),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.WEAPON),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.DEFAULT),
-            new StubCard(CardType.DEFAULT),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
+            new StubCard({ type: CardType.WEAPON, suit: CardSuit.CLUBS }),
+            new StubCard({ type: CardType.WEAPON, suit: CardSuit.DIAMONDS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.SPADES }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.CLUBS }),
+            new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.CLUBS }),
+            new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.CLUBS }),
+            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
         ]);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
         tempPlayers.getPlayers().forEach((player) => {
             player.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
             player.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
+            player.events.on("showCards", (cards) => {
+                /**
+                 * Событие, которое вызывает отображение карт.
+                 * @event GameTable#showCards
+                 * @type {Object}
+                 * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
+                 * @property {Player} player - игрок с которым связано событие
+                 */
+                this.emit("showCards", this.showCards({ cards: cards, player }).bind(this));
+            });
         });
 
         this.gameSessionHandler.history.addMove(
@@ -605,6 +615,35 @@ class GameHandler extends EventEmitter {
         } else {
             throw new Error("Объект player должен быть экземпляром Player");
         }
+    }
+
+    showCards({ cards, player }) {
+        // Проверка, что cards является массивом
+        if (!Array.isArray(cards)) {
+            throw new Error("Параметр 'cards' должен быть массивом");
+        }
+
+        if (!cards.every((card) => card instanceof aCard)) {
+            throw new Error("Не все элементы массива являются экземплярами aCard");
+        }
+
+        const selectionCards = new SelectionCards({
+            title: "Выбор персонажа",
+            description: "Выберите персонажа для игры:",
+            textExtension: `Игрок <i>${player.name}</i> выбирает персонажа . . .`,
+            collectionCards:
+                this.gameSessionHandler.head.collectionCharactersCards.getRandomCards(3),
+            selectionCount: 1,
+            // selectedIndices: [1, 3],
+            // isWaitingForResponse: false,
+        });
+
+        this.saveAndTriggerHook(player, "selectionStarted", { player: null, selectionCards });
+
+        // Отложенное событие для скрытия карт через 3 секунды
+        setTimeout(() => {
+            this.gameTable.events.emit("selectionHide", { player: null });
+        }, 3000); // 3000 миллисекунд = 3 секунды
     }
 
     initRoleForPlayers({ card, player }) {
