@@ -6,7 +6,7 @@ const CardsCollection = require("../../../handlers/CardsCollection");
 class CalamityJanet extends aCard {
     constructor(ownerName = "") {
         super({
-            name: "Black Jack",
+            name: "Calamity Janet",
             image: "../resources/imgs/cards/characters/01_calamityjanet.png",
             type: CardType.CHARACTER,
             ownerName: ownerName,

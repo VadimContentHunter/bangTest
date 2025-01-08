@@ -63,7 +63,7 @@ class Move {
     // Остальной код класса остается без изменений
 
     getFormattedDateTime() {
-        const date = this.#dateTime;
+        const date = this.dateTime;
         const day = String(date.getDate()).padStart(2, "0");
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const year = date.getFullYear();

@@ -217,8 +217,8 @@ class GameHandler extends EventEmitter {
                         gameTable: lastMove.gameTable,
                     })
                 );
+                this.gameSessionHandler.saveData();
                 console.log(`Игроку ${player.name} была выдана роль ${playerMain.role.name}`);
-                // this.saveAndTriggerHook(player, "roleGiven", { playerMain });
             }
         });
         console.log("GameHandler: Все игроки получили роль.");
