@@ -429,7 +429,7 @@ class PlayerCollection {
 
     /**
      * Создает копию текущей коллекции игроков, копируя указанные свойства каждого игрока.
-     * @returns {Player[]} - Массив новых объектов игроков с указанными свойствами.
+     * @returns {PlayerCollection} - Новая коллекция игроков.
      */
     copyPlayerCollectionFromCollection() {
         // Копируем коллекцию

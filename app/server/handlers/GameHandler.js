@@ -164,9 +164,9 @@ class GameHandler extends EventEmitter {
         ]);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
-        tempPlayers.forEach((player) => {
-            player.events.on("roleInstalled", this.initRoleForPlayers);
-            player.events.on("characterInstalled", this.initRoleForPlayers);
+        tempPlayers.getPlayers().forEach((player) => {
+            player.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
+            player.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
         });
 
         this.gameSessionHandler.history.addMove(
@@ -623,7 +623,7 @@ class GameHandler extends EventEmitter {
             throw new Error("GameHandler: Player must be an instance of Player.");
         }
 
-        if (!(card instanceof aCard) || card.type !== CardType.ROLE) {
+        if (!(card instanceof aCard) || card.type !== CardType.CHARACTER) {
             throw new Error(
                 "GameHandler: Character card must be an instance of aCard and type must be CHARACTER."
             );

@@ -177,7 +177,7 @@ class Player {
         }
 
         if (value instanceof Lives) {
-            this.value.events = this.events;
+            value.events = this.events;
         }
 
         this.#lives = value;
