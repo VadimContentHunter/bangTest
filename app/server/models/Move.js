@@ -29,7 +29,7 @@ class Move {
         dateTime = null,
         playersDistances = null,
         gameTable = null,
-    }) {
+    } = {}) {
         this.moveNumber = moveNumber;
         this.players = players ?? new PlayerCollection();
         this.dateTime = dateTime ?? new Date();

@@ -122,7 +122,19 @@ class GameHandler extends EventEmitter {
 
         this.playroomHandler = playroomHandler;
         // Решил делать дальше без у чета сохранения
-        this.gameSessionHandler = new GameSessionHandler(true, 1);
+        // this.gameSessionHandler = new GameSessionHandler(true, 1);
+        this.storage = {
+            statusGame: false,
+            rolesCards: new CardsCollection(),
+            charactersCards: new CardsCollection(),
+            gameCards: new CardsCollection(),
+
+            /**
+             * @property {Move}
+             */
+            move: new Move(),
+        };
+        
         this.playerActionManager = new PlayerActionManager();
     }
 
@@ -134,7 +146,7 @@ class GameHandler extends EventEmitter {
     startGame() {
         this.emit("beforeGameStart");
 
-        this.gameSessionHandler.head.collectionRolesCards = new CardsCollection([
+        this.storage.rolesCards = new CardsCollection([
             new BanditCard(),
             // new BanditCard(),
             // new BanditCard(),
@@ -143,13 +155,13 @@ class GameHandler extends EventEmitter {
             // new DeputySheriffCard(),
             // new DeputySheriffCard(),
         ]);
-        this.gameSessionHandler.head.collectionCharactersCards = new CardsCollection([
+        this.storage.charactersCards = new CardsCollection([
             new BartCassidy(),
             new BlackJack(),
             new CalamityJanet(),
             new ElGringo(),
         ]);
-        this.gameSessionHandler.head.collectionGameCards = new CardsCollection([
+        this.storage.gameCards = new CardsCollection([
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
             new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
@@ -165,20 +177,30 @@ class GameHandler extends EventEmitter {
         ]);
 
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
-        this.gameSessionHandler.history.addMove(
-            new Move({
-                description: "Первый ход, инициализация первичных данных",
-                players: tempPlayers,
-                playersDistances: new DistanceHandler(tempPlayers.getPlayers()),
-                gameTable: new GameTable({
-                    deckMain: new CardsCollection(
-                        this.gameSessionHandler.head.collectionGameCards.getAllCards()
-                    ),
-                }),
-            })
-        );
-        this.gameSessionHandler.createGameSession();
+        this.storage.move = new Move({
+            description: "Первый ход, инициализация первичных данных",
+            players: tempPlayers,
+            playersDistances: new DistanceHandler(tempPlayers.getPlayers()),
+            gameTable: new GameTable({
+                deckMain: new CardsCollection(this.storage.gameCards.getAllCards()),
+            }),
+        });
+        this.storage.statusGame = true;
 
+        if (this.storage.move.gameTable.events.listenerCount("showCards") === 0) {
+            this.storage.move.gameTable.events.on("showCards", this.showCards.bind(this));
+        }
+
+        this.storage.move.players.getPlayers().forEach((movePlayer) => {
+            if (movePlayer.events.listenerCount("roleInstalled") === 0) {
+                movePlayer.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("characterInstalled") === 0) {
+                movePlayer.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
+            }
+        });
+        
         this.emit("afterGameStart");
     }
 
@@ -191,8 +213,7 @@ class GameHandler extends EventEmitter {
      * @fires afterSelectRolesForPlayers - Событие, испускаемое после того, как всем игрокам назначены роли.
      */
     selectRolesForPlayers() {
-        let lastMove = this.getLastMove();
-        const players = lastMove.players.getPlayersWithoutRole();
+        const players = this.storage.move.players.getPlayersWithoutRole();
         players.forEach((player) => {
             // this.saveAndTriggerHook(player, "selectionStarted", { player, selectionCards });
 
@@ -203,38 +224,24 @@ class GameHandler extends EventEmitter {
             );
 
             if (playerMain instanceof Player) {
-                playerMain.role =
-                    this.gameSessionHandler.head.collectionRolesCards.pullRandomCard();
-                this.gameSessionHandler.history.addMove(
-                    new Move({
-                        description: `Игроку ${player.name} была выдана роль ${playerMain.role.name}`,
-                        players: lastMove.players,
-                        playersDistances: lastMove.playersDistances,
-                        gameTable: lastMove.gameTable,
-                    })
-                );
-                this.gameSessionHandler.saveData();
+                playerMain.role = this.storage.rolesCards.pullRandomCard();
+                this.storage.move.description = `Игроку ${player.name} была выдана роль ${playerMain.role.name}`;
                 console.log(`Игроку ${player.name} была выдана роль ${playerMain.role.name}`);
             }
         });
         console.log("GameHandler: Все игроки получили роль.");
 
-        lastMove = this.getLastMove();
-        lastMove.players.shufflePlayersWithSheriffFirst();
-        this.gameSessionHandler.history.addMove(
-            new Move({
-                description: `Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди.`,
-                players: lastMove.players,
-                playersDistances: new DistanceHandler(lastMove.players),
-                gameTable: lastMove.gameTable,
-            })
-        );
-        this.gameSessionHandler.saveData();
-
+        this.storage.move.players.shufflePlayersWithSheriffFirst();
+        this.storage.move.description = `Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди.`;
+        this.storage.move.playersDistances = new DistanceHandler(this.storage.move.players);
         console.log(
             "GameHandler: Игроки были перемешаны. Шерифу получил минимальный id и теперь он первый в очереди."
         );
-        this.emit("afterSelectRolesForPlayers", lastMove.players, lastMove.gameTable);
+        this.emit(
+            "afterSelectRolesForPlayers",
+            this.storage.move.players,
+            this.storage.move.gameTable
+        );
     }
 
     /**
@@ -245,9 +252,8 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerCardSelected
      */
     async selectCharactersForPlayers() {
-        const lastMove = this.getLastMove();
         // const playerSheriffFirst = lastMove.players.getPlayerByRoleClassName(SheriffCard);
-        const playerWithMinId = lastMove.players.getPlayerWithMinIdWithoutCharacter();
+        const playerWithMinId = this.storage.move.players.getPlayerWithMinIdWithoutCharacter();
         const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
             playerWithMinId,
             playerWithMinId?.name,
@@ -260,8 +266,7 @@ class GameHandler extends EventEmitter {
                 title: "Выбор персонажа",
                 description: "Выберите персонажа для игры:",
                 textExtension: `Игрок <i>${player.name}</i> выбирает персонажа . . .`,
-                collectionCards:
-                    this.gameSessionHandler.head.collectionCharactersCards.getRandomCards(3),
+                collectionCards: this.storage.charactersCards.getRandomCards(3),
                 selectionCount: 1,
                 // selectedIndices: [1, 3],
                 // isWaitingForResponse: false,
@@ -281,37 +286,17 @@ class GameHandler extends EventEmitter {
                     (card) => card instanceof aCard && card.type === CardType.CHARACTER
                 )
             );
-            // Сохранение gameSessionHandler.head.collectionCharactersCards Без выбранной карты
-            // const selectedCharacterCard =
-            //     this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
-            //         selectedCards[0].id
-            //     );
-            // this.gameSessionHandler.saveData();
-            // player.character = selectedCharacterCard;
 
-            player.character = this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
-                selectedCards[0].id
-            );
+            player.character = this.storage.charactersCards.pullCardById(selectedCards[0].id);
             this.saveAndTriggerHook(player, "selectionHide", { player });
-
-            // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
-            this.gameSessionHandler.history.addMove(
-                new Move({
-                    description: `Игрок ${player.name} выбрал себе персонажа ${player.character.name}`,
-                    players: lastMove.players,
-                    playersDistances: lastMove.playersDistances,
-                    gameTable: lastMove.gameTable,
-                })
-            );
-            this.gameSessionHandler.saveData();
             this.playerActionManager.clearHooksByPlayer(player);
             console.log(
                 `GameHandler: Игрок ${player.name} выбрал себе персонажа ${player.character.name}`
             );
 
             this.saveAndTriggerHook(player, "selectionEnd", {
-                playerCollection: lastMove.players,
-                gameTable: lastMove.gameTable,
+                playerCollection: this.storage.move.players,
+                gameTable: this.storage.move.gameTable,
             });
             this.selectCharactersForPlayers(); // Рекурсивный вызов для следующего игрока
             // } catch (error) {
@@ -322,7 +307,7 @@ class GameHandler extends EventEmitter {
             // }
         } else {
             console.log("GameHandler: Все игроки выбрали персонажей.");
-            this.emit("afterSelectCharactersForPlayers", lastMove.players);
+            this.emit("afterSelectCharactersForPlayers", this.storage.move.players);
         }
     }
 
@@ -385,8 +370,7 @@ class GameHandler extends EventEmitter {
      * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
      */
     async executeMovesRound() {
-        const lastMove = this.getLastMove();
-        const playersRound = lastMove.players.getPlayersSortedAsc();
+        const playersRound = this.storage.move.players.getPlayersSortedAsc();
         for (const playerRnd of playersRound) {
             const player = this.playroomHandler.playerOnline.copyPlayerFromPlayerCollection(
                 playerRnd,
@@ -398,13 +382,13 @@ class GameHandler extends EventEmitter {
 
             this.saveAndTriggerHook(player, "playerStartedMove", {
                 player: player,
-                playerCollection: lastMove.players,
-                gameTable: lastMove.gameTable,
+                playerCollection: this.storage.move.players,
+                gameTable: this.storage.move.gameTable,
             });
 
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
             // try {
-            await this.moveDrawTwoCards(player, lastMove);
+            await this.moveDrawTwoCards(player, this.storage.move);
 
             const movePlayCard = (ws, params, id = null) => {
                 // Проверяем, что sessionId из события совпадает с ожидаемым
@@ -412,25 +396,13 @@ class GameHandler extends EventEmitter {
                     // Игрок завершил ход, раз разрешение на событие только для этого игрока
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
                     const playerDiscardCard = player.hand.pullCardById(params.id);
-                    lastMove.gameTable.addPlayerOneCard(player, playerDiscardCard);
+                    this.storage.move.gameTable.addPlayerOneCard(player, playerDiscardCard);
                     this.emit("endCardTurnPlayer", {
                         player: player,
-                        playerCollection: lastMove.players,
-                        gameTable: lastMove.gameTable,
+                        playerCollection: this.storage.move.players,
+                        gameTable: this.storage.move.gameTable,
                     });
                     console.log(`Игрок ${player.name} походил карту ${playerDiscardCard.name}`);
-
-                    // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
-                    this.gameSessionHandler.history.addMove(
-                        new Move({
-                            description: `Этап "Ход": Игрок ${player.name} походил карту ${playerDiscardCard.name}`,
-                            players: lastMove.players,
-                            playersDistances: lastMove.playersDistances,
-                            gameTable: lastMove.gameTable,
-                        })
-                    );
-                    this.gameSessionHandler.saveData();
-
                     // После того как нужный игрок завершил ход, убираем обработчик
                     // this.removeListener("playCard", movePlayCard);
                 } else {
@@ -442,9 +414,9 @@ class GameHandler extends EventEmitter {
 
             this.on("playCard", movePlayCard);
 
-            await this.waitForPlayerMoveFinished(player, lastMove, 30000);
+            await this.waitForPlayerMoveFinished(player, this.storage.move, 30000);
             this.removeListener("playCard", movePlayCard);
-            await this.moveDiscardExcessCards(player, lastMove);
+            await this.moveDiscardExcessCards(player, this.storage.move);
             console.log(`GameHandler: Игрок ${player.name} завершил ход.`);
             // } catch (error) {
             //     console.error(
@@ -529,15 +501,6 @@ class GameHandler extends EventEmitter {
                 .map((card) => card.name)
                 .join(", ");
 
-            this.gameSessionHandler.history.addMove(
-                new Move({
-                    description: `Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`,
-                    players: lastMove.players,
-                    playersDistances: lastMove.playersDistances,
-                    gameTable: lastMove.gameTable,
-                })
-            );
-            this.gameSessionHandler.saveData();
             // this.playerActionManager.clearHooksByPlayer(player);
             console.log(
                 `GameHandler: Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`
@@ -561,7 +524,7 @@ class GameHandler extends EventEmitter {
                     collectionCards: player.hand.getAllCards(),
                     selectionCount: countDiscardCards,
                     // selectedIndices: [1, 3],
-                    // isWaitingForResponse: false,
+                    isWaitingForResponse: true,
                 });
 
                 // Выполняется отображение пользователю выбора карт и обработка выбранной карты
@@ -589,15 +552,6 @@ class GameHandler extends EventEmitter {
                     .map((card) => card.name)
                     .join(", ");
 
-                this.gameSessionHandler.history.addMove(
-                    new Move({
-                        description: `Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`,
-                        players: lastMove.players,
-                        playersDistances: lastMove.playersDistances,
-                        gameTable: lastMove.gameTable,
-                    })
-                );
-                this.gameSessionHandler.saveData();
                 // this.playerActionManager.clearHooksByPlayer(player);
                 console.log(
                     `GameHandler: Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`
@@ -651,7 +605,7 @@ class GameHandler extends EventEmitter {
 
         const propertyMappings = {
             player: player,
-            gameTable: this.getLastMove()?.gameTable,
+            gameTable: this.storage.move.gameTable,
         };
 
         // Динамическое присваивание свойств
@@ -662,30 +616,6 @@ class GameHandler extends EventEmitter {
         });
 
         card.action();
-    }
-
-    /**
-     * @returns {Move} Последний ход.
-     */
-    getLastMove() {
-        this.gameSessionHandler.loadData();
-        const lastMove = this.gameSessionHandler.history.getLastMove();
-
-        if (lastMove.gameTable.events.listenerCount("showCards") === 0) {
-            lastMove.gameTable.events.on("showCards", this.showCards.bind(this));
-        }
-
-        lastMove.players.getPlayers().forEach((movePlayer) => {
-            if (movePlayer.events.listenerCount("roleInstalled") === 0) {
-                movePlayer.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
-            }
-
-            if (movePlayer.events.listenerCount("characterInstalled") === 0) {
-                movePlayer.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
-            }
-        });
-
-        return lastMove;
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {
@@ -720,7 +650,7 @@ class GameHandler extends EventEmitter {
      * @returns {boolean} Возвращает true, если игра началась, иначе false.
      */
     isStartGame() {
-        return this.gameSessionHandler.head.statusGame;
+        return this.storage.statusGame;
     }
 }
 

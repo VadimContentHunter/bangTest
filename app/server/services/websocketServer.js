@@ -189,6 +189,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     });
 
     gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
+        serverHook.emit("lockPlayerMove", null);
         if (
             !(player instanceof Player || player === null) ||
             !(selectionCards instanceof SelectionCards)
@@ -262,8 +263,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 } else {
                     serverHook.emit(
                         "updateFullDataClients",
-                        gameHandler.getLastMove().players,
-                        gameHandler.getLastMove().gameTable
+                        gameHandler.storage.move.players,
+                        gameHandler.storage.move.gameTable
                     );
                 }
 

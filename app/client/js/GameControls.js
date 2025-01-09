@@ -277,6 +277,8 @@ class CardSelection extends GameControls {
 
         if (!this.isWaitingForResponse) {
             this.buttonSelectCards.style.display = "none";
+        } else {
+            this.buttonSelectCards.style.display = "block";
         }
 
         this.renderContainerCards();
