@@ -170,7 +170,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     gameHandler.on("afterMovesRound", () => {
         gameHandler.playerActionManager.clearAll();
-        // gameHandler.executeMovesRound();
+        gameHandler.executeMovesRound();
     });
 
     gameHandler.on("endDrawCards", ({ player, playerCollection, gameTable }) => {

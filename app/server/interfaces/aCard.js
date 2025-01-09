@@ -19,7 +19,24 @@ class CardSuit {
     static DIAMONDS = "бубна"; // Масть бубен
     static CLUBS = "креста"; // Масть крестов
     static SPADES = "пика"; // Масть пик
-    static NONE = "none"; // Масть пик
+    static NONE = "none";
+}
+
+class CardRank {
+    static TWO = "2";
+    static THREE = "3";
+    static FOUR = "4";
+    static FIVE = "5";
+    static SIX = "6";
+    static SEVEN = "7";
+    static EIGHT = "8";
+    static NINE = "9";
+    static TEN = "10";
+    static JACK = "Jack";
+    static QUEEN = "Queen";
+    static KING = "King";
+    static ACE = "Ace";
+    static NONE = "none";
 }
 
 /**
@@ -32,6 +49,7 @@ class aCard {
     #type = CardType.DEFAULT;
     #ownerName = "";
     #suit = null;
+    #rank = null;
 
     /**
      * Конструктор для создания карты.
@@ -51,6 +69,7 @@ class aCard {
         id = 0,
         ownerName = "",
         suit = CardSuit.NONE,
+        rank = CardRank.NONE,
     }) {
         this.id = id;
         this.name = name;
@@ -58,6 +77,7 @@ class aCard {
         this.type = type;
         this.ownerName = ownerName;
         this.suit = suit;
+        this.rank = rank;
 
         if (new.target === aCard) {
             throw new TypeError("Нельзя создать экземпляр абстрактного класса");
@@ -148,9 +168,22 @@ class aCard {
      */
     set suit(value) {
         if (!Object.values(CardSuit).includes(value)) {
-            throw new CardError("Неверный тип карты.");
+            throw new CardError("Неверная масть карты.");
         }
         this.#suit = value;
+    }
+
+    /**
+     * Устанавливает ранг карты.
+     * @param {string} value - Новый ранг карты.
+     * @throws {Error} Если переданный ранг невалиден.
+     */
+    set rank(value) {
+        if (!Object.values(CardRank).includes(value)) {
+            throw new CardError("Неверный ранг карты.");
+        }
+
+        this.#rank = value;
     }
 
     /**
@@ -203,6 +236,14 @@ class aCard {
      */
     get suit() {
         return this.#suit;
+    }
+
+    /**
+     * Возвращает ранг карты.
+     * @returns {string|null} Ранг карты.
+     */
+    get rank() {
+        return this.#rank;
     }
 
     /**
@@ -295,4 +336,4 @@ class aCard {
     }
 }
 
-module.exports = { aCard, CardType, CardSuit };
+module.exports = { aCard, CardType, CardSuit, CardRank };
