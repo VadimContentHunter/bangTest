@@ -78,6 +78,13 @@ class BlackJack extends aCard {
     }
 
     /**
+     * @returns {string} Имя цели карты.
+     */
+    get targetName() {
+        return "";
+    }
+
+    /**
      * Инициализирует объект BlackJack из JSON-данных.
      * @param {Object} data - Данные карты в формате JSON.
      * @param {PLayer|null} [data.player=null] - Количество жизней.

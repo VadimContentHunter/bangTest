@@ -7,14 +7,15 @@ const PlayerCollection = require("../../../handlers/PlayerCollection");
 class BangCard extends DefaultCard {
     #collectionPlayers = null;
 
-    constructor(rang, ownerName = "", targetName = "") {
+    constructor({ rank, suit, ownerName = "", targetName = "" }) {
         super({
             name: "BANG",
             image: "../resources/imgs/cards/defaultCards/01_bang.png",
             type: CardType.DEFAULT,
             ownerName: ownerName,
             targetName: targetName,
-            rang: rang,
+            suit: suit,
+            rank: rank,
         });
     }
 
@@ -44,9 +45,7 @@ class BangCard extends DefaultCard {
         return 0;
     }
 
-    action() {
-        
-    }
+    action() {}
 }
 
 module.exports = BangCard;

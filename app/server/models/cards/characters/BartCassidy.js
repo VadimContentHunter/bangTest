@@ -79,6 +79,13 @@ class BartCassidy extends aCard {
     }
 
     /**
+     * @returns {string} Имя цели карты.
+     */
+    get targetName() {
+        return "";
+    }
+
+    /**
      * Инициализирует объект BartCassidy из JSON данных.
      * @param {Object} data - Данные для инициализации.
      * @param {Player|null} [data.player=null] - Количество жизней.

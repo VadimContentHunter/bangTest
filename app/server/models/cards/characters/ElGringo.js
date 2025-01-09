@@ -13,6 +13,13 @@ class ElGringo extends aCard {
         });
     }
 
+    /**
+     * @returns {string} Имя цели карты.
+     */
+    get targetName() {
+        return "";
+    }
+
     static initFromJSON(data) {
         return new ElGringo(data?.ownerName ?? "");
     }

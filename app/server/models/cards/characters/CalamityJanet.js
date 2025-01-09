@@ -13,6 +13,13 @@ class CalamityJanet extends aCard {
         });
     }
 
+    /**
+     * @returns {string} Имя цели карты.
+     */
+    get targetName() {
+        return "";
+    }
+
     static initFromJSON(data) {
         return new CalamityJanet(data?.ownerName ?? "");
     }

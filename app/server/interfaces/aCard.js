@@ -43,14 +43,14 @@ class CardRank {
  * Абстрактный класс для карты.
  */
 class aCard {
-    #id = 0;
-    #name = null;
-    #image = null;
-    #type = CardType.DEFAULT;
-    #ownerName = "";
-    #targetName = "";
-    #suit = null;
-    #rank = null;
+    _id = 0;
+    _name = null;
+    _image = null;
+    _type = CardType.DEFAULT;
+    _ownerName = "";
+    _targetName = "";
+    _suit = null;
+    _rank = null;
 
     /**
      * Конструктор для создания карты.
@@ -120,7 +120,7 @@ class aCard {
         if (typeof value !== "number" || value < 0) {
             throw new CardError("ID должен быть положительным числом.");
         }
-        this.#id = value;
+        this._id = value;
     }
 
     /**
@@ -132,7 +132,7 @@ class aCard {
         if (typeof value !== "string") {
             throw new CardError("Имя должно быть строкой.");
         }
-        this.#name = value;
+        this._name = value;
     }
 
     /**
@@ -140,7 +140,7 @@ class aCard {
      * @param {string} imagePath - Путь к изображению.
      */
     set image(imagePath) {
-        this.#image = imagePath;
+        this._image = imagePath;
     }
 
     /**
@@ -152,7 +152,7 @@ class aCard {
         if (!Object.values(CardType).includes(value)) {
             throw new CardError("Неверный тип карты.");
         }
-        this.#type = value;
+        this._type = value;
     }
 
     /**
@@ -164,7 +164,7 @@ class aCard {
         if (typeof value !== "string") {
             throw new CardError("Имя владельца должно быть строкой.");
         }
-        this.#ownerName = value;
+        this._ownerName = value;
     }
 
     /**
@@ -175,7 +175,7 @@ class aCard {
         if (typeof value !== "string") {
             throw new CardError("Имя цели должно быть строкой.");
         }
-        this.#targetName = value;
+        this._targetName = value;
     }
 
     /**
@@ -187,7 +187,7 @@ class aCard {
         if (!Object.values(CardSuit).includes(value)) {
             throw new CardError("Неверная масть карты.");
         }
-        this.#suit = value;
+        this._suit = value;
     }
 
     /**
@@ -200,7 +200,7 @@ class aCard {
             throw new CardError("Неверный ранг карты.");
         }
 
-        this.#rank = value;
+        this._rank = value;
     }
 
     /**
@@ -208,7 +208,7 @@ class aCard {
      * @returns {number} ID карты.
      */
     get id() {
-        return this.#id;
+        return this._id;
     }
 
     /**
@@ -216,7 +216,7 @@ class aCard {
      * @returns {string} Имя карты.
      */
     get name() {
-        return this.#name;
+        return this._name;
     }
 
     /**
@@ -224,7 +224,7 @@ class aCard {
      * @returns {string} Путь к изображению.
      */
     get image() {
-        return this.#image;
+        return this._image;
     }
 
     /**
@@ -232,7 +232,7 @@ class aCard {
      * @returns {string} Тип карты.
      */
     get type() {
-        return this.#type;
+        return this._type;
     }
 
     /**
@@ -241,10 +241,10 @@ class aCard {
      * @throws {CardError} Если имя владельца не является строкой.
      */
     get ownerName() {
-        if (typeof this.#ownerName !== "string") {
+        if (typeof this._ownerName !== "string") {
             throw new CardError("Имя владельца должно быть строкой.");
         }
-        return this.#ownerName;
+        return this._ownerName;
     }
 
     /**
@@ -253,10 +253,10 @@ class aCard {
      * @throws {CardError} Если имя владельца не является строкой.
      */
     get targetName() {
-        if (typeof this.#targetName !== "string") {
+        if (typeof this._targetName !== "string") {
             throw new CardError("Имя цели должно быть строкой.");
         }
-        return this.#targetName;
+        return this._targetName;
     }
 
     /**
@@ -264,7 +264,7 @@ class aCard {
      * @returns {string|null} Масть карты.
      */
     get suit() {
-        return this.#suit;
+        return this._suit;
     }
 
     /**
@@ -272,7 +272,7 @@ class aCard {
      * @returns {string|null} Ранг карты.
      */
     get rank() {
-        return this.#rank;
+        return this._rank;
     }
 
     /**

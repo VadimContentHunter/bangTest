@@ -1,13 +1,19 @@
-const { aCard, CardType, CardSuit } = require("../../interfaces/aCard");
+const { aCard, CardType, CardSuit, CardRank } = require("../../interfaces/aCard");
 
 class StubCard extends aCard {
-    constructor({ type = CardType.DEFAULT, ownerName = "", suit = CardSuit.NONE } = {}) {
+    constructor({
+        type = CardType.DEFAULT,
+        ownerName = "",
+        suit = CardSuit.NONE,
+        rank = CardRank.NONE,
+    } = {}) {
         super({
             name: "Stub Card",
             image: "../resources/imgs/cards/cardBacks/girl.png",
             type: type,
             ownerName: ownerName,
             suit: suit,
+            rank: rank,
         });
     }
 
