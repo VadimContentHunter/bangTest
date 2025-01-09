@@ -48,6 +48,7 @@ class aCard {
     #image = null;
     #type = CardType.DEFAULT;
     #ownerName = "";
+    #targetName = "";
     #suit = null;
     #rank = null;
 
@@ -59,6 +60,9 @@ class aCard {
      * @param {string} [params.type=CardType.DEFAULT] - Тип карты.
      * @param {number} [params.id=0] - ID карты.
      * @param {string} [params.ownerName=""] - Имя владельца карты.
+     * @param {string} [params.targetName=""] - Имя Цели карты.
+     * @param {string} [params.suit=CardSuit.NONE] - масть карты.
+     * @param {string} [params.rank=CardRank.NONE] - ранг карты.
      * @throws {TypeError} Если пытаются создать экземпляр абстрактного класса.
      * @throws {CardError} Если не переопределен метод action() или initFromJSON().
      */
@@ -68,6 +72,7 @@ class aCard {
         type = CardType.DEFAULT,
         id = 0,
         ownerName = "",
+        targetName = "",
         suit = CardSuit.NONE,
         rank = CardRank.NONE,
     }) {
@@ -76,6 +81,7 @@ class aCard {
         this.image = image;
         this.type = type;
         this.ownerName = ownerName;
+        this.targetName = targetName;
         this.suit = suit;
         this.rank = rank;
 
@@ -162,6 +168,17 @@ class aCard {
     }
 
     /**
+     * @param {string} value - Имя цели.
+     * @throws {CardError} Если имя владельца не является строкой.
+     */
+    set targetName(value) {
+        if (typeof value !== "string") {
+            throw new CardError("Имя цели должно быть строкой.");
+        }
+        this.#targetName = value;
+    }
+
+    /**
      * Устанавливает масть карты.
      * @param {string} value - Масть карты или null.
      * @throws {CardError} Если масть не является строкой или null.
@@ -231,6 +248,18 @@ class aCard {
     }
 
     /**
+     * Получает имя цели карты.
+     * @returns {string} Имя цели карты.
+     * @throws {CardError} Если имя владельца не является строкой.
+     */
+    get targetName() {
+        if (typeof this.#targetName !== "string") {
+            throw new CardError("Имя цели должно быть строкой.");
+        }
+        return this.#targetName;
+    }
+
+    /**
      * Получает масть карты.
      * @returns {string|null} Масть карты.
      */
@@ -276,7 +305,9 @@ class aCard {
             image: this.image,
             type: this.type,
             ownerName: this.ownerName,
+            targetName: this.targetName,
             suit: this.suit,
+            rank: this.rank,
             className: this.constructor.name,
         };
     }
