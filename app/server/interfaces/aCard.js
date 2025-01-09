@@ -71,11 +71,11 @@ class aCard {
         }
 
         // Проверка на переопределение метода getActionCallCount()
-        if (this.getActionCallCount === aCard.prototype.getActionCallCount) {
-            throw new CardError(
-                `Класс-наследник ${this.constructor.name} должен реализовывать метод 'getActionCallCount()'`
-            );
-        }
+        // if (this.getActionCallCount === aCard.prototype.getActionCallCount) {
+        //     throw new CardError(
+        //         `Класс-наследник ${this.constructor.name} должен реализовывать метод 'getActionCallCount()'`
+        //     );
+        // }
 
         // Проверка: если статический метод initFromJSON не переопределен, выбрасываем ошибку
         if (this.constructor.initFromJSON === aCard.initFromJSON) {
@@ -220,9 +220,9 @@ class aCard {
      * @returns {number} Количество вызовов метода action.
      * @throws {CardError} Если метод не переопределен в дочернем классе.
      */
-    getActionCallCount() {
-        throw new CardError("Метод 'getActionCallCount()' должен быть реализован");
-    }
+    // getActionCallCount() {
+    //     throw new CardError("Метод 'getActionCallCount()' должен быть реализован");
+    // }
 
     /**
      * Преобразует объект карты в формат JSON.
