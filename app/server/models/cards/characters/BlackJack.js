@@ -25,6 +25,7 @@ class BlackJack extends aCard {
             image: "../resources/imgs/cards/characters/01_blackjack.png",
             type: CardType.CHARACTER,
             ownerName: ownerName,
+            targetName: "",
         });
 
         this.player = player;
@@ -75,13 +76,6 @@ class BlackJack extends aCard {
                 "BlackJack: Invalid player provided. Must be an instance of Player or null."
             );
         }
-    }
-
-    /**
-     * @returns {string} Имя цели карты.
-     */
-    get targetName() {
-        return "";
     }
 
     /**

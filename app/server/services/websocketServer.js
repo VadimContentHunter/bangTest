@@ -95,7 +95,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 }
 
                 if (gameTable instanceof GameTable) {
-                    client.send(JsonRpcFormatter.serializeRequest("battleZoneUpdate", gameTable));
+                    client.send(JsonRpcFormatter.serializeRequest("battleZoneUpdate", gameTable.getDataSummary()));
                 }
             }
         });

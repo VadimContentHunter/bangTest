@@ -26,18 +26,11 @@ class BartCassidy extends aCard {
             image: "../resources/imgs/cards/characters/01_bartcassidy.png",
             type: CardType.CHARACTER,
             ownerName: ownerName,
+            targetName: "",
         });
 
         this.player = player;
         this.gameTable = gameTable;
-    }
-
-    /**
-     * Геттер для #player.
-     * @returns {Player|null}
-     */
-    get player() {
-        return this.#player;
     }
 
     /**
@@ -56,11 +49,10 @@ class BartCassidy extends aCard {
     }
 
     /**
-     * Возвращает текущую игровую таблицу.
-     * @returns {GameTable|null} Текущая игровая таблица.
+     * @returns {Player|null}
      */
-    get gameTable() {
-        return this.#gameTable;
+    get player() {
+        return this.#player;
     }
 
     /**
@@ -79,10 +71,11 @@ class BartCassidy extends aCard {
     }
 
     /**
-     * @returns {string} Имя цели карты.
+     * Возвращает текущую игровую таблицу.
+     * @returns {GameTable|null} Текущая игровая таблица.
      */
-    get targetName() {
-        return "";
+    get gameTable() {
+        return this.#gameTable;
     }
 
     /**

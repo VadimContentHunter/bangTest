@@ -10,14 +10,8 @@ class ElGringo extends aCard {
             image: "../resources/imgs/cards/characters/01_elgringo.png",
             type: CardType.CHARACTER,
             ownerName: ownerName,
+            targetName: "",
         });
-    }
-
-    /**
-     * @returns {string} Имя цели карты.
-     */
-    get targetName() {
-        return "";
     }
 
     static initFromJSON(data) {
