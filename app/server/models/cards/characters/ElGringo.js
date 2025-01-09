@@ -17,6 +17,10 @@ class ElGringo extends aCard {
         return new ElGringo(data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

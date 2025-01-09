@@ -16,6 +16,10 @@ class DefaultCard extends aCard {
         return new DefaultCard(data.name, data.image, data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

@@ -18,6 +18,10 @@ class StubCard extends aCard {
         });
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

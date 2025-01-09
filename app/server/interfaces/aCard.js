@@ -70,6 +70,13 @@ class aCard {
             );
         }
 
+        // Проверка на переопределение метода getActionCallCount()
+        if (this.getActionCallCount === aCard.prototype.getActionCallCount) {
+            throw new CardError(
+                `Класс-наследник ${this.constructor.name} должен реализовывать метод 'getActionCallCount()'`
+            );
+        }
+
         // Проверка: если статический метод initFromJSON не переопределен, выбрасываем ошибку
         if (this.constructor.initFromJSON === aCard.initFromJSON) {
             throw new TypeError(
@@ -205,6 +212,16 @@ class aCard {
      */
     action() {
         throw new CardError("Метод 'action()' должен быть реализован");
+    }
+
+    /**
+     * Абстрактный метод для получения количества вызовов метода action.
+     * Этот метод должен быть реализован в дочерних классах.
+     * @returns {number} Количество вызовов метода action.
+     * @throws {CardError} Если метод не переопределен в дочернем классе.
+     */
+    getActionCallCount() {
+        throw new CardError("Метод 'getActionCallCount()' должен быть реализован");
     }
 
     /**

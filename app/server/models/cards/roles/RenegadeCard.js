@@ -14,6 +14,10 @@ class RenegadeCard extends aCard {
         return new RenegadeCard(data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

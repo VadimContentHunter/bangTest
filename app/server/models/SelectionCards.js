@@ -55,7 +55,7 @@ class SelectionCards {
         this.selectionCount = selectionCount;
         this.timer = timer;
         this.collectionCards = new CardsCollection();
-        this.collectionCards.setCards(collectionCards);
+        this.collectionCards.setCards(collectionCards, false);
         this.selectedIndices = selectedIndices;
         this.isWaitingForResponse = isWaitingForResponse;
     }

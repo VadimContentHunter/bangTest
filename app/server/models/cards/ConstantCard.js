@@ -16,6 +16,10 @@ class ConstantCard extends aCard {
         return new ConstantCard(data.name, data.image, data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

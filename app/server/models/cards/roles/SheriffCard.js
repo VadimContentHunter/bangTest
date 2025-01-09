@@ -43,6 +43,10 @@ class SheriffCard extends aCard {
         return new SheriffCard(data?.lives ?? null, data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {
         this.lives.addOneLife();
     }

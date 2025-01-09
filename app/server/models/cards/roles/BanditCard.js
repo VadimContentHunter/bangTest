@@ -14,7 +14,11 @@ class BanditCard extends aCard {
         return new BanditCard(data?.ownerName ?? "");
     }
 
-    action(){}
+    getActionCallCount() {
+        return 0;
+    }
+
+    action() {}
 }
 
 module.exports = BanditCard;

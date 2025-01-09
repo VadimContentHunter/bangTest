@@ -14,6 +14,10 @@ class DeputySheriffCard extends aCard {
         return new DeputySheriffCard(data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

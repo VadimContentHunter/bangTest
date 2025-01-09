@@ -89,6 +89,10 @@ class BlackJack extends aCard {
         return new BlackJack(data?.player ?? null, data?.gameTable ?? null, data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     /**
      * Метод действия карты BlackJack.
      * @listens GameTable#cardDrawn Обрабатывает событие "cardDrawn", которое вызывается, когда карты были взяты из основной колоды.

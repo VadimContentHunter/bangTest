@@ -17,6 +17,10 @@ class CalamityJanet extends aCard {
         return new CalamityJanet(data?.ownerName ?? "");
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     action() {}
 }
 

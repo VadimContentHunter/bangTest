@@ -94,6 +94,10 @@ class BartCassidy extends aCard {
         );
     }
 
+    getActionCallCount() {
+        return 0;
+    }
+
     /**
      * Действие персонажа Bart Cassidy.
      * @listens Lives#lifeRemoved Обрабатывает событие "lifeRemoved", которое вызывается при удалении жизней.
