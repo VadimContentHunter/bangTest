@@ -379,6 +379,11 @@ class Player {
         console.log(`Игрок ${this.name} удалён.`);
     }
 
+    // initYourself() {
+    //     this.role = this.role instanceof aCard ? this.role : null;
+    //     this.character = this.character instanceof aCard ? this.character : null;
+    // }
+
     /**
      * Преобразует игрока в JSON.
      * @returns {Object} - Объект в формате JSON, содержащий данные игрока.

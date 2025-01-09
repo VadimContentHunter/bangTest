@@ -107,8 +107,15 @@ class HistoryHandler {
         if (this._moves.length === 0) {
             throw new HistoryHandlerError("История пуста.");
         }
+         return this._moves[this._moves.length - 1];
 
-        return this._moves[this._moves.length - 1];
+        // const lastMove = this._moves[this._moves.length - 1];
+
+        // // Глубокое копирование с использованием JSON
+        // const deepCopy = JSON.parse(JSON.stringify(lastMove));
+
+        // // Создание нового объекта Move из глубокое копированных данных
+        // return Move.initFromJSON(deepCopy);
     }
 
     /**

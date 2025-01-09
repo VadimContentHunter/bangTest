@@ -121,7 +121,8 @@ class GameHandler extends EventEmitter {
         ];
 
         this.playroomHandler = playroomHandler;
-        this.gameSessionHandler = new GameSessionHandler(true, 2);
+        // Решил делать дальше без у чета сохранения
+        this.gameSessionHandler = new GameSessionHandler(true, 1);
         this.playerActionManager = new PlayerActionManager();
     }
 
@@ -280,6 +281,14 @@ class GameHandler extends EventEmitter {
                     (card) => card instanceof aCard && card.type === CardType.CHARACTER
                 )
             );
+            // Сохранение gameSessionHandler.head.collectionCharactersCards Без выбранной карты
+            // const selectedCharacterCard =
+            //     this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
+            //         selectedCards[0].id
+            //     );
+            // this.gameSessionHandler.saveData();
+            // player.character = selectedCharacterCard;
+
             player.character = this.gameSessionHandler.head.collectionCharactersCards.pullCardById(
                 selectedCards[0].id
             );
@@ -385,6 +394,7 @@ class GameHandler extends EventEmitter {
                 ["sessionId"]
             );
             this.playerActionManager.clearHooksByPlayer(player);
+            // player.initYourself();
 
             this.saveAndTriggerHook(player, "playerStartedMove", {
                 player: player,
@@ -661,19 +671,19 @@ class GameHandler extends EventEmitter {
         this.gameSessionHandler.loadData();
         const lastMove = this.gameSessionHandler.history.getLastMove();
 
-        lastMove.players.getPlayers().forEach((player) => {
-            if (player.events.listenerCount("roleInstalled") === 0) {
-                player.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
-            }
-
-            if (player.events.listenerCount("characterInstalled") === 0) {
-                player.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
-            }
-        });
-
         if (lastMove.gameTable.events.listenerCount("showCards") === 0) {
             lastMove.gameTable.events.on("showCards", this.showCards.bind(this));
         }
+
+        lastMove.players.getPlayers().forEach((movePlayer) => {
+            if (movePlayer.events.listenerCount("roleInstalled") === 0) {
+                movePlayer.events.on("roleInstalled", this.initRoleForPlayers.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("characterInstalled") === 0) {
+                movePlayer.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
+            }
+        });
 
         return lastMove;
     }
