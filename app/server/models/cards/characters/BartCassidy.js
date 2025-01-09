@@ -3,25 +3,24 @@ const Lives = require("../../Lives");
 const CardError = require("../../../Errors/CardError");
 const CardsCollection = require("../../../handlers/CardsCollection");
 const GameTable = require("../../../models/GameTable");
+const Player = require("../../../models/Player");
 
 /**
  * Класс BartCassidy представляет карту персонажа "Bart Cassidy".
  * Он наследует от базового класса aCard и имеет дополнительные свойства для жизней, игровой таблицы и руки игрока.
  */
 class BartCassidy extends aCard {
-    #lives = null;
+    #player = null;
     #gameTable = null;
-    #hand = null;
 
     /**
      * Создаёт новый объект BartCassidy.
-     * @param {Lives|null} lives - Объект, представляющий жизни персонажа.
+     * @param {Player|null} player - Объект, персонаж.
      * @param {GameTable|null} gameTable - Игровая таблица.
-     * @param {CardsCollection|null} hand - Коллекция карт в руке игрока.
      * @param {string} ownerName - Имя владельца карты.
      * @throws {CardError} Если переданы некорректные параметры.
      */
-    constructor(lives = null, gameTable = null, hand = null, ownerName = "") {
+    constructor(player = null, gameTable = null, ownerName = "") {
         super({
             name: "Bart Cassidy",
             image: "../resources/imgs/cards/characters/01_bartcassidy.png",
@@ -29,30 +28,29 @@ class BartCassidy extends aCard {
             ownerName: ownerName,
         });
 
-        this.lives = lives; // Используем сеттер
-        this.gameTable = gameTable; // Используем сеттер
-        this.hand = hand; // Используем сеттер
+        this.player = player;
+        this.gameTable = gameTable;
     }
 
     /**
-     * Возвращает текущие жизни персонажа.
-     * @returns {Lives|null} Текущее количество жизней.
+     * Геттер для #player.
+     * @returns {Player|null}
      */
-    get lives() {
-        return this.#lives;
+    get player() {
+        return this.#player;
     }
 
     /**
-     * Устанавливает количество жизней персонажа.
-     * @param {Lives|null} value - Объект Lives или null.
-     * @throws {CardError} Если передано некорректное значение.
+     * Сеттер для #player.
+     * @param {CardsCollection|null} value - Новое значение для руки карт.
+     * @throws {CardError} Если значение не является экземпляром CardsCollection.
      */
-    set lives(value) {
-        if (value === null || value instanceof Lives) {
-            this.#lives = value;
+    set player(value) {
+        if (value === null || value instanceof Player) {
+            this.#player = value;
         } else {
             throw new CardError(
-                "BartCassidy: Invalid lives provided. Must be an instance of Lives or null."
+                "BlackJack: Invalid player provided. Must be an instance of Player or null."
             );
         }
     }
@@ -81,42 +79,17 @@ class BartCassidy extends aCard {
     }
 
     /**
-     * Возвращает текущую руку игрока.
-     * @returns {CardsCollection|null} Текущая коллекция карт в руке игрока.
-     */
-    get hand() {
-        return this.#hand;
-    }
-
-    /**
-     * Устанавливает коллекцию карт в руке игрока.
-     * @param {CardsCollection|null} value - Коллекция карт или null.
-     * @throws {CardError} Если передано некорректное значение.
-     */
-    set hand(value) {
-        if (value === null || value instanceof CardsCollection) {
-            this.#hand = value;
-        } else {
-            throw new CardError(
-                "BartCassidy: Invalid hand provided. Must be an instance of CardsCollection or null."
-            );
-        }
-    }
-
-    /**
      * Инициализирует объект BartCassidy из JSON данных.
      * @param {Object} data - Данные для инициализации.
-     * @param {Lives|null} [data.lives=null] - Количество жизней.
+     * @param {Player|null} [data.player=null] - Количество жизней.
      * @param {GameTable|null} [data.gameTable=null] - Игровая таблица.
-     * @param {CardsCollection|null} [data.hand=null] - Коллекция карт в руке игрока.
      * @param {string} [data.ownerName=""] - Имя владельца карты.
      * @returns {BartCassidy} Новый объект BartCassidy.
      */
     static initFromJSON(data) {
         return new BartCassidy(
-            data?.lives ?? null,
+            data?.player ?? null,
             data?.gameTable ?? null,
-            data?.hand,
             data?.ownerName ?? ""
         );
     }
@@ -127,7 +100,11 @@ class BartCassidy extends aCard {
      * @throws {CardError} Если передан некорректный объект Lives.
      */
     action() {
-        if (this.lives instanceof Lives) {
+        if (
+            this.player instanceof Player &&
+            this.player.lives instanceof Lives &&
+            this.gameTable instanceof GameTable
+        ) {
             /**
              * Обрабатывает событие "lifeRemoved", которое вызывается при удалении жизней.
              *
@@ -138,13 +115,13 @@ class BartCassidy extends aCard {
              * @param {number} param0.removed - Количество удалённых жизней.
              * @throws {CardError} Если значение removed не является числом.
              */
-            this.lives.events.on("lifeRemoved", ({ oldLives, newLives, removed }) => {
-                if (typeof removed !== "number" || isNaN(removed) && removed < 0) {
+            this.player.lives.events.on("lifeRemoved", ({ oldLives, newLives, removed }) => {
+                if (typeof removed !== "number" || (isNaN(removed) && removed < 0)) {
                     throw new CardError(
                         "BartCassidy: Invalid 'removed' value. It must be a number. And removed < 0"
                     );
                 }
-                this.gameTable.drawCardFromMainDeck(removed, this.hand);
+                this.gameTable?.drawCardsForPlayer(removed, this.player.hand);
             });
         } else {
             throw new CardError("BartCassidy: Invalid lives provided");

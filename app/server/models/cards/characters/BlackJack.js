@@ -15,15 +15,20 @@ class BlackJack extends aCard {
 
     /**
      * Создаёт новый объект BlackJack.
+     * @param {Player|null} player - Объект, персонаж.
+     * @param {GameTable|null} gameTable - Игровая таблица.
      * @param {string} ownerName - Имя владельца карты.
      */
-    constructor(ownerName = "") {
+    constructor(player = null, gameTable = null, ownerName = "") {
         super({
             name: "Black Jack",
             image: "../resources/imgs/cards/characters/01_blackjack.png",
             type: CardType.CHARACTER,
             ownerName: ownerName,
         });
+
+        this.player = player;
+        this.gameTable = gameTable;
     }
 
     /**
@@ -75,11 +80,13 @@ class BlackJack extends aCard {
     /**
      * Инициализирует объект BlackJack из JSON-данных.
      * @param {Object} data - Данные карты в формате JSON.
+     * @param {PLayer|null} [data.player=null] - Количество жизней.
+     * @param {GameTable|null} [data.gameTable=null] - Игровая таблица.
      * @param {string} data.ownerName - Имя владельца карты.
      * @returns {BlackJack} Новый объект BlackJack.
      */
     static initFromJSON(data) {
-        return new BlackJack(data?.ownerName ?? "");
+        return new BlackJack(data?.player ?? null, data?.gameTable ?? null, data?.ownerName ?? "");
     }
 
     /**

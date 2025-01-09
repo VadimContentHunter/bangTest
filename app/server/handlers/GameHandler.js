@@ -641,9 +641,7 @@ class GameHandler extends EventEmitter {
 
         const propertyMappings = {
             player: player,
-            lives: player.lives,
             gameTable: this.getLastMove()?.gameTable,
-            hand: player.hand,
         };
 
         // Динамическое присваивание свойств
