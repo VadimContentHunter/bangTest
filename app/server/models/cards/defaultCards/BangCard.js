@@ -14,7 +14,6 @@ class BangCard extends DefaultCard {
         super({
             name: "BANG",
             image: "../resources/imgs/cards/defaultCards/01_bang.png",
-            type: CardType.DEFAULT,
             ownerName: ownerName,
             targetName: targetName,
             suit: suit,
@@ -89,7 +88,7 @@ class BangCard extends DefaultCard {
             throw new Error("Дистанция между этими игроками не найдена.");
         }
 
-        // if(distanceValue <= ownerPlayer.weapon?.)
+        // if(ownerPlayer.weapon instanceof aCard && distanceValue <= ownerPlayer.weapon.)
     }
 }
 

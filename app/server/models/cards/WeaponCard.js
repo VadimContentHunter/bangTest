@@ -2,14 +2,16 @@ const { aCard, CardType, CardSuit, CardRank } = require("../../interfaces/aCard"
 const CardError = require("../../Errors/CardError");
 const CardsCollection = require("../../handlers/CardsCollection");
 
-class DefaultCard extends aCard {
+class WeaponCard extends aCard {
+    #distance = 0;
+
     /**
      * Конструктор для создания карты.
      * @param {Object} params - Параметры карты.
      * @param {string} params.name - Название карты.
      * @param {string} params.image - Путь к изображению карты.
+     * @param {string} params.distance - Дистанция оружия.
      * @param {string} [params.ownerName=""] - Имя владельца карты.
-     * @param {string} [params.targetName=""] - Имя Цели карты.
      * @param {string} [params.suit=CardSuit.NONE] - масть карты.
      * @param {string} [params.rank=CardRank.NONE] - ранг карты.
      * @throws {TypeError} Если пытаются создать экземпляр абстрактного класса.
@@ -18,28 +20,49 @@ class DefaultCard extends aCard {
     constructor({
         name,
         image,
+        distance,
         ownerName = "",
-        targetName = "",
         suit = CardSuit.NONE,
         rank = CardRank.NONE,
     }) {
         super({
             name: name,
             image: image,
-            type: CardType.DEFAULT,
+            type: CardType.WEAPON,
             ownerName: ownerName,
-            targetName: targetName,
             suit: suit,
             rank: rank,
         });
+
+        this.distance = distance;
+    }
+
+    /**
+     * Геттер для дистанции оружия.
+     * @returns {number} Дистанция оружия.
+     */
+    get distance() {
+        return this.#distance;
+    }
+
+    /**
+     * Сеттер для дистанции.
+     * @param {number} value - Установить дистанцию.
+     * @throws {CardError} Если distance не является положительным целым числом.
+     */
+    set distance(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new CardError("distance должен быть положительным целым числом.");
+        }
+        this.#distance = value;
     }
 
     static initFromJSON(data) {
-        return new DefaultCard({
+        return new WeaponCard({
             name: data.name,
             image: data.image,
+            distance: data.distance,
             ownerName: data?.ownerName ?? "",
-            targetName: data?.targetName ?? "",
             suit: data.suit ?? CardSuit.NONE,
             rank: data.rank ?? CardRank.NONE,
         });
@@ -52,4 +75,4 @@ class DefaultCard extends aCard {
     action() {}
 }
 
-module.exports = DefaultCard;
+module.exports = WeaponCard;

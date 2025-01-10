@@ -299,17 +299,25 @@ class aCard {
      * @returns {Object} Объект карты в формате JSON.
      */
     toJSON() {
-        return {
-            id: this.id,
-            name: this.name,
-            image: this.image,
-            type: this.type,
-            ownerName: this.ownerName,
-            targetName: this.targetName,
-            suit: this.suit,
-            rank: this.rank,
-            className: this.constructor.name,
-        };
+        return JSON.parse(
+            JSON.stringify(
+                Object.assign(
+                    {},
+                    {
+                        id: this.id,
+                        name: this.name,
+                        image: this.image,
+                        type: this.type,
+                        ownerName: this.ownerName,
+                        targetName: this.targetName,
+                        suit: this.suit,
+                        rank: this.rank,
+                        className: this.constructor.name,
+                    },
+                    this
+                )
+            )
+        );
     }
 
     /**
