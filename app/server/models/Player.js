@@ -449,7 +449,7 @@ class Player {
             );
         }
 
-        const drawnCards = gameTable.deckMain.pullRandomCards(count);
+        const drawnCards = gameTable.drawCards(count);
 
         // Создаем копии карт, чтобы вернуть их наружу
         // const copiedCards = drawnCards.map((card) => ({ ...card }));

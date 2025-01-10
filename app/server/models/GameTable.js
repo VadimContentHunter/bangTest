@@ -170,9 +170,7 @@ class GameTable {
 
         // Проверяем, достаточно ли карт в основной колоде
         if (this.deckMain.countCards() >= count) {
-            // Берем карты из основной колоды
-            const drawnCards = this.deckMain.pullRandomCards(count);
-            return drawnCards; // Возвращаем массив карт
+            return this.deckMain.pullRandomCards(count);
         } else {
             // Если карт недостаточно даже после переноса, выбрасываем исключение
             throw new Error("В основной колоде недостаточно карт для выполнения операции.");
