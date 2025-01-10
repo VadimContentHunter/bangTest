@@ -12,6 +12,7 @@ class CardModel {
         CHARACTER: "character",
         WEAPON: "weapon",
         HAND: "hand",
+        CONST: "const",
         DEFAULT: "default",
     };
 

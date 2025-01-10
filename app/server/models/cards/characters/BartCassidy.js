@@ -106,7 +106,6 @@ class BartCassidy extends aCard {
     action() {
         if (
             this.player instanceof Player &&
-            this.player.lives instanceof Lives &&
             this.gameTable instanceof GameTable
         ) {
             /**
@@ -119,13 +118,13 @@ class BartCassidy extends aCard {
              * @param {number} param0.removed - Количество удалённых жизней.
              * @throws {CardError} Если значение removed не является числом.
              */
-            this.player.lives.events.on("lifeRemoved", ({ oldLives, newLives, removed }) => {
+            this.player.events.on("lifeRemoved", ({ oldLives, newLives, removed }) => {
                 if (typeof removed !== "number" || (isNaN(removed) && removed < 0)) {
                     throw new CardError(
                         "BartCassidy: Invalid 'removed' value. It must be a number. And removed < 0"
                     );
                 }
-                this.gameTable?.drawCardsForPlayer(removed, this.player.hand);
+                this.player.drawFromDeck(this.gameTable, removed, true);
             });
         } else {
             throw new CardError("BartCassidy: Invalid lives provided");

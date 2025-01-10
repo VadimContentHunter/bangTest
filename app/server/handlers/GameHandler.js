@@ -33,6 +33,11 @@ const CalamityJanet = require("../models/cards/characters/CalamityJanet");
 const ElGringo = require("../models/cards/characters/ElGringo");
 const BangCard = require("../models/cards/defaultCards/BangCard");
 const CardError = require("../Errors/CardError");
+const WeaponCard = require("../models/cards/WeaponCard");
+const DefaultCard = require("../models/cards/DefaultCard");
+const ConstantCard = require("../models/cards/ConstantCard");
+const RemingtonCard = require("../models/cards/weapons/RemingtonCard");
+const CardInteractionError = require("../Errors/CardInteractionError");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -120,6 +125,11 @@ class GameHandler extends EventEmitter {
             BlackJack,
             CalamityJanet,
             ElGringo,
+            WeaponCard,
+            BangCard,
+            DefaultCard,
+            ConstantCard,
+            RemingtonCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -167,14 +177,14 @@ class GameHandler extends EventEmitter {
             new BangCard({ rank: CardRank.ACE, suit: CardSuit.SPADES }),
             new BangCard({ rank: CardRank.TWO, suit: CardSuit.DIAMONDS }),
             new BangCard({ rank: CardRank.THREE, suit: CardSuit.DIAMONDS }),
-            new BangCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
+            new RemingtonCard(),
             new BangCard({ rank: CardRank.FIVE, suit: CardSuit.DIAMONDS }),
             new BangCard({ rank: CardRank.SIX, suit: CardSuit.DIAMONDS }),
             new BangCard({ rank: CardRank.SEVEN, suit: CardSuit.DIAMONDS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
+            new RemingtonCard(),
+            new RemingtonCard(),
+            new RemingtonCard(),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
         ]);
 
@@ -202,6 +212,10 @@ class GameHandler extends EventEmitter {
 
             if (movePlayer.events.listenerCount("showCards") === 0) {
                 movePlayer.events.on("showCards", this.showCards.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("cardPlayed") === 0) {
+                movePlayer.events.on("cardPlayed", this.activateCard.bind(this));
             }
 
             if (movePlayer.events.listenerCount("playerMessage") === 0) {
@@ -405,27 +419,34 @@ class GameHandler extends EventEmitter {
             const movePlayCard = (ws, params, id = null) => {
                 // Проверяем, что sessionId из события совпадает с ожидаемым
                 if (ws.sessionId === player.sessionId) {
+                    const gameTable = this.storage.move.gameTable;
                     try {
                         // Игрок завершил ход, раз разрешение на событие только для этого игрока
                         // clearTimeout(timeout); // Очищаем таймер, если используем его
-                        const playCard = player.hand.getCardById(params.id);
-                        if (playCard.collectionPlayers !== undefined) {
-                            playCard.collectionPlayers = this.storage.move.players;
-                        }
 
-                        playCard.ownerName = player.name;
-                        playCard.targetName = params.targetName ?? "";
-                        playCard.action();
-
-                        player.playCardToTable(this.storage.move.gameTable, playCard);
+                        player.playCardToTable({
+                            gameTable: gameTable,
+                            cardId: params.id,
+                            cardTargetName: params?.targetName ?? "",
+                        });
                         this.emit("endCardTurnPlayer", {
                             player: player,
                             playerCollection: this.storage.move.players,
-                            gameTable: this.storage.move.gameTable,
+                            gameTable: gameTable,
                         });
-                        console.log(`Игрок ${player.name} походил карту ${playCard.name}`);
                     } catch (error) {
-                        if (error instanceof CardError) {
+                        if (error instanceof CardInteractionError) {
+                            if (
+                                !player.hand.hasCardById(error.card?.id) &&
+                                gameTable.playedCards.hasCardById(error.card?.id)
+                            ) {
+                                player.hand.addCard(
+                                    gameTable.playedCards.pullCardById(error.card?.id),
+                                );
+                            } else {
+                                throw error;
+                            }
+
                             console.log(error.message);
                             this.emit("gameHandlerMessage", {
                                 message: error.message,
@@ -612,6 +633,31 @@ class GameHandler extends EventEmitter {
             // this.saveAndTriggerHook(player, "selectionHide", { player: null });
             this.emit("selectionHide", { player: null });
         }, 3000); // 3000 миллисекунд = 3 секунды
+    }
+
+    activateCard({ player, card }) {
+        const gameTable = this.storage.move.gameTable;
+
+        if (!(player instanceof Player)) {
+            throw new Error("GameHandler: Player must be an instance of Player.");
+        }
+
+        if (!(card instanceof aCard)) {
+            throw new Error("GameHandler: Card must be an instance of a Card.");
+        }
+
+        if (card instanceof WeaponCard) {
+            player.weapon = card;
+            if (gameTable.playedCards.hasCardById(card.id)) {
+                gameTable.playedCards.pullCardById(card.id);
+            }
+            return;
+        }
+
+        if (card.collectionPlayers !== undefined) {
+            card.collectionPlayers = this.storage.move.players;
+        }
+        card.action();
     }
 
     initRoleForPlayers({ card, player }) {

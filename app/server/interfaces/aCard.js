@@ -51,6 +51,8 @@ class aCard {
     _targetName = "";
     _suit = null;
     _rank = null;
+    _distance = null;
+    _damage = null;
 
     /**
      * Конструктор для создания карты.
@@ -299,25 +301,19 @@ class aCard {
      * @returns {Object} Объект карты в формате JSON.
      */
     toJSON() {
-        return JSON.parse(
-            JSON.stringify(
-                Object.assign(
-                    {},
-                    {
-                        id: this.id,
-                        name: this.name,
-                        image: this.image,
-                        type: this.type,
-                        ownerName: this.ownerName,
-                        targetName: this.targetName,
-                        suit: this.suit,
-                        rank: this.rank,
-                        className: this.constructor.name,
-                    },
-                    this
-                )
-            )
-        );
+        return {
+            id: this.id,
+            name: this.name,
+            image: this.image,
+            type: this.type,
+            ownerName: this.ownerName,
+            targetName: this.targetName,
+            suit: this.suit,
+            rank: this.rank,
+            className: this.constructor.name,
+            distance: this._distance,
+            damage: this._damage,
+        };
     }
 
     /**

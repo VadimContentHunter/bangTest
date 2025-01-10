@@ -76,10 +76,10 @@ class CardsCollection {
     /**
      * Добавляет одну карту в коллекцию.
      * @param {aCard} card - Карта для добавления.
-     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карты на новое.
+     * @param {boolean} [overwriteId=false] - Указывает, нужно ли заменять ID карты на новое.
      * @throws {CardError} Если карта не является экземпляром aCard.
      */
-    addCard(card, overwriteId = true) {
+    addCard(card, overwriteId = false) {
         if (!(card instanceof aCard)) {
             throw new CardError("Объект карты должен быть экземпляром aCard.");
         }
@@ -96,10 +96,10 @@ class CardsCollection {
     /**
      * Добавляет массив карт в коллекцию.
      * @param {aCard[]} cards - Массив карт для добавления.
-     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карт на новые.
+     * @param {boolean} [overwriteId=false] - Указывает, нужно ли заменять ID карт на новые.
      * @throws {CardError} Если карты не являются экземплярами aCard или передан не массив.
      */
-    addArrayCards(cards, overwriteId = true) {
+    addArrayCards(cards, overwriteId = false) {
         if (!Array.isArray(cards)) {
             throw new CardError("Аргумент должен быть массивом.");
         }
@@ -115,9 +115,9 @@ class CardsCollection {
      * Создает карту из данных и добавляет её в коллекцию.
      * @param {Object} cardData - Данные для создания карты.
      * @param {typeof aCard} classCard - Класс карты для создания.
-     * @param {boolean} [overwriteId=true] - Указывает, нужно ли заменять ID карты на новое.
+     * @param {boolean} [overwriteId=false] - Указывает, нужно ли заменять ID карты на новое.
      */
-    addCardFromData(cardData, classCard, overwriteId = true) {
+    addCardFromData(cardData, classCard, overwriteId = false) {
         this.addCard(aCard.initCard(cardData, classCard), overwriteId);
     }
 

@@ -6,6 +6,7 @@ const PlayerCollection = require("../../../handlers/PlayerCollection");
 const DistanceHandler = require("../../../handlers/DistanceHandler");
 const Player = require("../../Player");
 const WeaponCard = require("../WeaponCard");
+const CardInteractionError = require("../../../Errors/CardInteractionError");
 const PlayerInteractionError = require("../../../Errors/PlayerInteractionError");
 
 class BangCard extends DefaultCard {
@@ -76,8 +77,9 @@ class BangCard extends DefaultCard {
         }
 
         if (!(targetPlayer instanceof Player)) {
-            throw new CardError(
-                `Игрок ${this.ownerName}, походил карту ${this.name}, но не выбрал цель.`
+            throw new CardInteractionError(
+                `Игрок ${this.ownerName}, походил карту ${this.name}, но не выбрал цель.`,
+                this
             );
         }
 
@@ -88,14 +90,7 @@ class BangCard extends DefaultCard {
                 new DistanceHandler(this.collectionPlayers)
             );
         } catch (error) {
-            if (error instanceof PlayerInteractionError) {
-                ownerPlayer.events.emit("playerMessage", {
-                    message: error.message,
-                    initPlayer: ownerPlayer,
-                });
-            } else {
-                throw error;
-            }
+            throw new CardInteractionError(error.message, this);
         }
     }
 }

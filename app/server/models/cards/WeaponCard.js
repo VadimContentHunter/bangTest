@@ -1,6 +1,7 @@
 const { aCard, CardType, CardSuit, CardRank } = require("../../interfaces/aCard");
 const CardError = require("../../Errors/CardError");
 const CardsCollection = require("../../handlers/CardsCollection");
+const ConstantCard = require("./ConstantCard");
 
 class WeaponCard extends aCard {
     _distance = 0;

@@ -190,19 +190,19 @@ class GameTable {
         }
 
         // Добавляем карты в колоду сброса
-        this.discardDeck.addArrayCards(cards, false);
+        this.discardDeck.addArrayCards(cards);
     }
 
     /**
      * Сбрасывает в колоду все карты находящиеся на столе
      */
     discardAllCardsFromTable() {
-        this.discardDeck.addArrayCards(this.playedCards.pullAllCards(), false);
+        this.discardDeck.addArrayCards(this.playedCards.pullAllCards());
     }
 
     transferDiscardToMainDeck() {
         if (this.discardDeck.countCards() > 0) {
-            this.deckMain.addArrayCards(this.discardDeck.pullAllCards(), false);
+            this.deckMain.addArrayCards(this.discardDeck.pullAllCards());
         }
     }
 

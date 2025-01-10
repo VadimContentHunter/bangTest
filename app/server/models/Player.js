@@ -416,7 +416,10 @@ class Player {
             );
         }
 
-        if (this.weapon instanceof WeaponCard && distanceValue <= this.weapon.distance) {
+        if (
+            attackingPlayer.weapon instanceof WeaponCard &&
+            distanceValue <= attackingPlayer.weapon.distance
+        ) {
             this.lives.removeLives(damage);
         } else {
             throw new PlayerInteractionError(
@@ -440,9 +443,9 @@ class Player {
         }
 
         // Проверка, что count является целым числом
-        if (!Number.isInteger(count) || count <= 0) {
+        if (!Number.isInteger(count)) {
             throw new ValidatePlayerError(
-                "Параметр 'count' должен быть положительным целым числом."
+                "Параметр 'count' должен быть положительным целым числом или 0."
             );
         }
 
@@ -452,7 +455,7 @@ class Player {
         // const copiedCards = drawnCards.map((card) => ({ ...card }));
 
         // Добавляем карты в руку игрока
-        this.hand.addArrayCards(drawnCards, false);
+        this.hand.addArrayCards(drawnCards);
 
         // Вызываем событие, что карты были взяты
         if (this.events instanceof EventEmitter && !ignoredEvent) {
@@ -498,7 +501,7 @@ class Player {
         // const copiedCards = cardsToDiscard.map((card) => ({ ...card }));
 
         // Добавляем сброшенные карты в колоду сброса
-        gameTable.discardDeck.addArrayCards(cardsToDiscard, false);
+        gameTable.discardDeck.addArrayCards(cardsToDiscard);
 
         // Вызываем событие о сбросе карт
         if (this.events instanceof EventEmitter) {
@@ -519,31 +522,33 @@ class Player {
 
     /**
      * Игрок добавляет одну карту на игровой стол.
-     * @param {GameTable} gameTable - Игровой стол, на который добавляется карта.
-     * @param {string|number|aCard} cardId - ID карты, которую игрок хочет добавить на стол.
+     * @param {Object} options - Параметры метода.
+     * @param {GameTable} options.gameTable - Игровой стол, на который добавляется карта.
+     * @param {string|number} options.cardId - ID карты, которую игрок хочет добавить на стол.
+     * @param {string} [options.cardTargetName=""] - Название цели карты (по умолчанию пустая строка).
      * @throws {ValidatePlayerError} Если `gameTable` не является экземпляром GameTable.
      * @throws {ValidatePlayerError} Если карта с указанным ID не найдена в руке игрока.
      * @fires GameTable#cardPlayed Событие, которое срабатывает, когда игрок кладет карту на стол.
      */
-    playCardToTable(gameTable, cardId) {
+    playCardToTable({ gameTable, cardId, cardTargetName = "" }) {
         if (!(gameTable instanceof GameTable)) {
             throw new ValidatePlayerError("Игровой стол должен быть экземпляром GameTable");
         }
 
-        cardId = cardId?.id;
         if ((typeof cardId !== "string" || cardId.trim() === "") && typeof cardId !== "number") {
-            throw new ValidatePlayerError("ID карты должен быть непустой строкой.");
+            throw new ValidatePlayerError("ID карты должен быть непустой строкой или числом.");
+        }
+
+        if (typeof cardTargetName !== "string") {
+            throw new ValidatePlayerError("Название цели карты должно быть строкой.");
         }
 
         // Извлекаем карту из руки игрока
         const playedCard = this.hand.pullCardById(cardId);
-        if (!playedCard) {
-            throw new ValidatePlayerError(`Карта с ID "${cardId}" не найдена в руке игрока.`);
-        }
-
-        // Добавляем карту на игровой стол
         playedCard.ownerName = this.name;
+        playedCard.targetName = cardTargetName;
         gameTable.playedCards.addCard(playedCard);
+        console.log(`Игрок ${this.name} походил карту ${playedCard.name}`);
 
         // Вызываем событие о том, что карта сыграна
         if (this.events instanceof EventEmitter) {
@@ -555,7 +560,7 @@ class Player {
              */
             this.events.emit("cardPlayed", {
                 player: this,
-                card: { ...playedCard }, // Передаем копию карты для безопасности
+                card: playedCard,
             });
         }
     }
