@@ -178,20 +178,18 @@ class GameHandler extends EventEmitter {
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
         ]);
 
+        const gameTable = new GameTable({
+            deckMain: new CardsCollection(this.storage.gameCards.getAllCards()),
+        });
+
         const tempPlayers = this.playroomHandler.playerOnline.copyPlayerCollectionFromCollection();
         this.storage.move = new Move({
             description: "Первый ход, инициализация первичных данных",
             players: tempPlayers,
             playersDistances: new DistanceHandler(tempPlayers.getPlayers()),
-            gameTable: new GameTable({
-                deckMain: new CardsCollection(this.storage.gameCards.getAllCards()),
-            }),
+            gameTable: gameTable,
         });
         this.storage.statusGame = true;
-
-        if (this.storage.move.gameTable.events.listenerCount("showCards") === 0) {
-            this.storage.move.gameTable.events.on("showCards", this.showCards.bind(this));
-        }
 
         this.storage.move.players.getPlayers().forEach((movePlayer) => {
             if (movePlayer.events.listenerCount("roleInstalled") === 0) {
@@ -200,6 +198,19 @@ class GameHandler extends EventEmitter {
 
             if (movePlayer.events.listenerCount("characterInstalled") === 0) {
                 movePlayer.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("showCards") === 0) {
+                movePlayer.events.on("showCards", this.showCards.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("playerMessage") === 0) {
+                movePlayer.events.on("playerMessage", ({ message, initPlayer }) => {
+                    this.emit("gameHandlerMessage", {
+                        message: message,
+                        player: initPlayer,
+                    });
+                });
             }
         });
 
@@ -402,10 +413,6 @@ class GameHandler extends EventEmitter {
                             playerDiscardCard.collectionPlayers = this.storage.move.players;
                         }
 
-                        if (playerDiscardCard.playersDistances !== undefined) {
-                            playerDiscardCard.playersDistances = this.storage.move.playersDistances;
-                        }
-
                         playerDiscardCard.ownerName = player.name;
                         playerDiscardCard.targetName = params.targetName ?? "";
                         playerDiscardCard.action();
@@ -421,13 +428,14 @@ class GameHandler extends EventEmitter {
                     } catch (error) {
                         if (error instanceof CardError) {
                             console.log(error.message);
-                            this.emit("gameHandlerMessage", {message: error.message, player: player});
+                            this.emit("gameHandlerMessage", {
+                                message: error.message,
+                                player: player,
+                            });
                             return;
                         }
                     }
-                    
 
-                    
                     // После того как нужный игрок завершил ход, убираем обработчик
                     // this.removeListener("playCard", movePlayCard);
                 } else {
@@ -512,8 +520,7 @@ class GameHandler extends EventEmitter {
 
     async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
-            let selectedCards = [];
-            lastMove.gameTable.drawCardsForPlayer(player, 2);
+            let selectedCards = player.drawFromDeck(lastMove.gameTable, 2);
 
             this.emit("endDrawCards", {
                 player: player,
@@ -569,7 +576,7 @@ class GameHandler extends EventEmitter {
                             card.type !== CardType.CHARACTER
                     )
                 );
-                lastMove.gameTable.discardPlayerCards(player, selectedCards);
+                player.discardCards(lastMove.gameTable, selectedCards);
 
                 // Сохраняется изменения в истории игры и вызывается событие Конца хода выбора игрока
                 const cardNames = selectedCards

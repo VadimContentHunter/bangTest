@@ -5,10 +5,12 @@ const DefaultCard = require("../DefaultCard");
 const PlayerCollection = require("../../../handlers/PlayerCollection");
 const DistanceHandler = require("../../../handlers/DistanceHandler");
 const Player = require("../../Player");
+const WeaponCard = require("../WeaponCard");
+const PlayerInteractionError = require("../../../Errors/PlayerInteractionError");
 
 class BangCard extends DefaultCard {
     #collectionPlayers = null;
-    #playersDistances = null;
+    #damage = 1;
 
     constructor({ rank, suit, ownerName = "", targetName = "" }) {
         super({
@@ -40,21 +42,21 @@ class BangCard extends DefaultCard {
     }
 
     /**
-     * @returns {DistanceHandler|null}
+     * @returns {number}
      */
-    get playersDistances() {
-        return this.#playersDistances;
+    get damage() {
+        return this.#damage;
     }
 
     /**
-     * @param {DistanceHandler|null} value - Экземпляр DistanceHandler.
-     * @throws {CardError} Если значение не является экземпляром DistanceHandler.
+     * @param {number} value
+     * @throws {CardError} Если параметр 'damage' не является положительным целым числом.
      */
-    set playersDistances(value) {
-        if (!(value instanceof DistanceHandler) && value !== null) {
-            throw new CardError("playersDistances должен быть экземпляром DistanceHandler.");
+    set damage(value) {
+        if (!Number.isInteger(value) || value <= 0) {
+            throw new CardError("Параметр 'damage' должен быть положительным целым числом.");
         }
-        this.#playersDistances = value;
+        this.#damage = value;
     }
 
     static initFromJSON(data) {
@@ -74,21 +76,27 @@ class BangCard extends DefaultCard {
         }
 
         if (!(targetPlayer instanceof Player)) {
-            throw new CardError(`Игрок ${this.ownerName}, походил карту ${this.name}, но не выбрал цель.`);
-        }
-
-        if (!(this.playersDistances instanceof DistanceHandler)) {
-            throw new Error(
-                `Не удалось найти дистанцию игроков`
+            throw new CardError(
+                `Игрок ${this.ownerName}, походил карту ${this.name}, но не выбрал цель.`
             );
         }
 
-        let distanceValue = this.playersDistances.getDistanceValue(ownerPlayer, targetPlayer);
-        if (distanceValue === null) {
-            throw new Error("Дистанция между этими игроками не найдена.");
+        try {
+            targetPlayer.takeDamageFromPlayer(
+                ownerPlayer,
+                this.damage,
+                new DistanceHandler(this.collectionPlayers)
+            );
+        } catch (error) {
+            if (error instanceof PlayerInteractionError) {
+                ownerPlayer.events.emit("playerMessage", {
+                    message: error.message,
+                    initPlayer: ownerPlayer,
+                });
+            } else {
+                throw error;
+            }
         }
-
-        // if(ownerPlayer.weapon instanceof aCard && distanceValue <= ownerPlayer.weapon.)
     }
 }
 

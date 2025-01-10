@@ -100,79 +100,70 @@ class BlackJack extends aCard {
      * @throws {CardError} Если переданы некорректные значения для параметров.
      */
     action() {
-        if (this.gameTable instanceof GameTable) {
+        if (this.gameTable instanceof GameTable && this.player instanceof Player) {
             /**
              * Обрабатывает событие "cardDrawn", которое вызывается, когда карты были взяты из основной колоды.
              *
              * @listens GameTable#cardDrawn
              * @param {Object} param0 - Объект, содержащий данные о взятых картах.
              * @param {Array<aCard>} param0.drawnCards - Массив карт, которые были взяты из основной колоды.
-             * @param {number} param0.remainingInDeck - Количество оставшихся карт в основной колоде.
              * @param {Player|null} param0.drawingPlayer  - Игрок, который взял карты, или null, если игрок не указан.
              * @throws {CardError} Если переданы некорректные данные для параметров.
              */
-            this.gameTable.events.on(
-                "cardDrawn",
-                ({ drawnCards, remainingInDeck, drawingPlayer = null }) => {
-                    // Проверка, что drawnCards — это массив объектов типа aCard
-                    if (!Array.isArray(drawnCards)) {
-                        throw new CardError("BlackJack: drawnCards должно быть массивом.");
+            this.player.events.on("cardDrawn", ({ drawnCards, drawingPlayer = null }) => {
+                // Проверка, что drawnCards — это массив объектов типа aCard
+                if (!Array.isArray(drawnCards)) {
+                    throw new CardError("BlackJack: drawnCards должно быть массивом.");
+                }
+
+                if (drawingPlayer instanceof Player && drawingPlayer.name !== this.player.name) {
+                    return;
+                }
+
+                let drawCount = 0;
+                drawnCards.forEach((card, index) => {
+                    if (!(card instanceof aCard)) {
+                        throw new CardError(
+                            "BlackJack: каждый элемент в drawnCards должен быть экземпляром aCard."
+                        );
                     }
 
                     if (
-                        drawingPlayer instanceof Player &&
-                        this.player instanceof Player &&
-                        drawingPlayer.name !== this.player.name
+                        index % 2 === 1 &&
+                        (card.suit === CardSuit.HEARTS || card.suit === CardSuit.DIAMONDS)
                     ) {
-                        return;
+                        drawCount++;
+
+                        console.log(
+                            `BlackJack: игрок ${
+                                this.player?.name || "неизвестный"
+                            } берет еще одну карту`
+                        );
+
+                        const selectionCards = new SelectionCards({
+                            title: `Событие персонажа ${this.name}`,
+                            description: "Если карта масти 'Черва' или 'Бубна', игрок берет карту",
+                            textExtension: `Игрок <i>${
+                                this.player?.name || "неизвестный"
+                            }</i> вытянул эту карту . . .`,
+                            collectionCards: [card],
+                            selectionCount: 0,
+                            isWaitingForResponse: false,
+                        });
+
+                        /**
+                         * Событие, которое вызывает отображение карт.
+                         * @event GameTable#showCards
+                         * @type {Object}
+                         * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
+                         * @property {SelectionCards} selectionCards - Объект выбора карт.
+                         */
+                        this.player.events.emit("showCards", { selectionCards });
                     }
+                });
 
-                    let drawCount = 0;
-                    drawnCards.forEach((card, index) => {
-                        if (!(card instanceof aCard)) {
-                            throw new CardError(
-                                "BlackJack: каждый элемент в drawnCards должен быть экземпляром aCard."
-                            );
-                        }
-
-                        if (
-                            index % 2 === 1 &&
-                            (card.suit === CardSuit.HEARTS || card.suit === CardSuit.DIAMONDS)
-                        ) {
-                            drawCount++;
-
-                            console.log(
-                                `BlackJack: игрок ${
-                                    this.player?.name || "неизвестный"
-                                } берет еще одну карту`
-                            );
-
-                            const selectionCards = new SelectionCards({
-                                title: `Событие персонажа ${this.name}`,
-                                description:
-                                    "Если карта масти 'Черва' или 'Бубна', игрок берет карту",
-                                textExtension: `Игрок <i>${
-                                    this.player?.name || "неизвестный"
-                                }</i> вытянул эту карту . . .`,
-                                collectionCards: [card],
-                                selectionCount: 0,
-                                isWaitingForResponse: false,
-                            });
-
-                            /**
-                             * Событие, которое вызывает отображение карт.
-                             * @event GameTable#showCards
-                             * @type {Object}
-                             * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
-                             * @property {SelectionCards} selectionCards - Объект выбора карт.
-                             */
-                            this.gameTable.events.emit("showCards", { selectionCards });
-                        }
-                    });
-
-                    this.gameTable.drawCardsForPlayer(this.player, drawCount, true);
-                }
-            );
+                this.gameTable.drawCardsForPlayer(this.player, drawCount, true);
+            });
         } else {
             throw new CardError("BlackJack: Некорректный объект GameTable.");
         }

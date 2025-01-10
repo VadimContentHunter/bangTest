@@ -8,6 +8,7 @@ const EventEmitter = require("events");
 const DistanceHandler = require("../handlers/DistanceHandler");
 const WeaponCard = require("./cards/WeaponCard");
 const GameTable = require("./GameTable");
+const PlayerInteractionError = require("../Errors/PlayerInteractionError");
 
 class Player {
     /**
@@ -416,7 +417,7 @@ class Player {
         if (this.weapon instanceof WeaponCard && distanceValue <= this.weapon.distance) {
             this.lives.removeLives(damage);
         } else {
-            throw new ValidatePlayerError(
+            throw new PlayerInteractionError(
                 `Не удалось нанести урон игроку "${this.name}", Дистанция до игрока, слишком большая.`
             );
         }
@@ -426,8 +427,10 @@ class Player {
      * Игрок берет карты из основной колоды.
      * @param {GameTable} gameTable - Игровой стол, на котором находится колода.
      * @param {number} count - Количество карт, которые игрок должен взять.
+     * @returns {aCard[]} Массив взятых карт (копий).
      * @throws {ValidatePlayerError} Если игровая таблица не является экземпляром класса GameTable.
      * @throws {ValidatePlayerError} Если параметр 'count' не является положительным целым числом.
+     * @fires GameTable#cardDrawn Событие, которое срабатывает, когда игрок берет карты из колоды.
      */
     drawFromDeck(gameTable, count) {
         if (!(gameTable instanceof GameTable)) {
@@ -441,7 +444,75 @@ class Player {
             );
         }
 
-        this.hand.addArrayCards(gameTable.deckMain.pullRandomCards(count), false);
+        const drawnCards = gameTable.deckMain.pullRandomCards(count);
+
+        // Создаем копии карт, чтобы вернуть их наружу
+        const copiedCards = drawnCards.map((card) => ({ ...card }));
+
+        // Добавляем карты в руку игрока
+        this.hand.addArrayCards(drawnCards, false);
+
+        // Вызываем событие, что карты были взяты
+        if (this.events) {
+            /**
+             * @event GameTable#cardDrawn
+             * @type {Object}
+             * @property {Player} player - Игрок, который взял карты.
+             * @property {aCard[]} drawnCards - Массив карт, которые были взяты игроком.
+             */
+            this.events.emit("cardDrawn", {
+                drawingPlayer: this,
+                drawnCards: copiedCards,
+            });
+        }
+
+        return copiedCards; // Возвращаем копии карт
+    }
+
+    /**
+     * Игрок сбрасывает карты в колоду сброса.
+     * @param {GameTable} gameTable - Игровой стол, на котором находится колода.
+     * @param {Array} cardIds - Массив ID карт, которые игрок хочет сбросить.
+     * @returns {aCard[]} Массив копий сброшенных карт (копий).
+     * @throws {ValidatePlayerError} Если cardIds не является массивом.
+     * @throws {ValidatePlayerError} Если карты с такими ID не найдены в руке игрока.
+     * @fires GameTable#cardDiscarded Событие, которое срабатывает, когда игрок сбрасывает карты.
+     */
+    discardCards(gameTable, cardIds) {
+        if (!(gameTable instanceof GameTable)) {
+            throw new ValidatePlayerError("Игровой стол должен быть экземпляром GameTable");
+        }
+
+        if (!Array.isArray(cardIds)) {
+            throw new ValidatePlayerError("Параметр 'cardIds' должен быть массивом.");
+        }
+
+        const cardsToDiscard = this.hand.pullCardsByIds(cardIds);
+        if (cardsToDiscard.length === 0) {
+            throw new ValidatePlayerError("Карты с указанными ID не найдены в руке игрока.");
+        }
+
+        // Создаем копии карт, чтобы вернуть их наружу
+        const copiedCards = cardsToDiscard.map((card) => ({ ...card }));
+
+        // Добавляем сброшенные карты в колоду сброса
+        gameTable.discardDeck.addArrayCards(cardsToDiscard, false);
+
+        // Вызываем событие о сбросе карт
+        if (this.events instanceof EventEmitter) {
+            /**
+             * @event GameTable#cardDiscarded
+             * @type {Object}
+             * @property {Player} player - Игрок, который сбросил карты.
+             * @property {aCard[]} discardedCards - Массив карт, которые были сброшены.
+             */
+            this.events.emit("cardDiscarded", {
+                discardedPlayer: this,
+                discardedCards: cardsToDiscard,
+            });
+        }
+
+        return copiedCards; // Возвращаем копии сброшенных карт
     }
 
     /**
