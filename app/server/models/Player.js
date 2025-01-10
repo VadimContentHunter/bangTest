@@ -5,7 +5,7 @@ const LivesError = require("../Errors/LivesError");
 const Lives = require("../models/Lives");
 const SheriffCard = require("./cards/roles/SheriffCard");
 const EventEmitter = require("events");
-const DistanceHandler = require("../handlers/DistanceHandler");
+// const DistanceHandler = require("../handlers/DistanceHandler");
 const WeaponCard = require("./cards/WeaponCard");
 const GameTable = require("./GameTable");
 const PlayerInteractionError = require("../Errors/PlayerInteractionError");
@@ -395,6 +395,8 @@ class Player {
      * @throws {ValidatePlayerError} Если дистанция до атакующего игрока слишком большая для нанесения урона.
      */
     takeDamageFromPlayer(attackingPlayer, damage, playersDistances) {
+        const DistanceHandler = require("../handlers/DistanceHandler");
+
         if (!(attackingPlayer instanceof Player)) {
             throw new ValidatePlayerError("Атакующий игрок должен быт объектом класса Player");
         }
@@ -432,7 +434,7 @@ class Player {
      * @throws {ValidatePlayerError} Если параметр 'count' не является положительным целым числом.
      * @fires GameTable#cardDrawn Событие, которое срабатывает, когда игрок берет карты из колоды.
      */
-    drawFromDeck(gameTable, count) {
+    drawFromDeck(gameTable, count, ignoredEvent = false) {
         if (!(gameTable instanceof GameTable)) {
             throw new ValidatePlayerError("Игровой стол должен быть экземпляром GameTable");
         }
@@ -447,13 +449,13 @@ class Player {
         const drawnCards = gameTable.deckMain.pullRandomCards(count);
 
         // Создаем копии карт, чтобы вернуть их наружу
-        const copiedCards = drawnCards.map((card) => ({ ...card }));
+        // const copiedCards = drawnCards.map((card) => ({ ...card }));
 
         // Добавляем карты в руку игрока
         this.hand.addArrayCards(drawnCards, false);
 
         // Вызываем событие, что карты были взяты
-        if (this.events) {
+        if (this.events instanceof EventEmitter && !ignoredEvent) {
             /**
              * @event GameTable#cardDrawn
              * @type {Object}
@@ -462,11 +464,11 @@ class Player {
              */
             this.events.emit("cardDrawn", {
                 drawingPlayer: this,
-                drawnCards: copiedCards,
+                drawnCards: drawnCards,
             });
         }
 
-        return copiedCards; // Возвращаем копии карт
+        return drawnCards; // Возвращаем копии карт
     }
 
     /**
@@ -493,7 +495,7 @@ class Player {
         }
 
         // Создаем копии карт, чтобы вернуть их наружу
-        const copiedCards = cardsToDiscard.map((card) => ({ ...card }));
+        // const copiedCards = cardsToDiscard.map((card) => ({ ...card }));
 
         // Добавляем сброшенные карты в колоду сброса
         gameTable.discardDeck.addArrayCards(cardsToDiscard, false);
@@ -512,7 +514,50 @@ class Player {
             });
         }
 
-        return copiedCards; // Возвращаем копии сброшенных карт
+        return cardsToDiscard; // Возвращаем копии сброшенных карт
+    }
+
+    /**
+     * Игрок добавляет одну карту на игровой стол.
+     * @param {GameTable} gameTable - Игровой стол, на который добавляется карта.
+     * @param {string|number|aCard} cardId - ID карты, которую игрок хочет добавить на стол.
+     * @throws {ValidatePlayerError} Если `gameTable` не является экземпляром GameTable.
+     * @throws {ValidatePlayerError} Если карта с указанным ID не найдена в руке игрока.
+     * @fires GameTable#cardPlayed Событие, которое срабатывает, когда игрок кладет карту на стол.
+     */
+    playCardToTable(gameTable, cardId) {
+        if (!(gameTable instanceof GameTable)) {
+            throw new ValidatePlayerError("Игровой стол должен быть экземпляром GameTable");
+        }
+
+        cardId = cardId?.id;
+        if ((typeof cardId !== "string" || cardId.trim() === "") && typeof cardId !== "number") {
+            throw new ValidatePlayerError("ID карты должен быть непустой строкой.");
+        }
+
+        // Извлекаем карту из руки игрока
+        const playedCard = this.hand.pullCardById(cardId);
+        if (!playedCard) {
+            throw new ValidatePlayerError(`Карта с ID "${cardId}" не найдена в руке игрока.`);
+        }
+
+        // Добавляем карту на игровой стол
+        playedCard.ownerName = this.name;
+        gameTable.playedCards.addCard(playedCard);
+
+        // Вызываем событие о том, что карта сыграна
+        if (this.events instanceof EventEmitter) {
+            /**
+             * @event GameTable#cardPlayed
+             * @type {Object}
+             * @property {Player} player - Игрок, который сыграл карту.
+             * @property {aCard} card - Карта, которую игрок сыграл.
+             */
+            this.events.emit("cardPlayed", {
+                player: this,
+                card: { ...playedCard }, // Передаем копию карты для безопасности
+            });
+        }
     }
 
     /**

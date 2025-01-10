@@ -408,23 +408,22 @@ class GameHandler extends EventEmitter {
                     try {
                         // Игрок завершил ход, раз разрешение на событие только для этого игрока
                         // clearTimeout(timeout); // Очищаем таймер, если используем его
-                        const playerDiscardCard = player.hand.getCardById(params.id);
-                        if (playerDiscardCard.collectionPlayers !== undefined) {
-                            playerDiscardCard.collectionPlayers = this.storage.move.players;
+                        const playCard = player.hand.getCardById(params.id);
+                        if (playCard.collectionPlayers !== undefined) {
+                            playCard.collectionPlayers = this.storage.move.players;
                         }
 
-                        playerDiscardCard.ownerName = player.name;
-                        playerDiscardCard.targetName = params.targetName ?? "";
-                        playerDiscardCard.action();
+                        playCard.ownerName = player.name;
+                        playCard.targetName = params.targetName ?? "";
+                        playCard.action();
 
-                        this.storage.move.gameTable.addPlayerOneCard(player, playerDiscardCard);
-                        player.hand.pullCardById(params.id);
+                        player.playCardToTable(this.storage.move.gameTable, playCard);
                         this.emit("endCardTurnPlayer", {
                             player: player,
                             playerCollection: this.storage.move.players,
                             gameTable: this.storage.move.gameTable,
                         });
-                        console.log(`Игрок ${player.name} походил карту ${playerDiscardCard.name}`);
+                        console.log(`Игрок ${player.name} походил карту ${playCard.name}`);
                     } catch (error) {
                         if (error instanceof CardError) {
                             console.log(error.message);
@@ -433,6 +432,8 @@ class GameHandler extends EventEmitter {
                                 player: player,
                             });
                             return;
+                        } else {
+                            throw error;
                         }
                     }
 

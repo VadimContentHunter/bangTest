@@ -161,8 +161,9 @@ class BlackJack extends aCard {
                         this.player.events.emit("showCards", { selectionCards });
                     }
                 });
-
-                this.gameTable.drawCardsForPlayer(this.player, drawCount, true);
+            
+                this.player.drawFromDeck(this.gameTable, drawCount, true);
+                // this.gameTable.drawCardsForPlayer(this.player, drawCount, true);
             });
         } else {
             throw new CardError("BlackJack: Некорректный объект GameTable.");

@@ -1,4 +1,3 @@
-const Player = require("./Player"); // Подключение модели Player
 const GameTableError = require("../Errors/GameTableError"); // Подключение ошибки для дистанции
 const CardsCollection = require("../handlers/CardsCollection");
 const { aCard } = require("../interfaces/aCard");
@@ -145,53 +144,6 @@ class GameTable {
             throw new GameTableError("playedCards не инициализирован.");
         }
         return this.#playedCards;
-    }
-
-    /**
-     * Добавляет карты игрока на стол.
-     * @param {Player} player - Экземпляр игрока.
-     * @param {Array<aCard>} cards - Массив карт.
-     * @throws {GameTableError} Если переданы некорректные параметры.
-     */
-    addPlayerCards(player, cards) {
-        if (!(player instanceof Player)) {
-            throw new GameTableError("Игрок не наследуется от класса Player.");
-        }
-
-        if (!Array.isArray(cards)) {
-            throw new GameTableError("cards должен быть массивом.");
-        }
-
-        for (const card of cards) {
-            if (!(card instanceof aCard)) {
-                throw new GameTableError(
-                    "Все элементы массива cards должны быть экземплярами aCard."
-                );
-            }
-        }
-
-        // Присваиваем имя владельца каждой карте и добавляем её в playedCards
-        for (const card of cards) {
-            this.addPlayerOneCard(player, card);
-        }
-    }
-
-    /**
-     * Добавляет карту игрока на стол.
-     * @param {Player} player - Экземпляр игрока.
-     * @param {aCard} card - Карта игрока.
-     * @throws {GameTableError} Если переданы некорректные параметры.
-     */
-    addPlayerOneCard(player, card) {
-        if (!(player instanceof Player)) {
-            throw new GameTableError("Игрок не наследуется от класса Player.");
-        }
-
-        if (!(card instanceof aCard)) {
-            throw new GameTableError("card должен быть экземпляром aCard.");
-        }
-        card.ownerName = player.name;
-        this.playedCards.addCard(card, false);
     }
 
     getDataSummary() {

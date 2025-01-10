@@ -9,8 +9,8 @@ const WeaponCard = require("../WeaponCard");
 const PlayerInteractionError = require("../../../Errors/PlayerInteractionError");
 
 class BangCard extends DefaultCard {
-    #collectionPlayers = null;
-    #damage = 1;
+    _collectionPlayers = null;
+    _damage = 1;
 
     constructor({ rank, suit, ownerName = "", targetName = "" }) {
         super({
@@ -27,7 +27,7 @@ class BangCard extends DefaultCard {
      * @returns {PlayerCollection|null}
      */
     get collectionPlayers() {
-        return this.#collectionPlayers;
+        return this._collectionPlayers;
     }
 
     /**
@@ -38,14 +38,14 @@ class BangCard extends DefaultCard {
         if (!(value instanceof PlayerCollection) && value !== null) {
             throw new CardError("collectionPlayers должен быть экземпляром PlayerCollection.");
         }
-        this.#collectionPlayers = value;
+        this._collectionPlayers = value;
     }
 
     /**
      * @returns {number}
      */
     get damage() {
-        return this.#damage;
+        return this._damage;
     }
 
     /**
@@ -56,7 +56,7 @@ class BangCard extends DefaultCard {
         if (!Number.isInteger(value) || value <= 0) {
             throw new CardError("Параметр 'damage' должен быть положительным целым числом.");
         }
-        this.#damage = value;
+        this._damage = value;
     }
 
     static initFromJSON(data) {
