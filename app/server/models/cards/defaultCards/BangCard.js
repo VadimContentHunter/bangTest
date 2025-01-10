@@ -3,9 +3,12 @@ const CardError = require("../../../Errors/CardError");
 const CardsCollection = require("../../../handlers/CardsCollection");
 const DefaultCard = require("../DefaultCard");
 const PlayerCollection = require("../../../handlers/PlayerCollection");
+const DistanceHandler = require("../../../handlers/DistanceHandler");
+const Player = require("../../Player");
 
 class BangCard extends DefaultCard {
     #collectionPlayers = null;
+    #playersDistances = null;
 
     constructor({ rank, suit, ownerName = "", targetName = "" }) {
         super({
@@ -20,21 +23,39 @@ class BangCard extends DefaultCard {
     }
 
     /**
-     * @returns {CardsCollection|null}
+     * @returns {PlayerCollection|null}
      */
     get collectionPlayers() {
         return this.#collectionPlayers;
     }
 
     /**
-     * @param {CardsCollection|null} value - Экземпляр CardsCollection.
-     * @throws {GameTableError} Если значение не является экземпляром CardsCollection.
+     * @param {PlayerCollection|null} value - Экземпляр PlayerCollection.
+     * @throws {CardError} Если значение не является экземпляром PlayerCollection.
      */
     set collectionPlayers(value) {
         if (!(value instanceof PlayerCollection) && value !== null) {
             throw new CardError("collectionPlayers должен быть экземпляром PlayerCollection.");
         }
         this.#collectionPlayers = value;
+    }
+
+    /**
+     * @returns {DistanceHandler|null}
+     */
+    get playersDistances() {
+        return this.#playersDistances;
+    }
+
+    /**
+     * @param {DistanceHandler|null} value - Экземпляр DistanceHandler.
+     * @throws {CardError} Если значение не является экземпляром DistanceHandler.
+     */
+    set playersDistances(value) {
+        if (!(value instanceof DistanceHandler) && value !== null) {
+            throw new CardError("playersDistances должен быть экземпляром DistanceHandler.");
+        }
+        this.#playersDistances = value;
     }
 
     static initFromJSON(data) {
@@ -45,7 +66,31 @@ class BangCard extends DefaultCard {
         return 0;
     }
 
-    action() {}
+    action() {
+        const ownerPlayer = this.collectionPlayers.getPlayerByName(this.ownerName);
+        const targetPlayer = this.collectionPlayers.getPlayerByName(this.targetName);
+
+        if (!(ownerPlayer instanceof Player)) {
+            throw new CardError("Не известно кто походил карту");
+        }
+
+        if (!(targetPlayer instanceof Player)) {
+            throw new CardError(`Игрок ${this.ownerName}, походил карту ${this.name}, но не выбрал цель.`);
+        }
+
+        if (!(this.playersDistances instanceof DistanceHandler)) {
+            throw new Error(
+                `Не удалось найти дистанцию игроков`
+            );
+        }
+
+        let distanceValue = this.playersDistances.getDistanceValue(ownerPlayer, targetPlayer);
+        if (distanceValue === null) {
+            throw new Error("Дистанция между этими игроками не найдена.");
+        }
+
+        // if(distanceValue <= ownerPlayer.weapon?.)
+    }
 }
 
 module.exports = BangCard;

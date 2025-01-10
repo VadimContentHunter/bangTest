@@ -95,7 +95,12 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 }
 
                 if (gameTable instanceof GameTable) {
-                    client.send(JsonRpcFormatter.serializeRequest("battleZoneUpdate", gameTable.getDataSummary()));
+                    client.send(
+                        JsonRpcFormatter.serializeRequest(
+                            "battleZoneUpdate",
+                            gameTable.getDataSummary()
+                        )
+                    );
                 }
             }
         });
@@ -114,6 +119,20 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             } else {
                 client.send(
                     JsonRpcFormatter.serializeRequest("lockPlayerMove", { isMyMove: false })
+                );
+            }
+        });
+    });
+
+    serverHook.on("serverMessage", ({ player, message }) => {
+        wss.clients.forEach((client) => {
+            if (
+                client.readyState === WebSocket.OPEN &&
+                player instanceof Player &&
+                player.sessionId === client.sessionId
+            ) {
+                client.send(
+                    JsonRpcFormatter.serializeRequest("clientMessage", { message: message })
                 );
             }
         });
@@ -228,6 +247,10 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
 
     gameHandler.on("selectionEnd", ({ playerCollection, gameTable }) => {
         serverHook.emit("updateFullDataClients", playerCollection, gameTable);
+    });
+
+    gameHandler.on("gameHandlerMessage", ({ player, message }) => {
+        serverHook.emit("serverMessage", { player, message });
     });
 
     // Событие при установлении нового соединения

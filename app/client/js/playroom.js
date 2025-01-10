@@ -147,6 +147,14 @@ function responseServer(requestManager, notificationsHtml, response) {
 
 function requestServer(request, data = {}, ws) {
     switch (request.method) {
+        case "clientMessage": 
+            if (!(data.notificationsHtml instanceof NotificationsHtml)) {
+                console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
+            } else if (request?.params?.message === null) {
+            } else {
+                data.notificationsHtml.addNotification(request?.params?.message);
+            }
+            break;
         case "updateSessionId":
             updateSessionId(request?.params);
             break;
@@ -308,7 +316,7 @@ function requestServer(request, data = {}, ws) {
 }
 
 function errorHandler(error, notificationsHtml) {
-    throw error;
+    // throw error;
     if (!(notificationsHtml instanceof NotificationsHtml)) {
         console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
     } else {
@@ -505,6 +513,7 @@ function main() {
                                 playerHand: playerHand,
                                 battleZone: battleZone,
                                 playersFieldElement: playersFieldElement,
+                                notificationsHtml: notificationsHtml,
                             },
                             ws
                         );

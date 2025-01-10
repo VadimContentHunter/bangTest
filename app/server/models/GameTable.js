@@ -199,7 +199,7 @@ class GameTable {
             countDeckMain: this.deckMain.countCards(),
             countDiscardDeck: this.discardDeck.countCards(),
             timer: this.timer,
-            collectionCards: this.playedCards.getAllCards(),
+            collectionCards: this.playedCards,
         };
     }
 

@@ -1,11 +1,18 @@
 const Distance = require("../models/Distance");
 const Player = require("../models/Player");
 const DistanceError = require("../Errors/DistanceError");
+const PlayerCollection = require("./PlayerCollection");
 
 class DistanceHandler {
     #distances = [];
 
+    /**
+     * @param {Player[] | PlayerCollection} players
+     */
     constructor(players = []) {
+        if (players instanceof PlayerCollection) {
+            players = players.getPlayers();
+        }
         if (players.length > 0) {
             this.setDistancesForPlayers(players);
         }
@@ -13,10 +20,14 @@ class DistanceHandler {
 
     /**
      * Установить дистанции для массива игроков по заданным правилам.
-     * @param {Player[]} players - Массив игроков.
+     * @param {Player[] | PlayerCollection} players - Массив игроков.
      * @throws {DistanceError} Если массив игроков недействителен.
      */
     setDistancesForPlayers(players) {
+        if (players instanceof PlayerCollection) {
+            players = players.getPlayers();
+        }
+
         if (!Array.isArray(players) || players.some((player) => !(player instanceof Player))) {
             throw new DistanceError("Все элементы массива должны быть экземплярами Player.");
         }

@@ -19,7 +19,7 @@ const Move = require("../models/Move");
 const CardsCollection = require("../handlers/CardsCollection");
 const SelectionCardsError = require("../Errors/SelectionCardsError");
 const SelectionCards = require("../models/SelectionCards");
-const { aCard, CardType, CardSuit } = require("../interfaces/aCard");
+const { aCard, CardType, CardSuit, CardRank } = require("../interfaces/aCard");
 
 const StubCard = require("../models/cards/StubCard");
 const PlayerActionManager = require("./PlayerActionManager");
@@ -31,6 +31,8 @@ const BartCassidy = require("../models/cards/characters/BartCassidy");
 const BlackJack = require("../models/cards/characters/BlackJack");
 const CalamityJanet = require("../models/cards/characters/CalamityJanet");
 const ElGringo = require("../models/cards/characters/ElGringo");
+const BangCard = require("../models/cards/defaultCards/BangCard");
+const CardError = require("../Errors/CardError");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -134,7 +136,7 @@ class GameHandler extends EventEmitter {
              */
             move: new Move(),
         };
-        
+
         this.playerActionManager = new PlayerActionManager();
     }
 
@@ -162,13 +164,13 @@ class GameHandler extends EventEmitter {
             new ElGringo(),
         ]);
         this.storage.gameCards = new CardsCollection([
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
-            new StubCard({ type: CardType.WEAPON, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.HEARTS }),
-            new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
+            new BangCard({ rank: CardRank.ACE, suit: CardSuit.SPADES }),
+            new BangCard({ rank: CardRank.TWO, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.THREE, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.FIVE, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.SIX, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.SEVEN, suit: CardSuit.DIAMONDS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
             new StubCard({ type: CardType.WEAPON, suit: CardSuit.HEARTS }),
             new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
@@ -200,7 +202,7 @@ class GameHandler extends EventEmitter {
                 movePlayer.events.on("characterInstalled", this.initCharacterForPlayers.bind(this));
             }
         });
-        
+
         this.emit("afterGameStart");
     }
 
@@ -378,31 +380,54 @@ class GameHandler extends EventEmitter {
                 ["sessionId"]
             );
             this.playerActionManager.clearHooksByPlayer(player);
-            // player.initYourself();
-
+            this.storage.move.playersDistances = new DistanceHandler(this.storage.move.players);
             this.saveAndTriggerHook(player, "playerStartedMove", {
                 player: player,
                 playerCollection: this.storage.move.players,
                 gameTable: this.storage.move.gameTable,
             });
-
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
+
             // try {
             await this.moveDrawTwoCards(player, this.storage.move);
 
             const movePlayCard = (ws, params, id = null) => {
                 // Проверяем, что sessionId из события совпадает с ожидаемым
                 if (ws.sessionId === player.sessionId) {
-                    // Игрок завершил ход, раз разрешение на событие только для этого игрока
-                    // clearTimeout(timeout); // Очищаем таймер, если используем его
-                    const playerDiscardCard = player.hand.pullCardById(params.id);
-                    this.storage.move.gameTable.addPlayerOneCard(player, playerDiscardCard);
-                    this.emit("endCardTurnPlayer", {
-                        player: player,
-                        playerCollection: this.storage.move.players,
-                        gameTable: this.storage.move.gameTable,
-                    });
-                    console.log(`Игрок ${player.name} походил карту ${playerDiscardCard.name}`);
+                    try {
+                        // Игрок завершил ход, раз разрешение на событие только для этого игрока
+                        // clearTimeout(timeout); // Очищаем таймер, если используем его
+                        const playerDiscardCard = player.hand.getCardById(params.id);
+                        if (playerDiscardCard.collectionPlayers !== undefined) {
+                            playerDiscardCard.collectionPlayers = this.storage.move.players;
+                        }
+
+                        if (playerDiscardCard.playersDistances !== undefined) {
+                            playerDiscardCard.playersDistances = this.storage.move.playersDistances;
+                        }
+
+                        playerDiscardCard.ownerName = player.name;
+                        playerDiscardCard.targetName = params.targetName ?? "";
+                        playerDiscardCard.action();
+
+                        this.storage.move.gameTable.addPlayerOneCard(player, playerDiscardCard);
+                        player.hand.pullCardById(params.id);
+                        this.emit("endCardTurnPlayer", {
+                            player: player,
+                            playerCollection: this.storage.move.players,
+                            gameTable: this.storage.move.gameTable,
+                        });
+                        console.log(`Игрок ${player.name} походил карту ${playerDiscardCard.name}`);
+                    } catch (error) {
+                        if (error instanceof CardError) {
+                            console.log(error.message);
+                            this.emit("gameHandlerMessage", {message: error.message, player: player});
+                            return;
+                        }
+                    }
+                    
+
+                    
                     // После того как нужный игрок завершил ход, убираем обработчик
                     // this.removeListener("playCard", movePlayCard);
                 } else {
@@ -554,7 +579,7 @@ class GameHandler extends EventEmitter {
 
                 // this.playerActionManager.clearHooksByPlayer(player);
                 console.log(
-                    `GameHandler: Этап "спроса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`
+                    `GameHandler: Этап "сброса": Игрок ${player.name} сбрасывает карту/ы ${cardNames}`
                 );
 
                 this.saveAndTriggerHook(player, "selectionEnd", {
