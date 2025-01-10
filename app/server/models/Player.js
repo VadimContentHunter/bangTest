@@ -7,6 +7,7 @@ const SheriffCard = require("./cards/roles/SheriffCard");
 const EventEmitter = require("events");
 const DistanceHandler = require("../handlers/DistanceHandler");
 const WeaponCard = require("./cards/WeaponCard");
+const GameTable = require("./GameTable");
 
 class Player {
     /**
@@ -381,6 +382,17 @@ class Player {
         console.log(`Игрок ${this.name} удалён.`);
     }
 
+    /**
+     * Игрок получает урон от другого игрока.
+     * @param {Player} attackingPlayer - Игрок, который наносит урон.
+     * @param {number} damage - Количество урона, который игрок должен получить.
+     * @param {DistanceHandler} playersDistances - Объект, который управляет дистанциями между игроками.
+     * @throws {ValidatePlayerError} Если атакующий игрок не является экземпляром класса Player.
+     * @throws {ValidatePlayerError} Если урон не является положительным целым числом.
+     * @throws {ValidatePlayerError} Если объект с дистанциями не является экземпляром класса DistanceHandler.
+     * @throws {ValidatePlayerError} Если дистанция между игроками не найдена.
+     * @throws {ValidatePlayerError} Если дистанция до атакующего игрока слишком большая для нанесения урона.
+     */
     takeDamageFromPlayer(attackingPlayer, damage, playersDistances) {
         if (!(attackingPlayer instanceof Player)) {
             throw new ValidatePlayerError("Атакующий игрок должен быт объектом класса Player");
@@ -408,6 +420,28 @@ class Player {
                 `Не удалось нанести урон игроку "${this.name}", Дистанция до игрока, слишком большая.`
             );
         }
+    }
+
+    /**
+     * Игрок берет карты из основной колоды.
+     * @param {GameTable} gameTable - Игровой стол, на котором находится колода.
+     * @param {number} count - Количество карт, которые игрок должен взять.
+     * @throws {ValidatePlayerError} Если игровая таблица не является экземпляром класса GameTable.
+     * @throws {ValidatePlayerError} Если параметр 'count' не является положительным целым числом.
+     */
+    drawFromDeck(gameTable, count) {
+        if (!(gameTable instanceof GameTable)) {
+            throw new ValidatePlayerError("Игровой стол должен быть экземпляром GameTable");
+        }
+
+        // Проверка, что count является целым числом
+        if (!Number.isInteger(count) || count <= 0) {
+            throw new ValidatePlayerError(
+                "Параметр 'count' должен быть положительным целым числом."
+            );
+        }
+
+        this.hand.addArrayCards(gameTable.deckMain.pullRandomCards(count), false);
     }
 
     /**
