@@ -5,6 +5,8 @@ const LivesError = require("../Errors/LivesError");
 const Lives = require("../models/Lives");
 const SheriffCard = require("./cards/roles/SheriffCard");
 const EventEmitter = require("events");
+const DistanceHandler = require("../handlers/DistanceHandler");
+const WeaponCard = require("./cards/WeaponCard");
 
 class Player {
     /**
@@ -379,10 +381,34 @@ class Player {
         console.log(`Игрок ${this.name} удалён.`);
     }
 
-    // initYourself() {
-    //     this.role = this.role instanceof aCard ? this.role : null;
-    //     this.character = this.character instanceof aCard ? this.character : null;
-    // }
+    takeDamageFromPlayer(attackingPlayer, damage, playersDistances) {
+        if (!(attackingPlayer instanceof Player)) {
+            throw new ValidatePlayerError("Атакующий игрок должен быт объектом класса Player");
+        }
+
+        if (!Number.isInteger(damage) || damage <= 0) {
+            throw new ValidatePlayerError("Урон должен быть положительным целым числом");
+        }
+
+        if (!(playersDistances instanceof DistanceHandler)) {
+            throw new ValidatePlayerError(`Не удалось найти дистанцию игроков`);
+        }
+
+        let distanceValue = playersDistances.getDistanceValue(this, attackingPlayer);
+        if (distanceValue === null) {
+            throw new ValidatePlayerError(
+                `Дистанция между атакующим игроком "${attackingPlayer.name}" не найдена.`
+            );
+        }
+
+        if (this.weapon instanceof WeaponCard && distanceValue <= this.weapon.distance) {
+            this.lives.removeLives(damage);
+        } else {
+            throw new ValidatePlayerError(
+                `Не удалось нанести урон игроку "${this.name}", Дистанция до игрока, слишком большая.`
+            );
+        }
+    }
 
     /**
      * Преобразует игрока в JSON.

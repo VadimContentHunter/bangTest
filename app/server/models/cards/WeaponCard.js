@@ -3,7 +3,7 @@ const CardError = require("../../Errors/CardError");
 const CardsCollection = require("../../handlers/CardsCollection");
 
 class WeaponCard extends aCard {
-    #distance = 0;
+    _distance = 0;
 
     /**
      * Конструктор для создания карты.
@@ -42,7 +42,7 @@ class WeaponCard extends aCard {
      * @returns {number} Дистанция оружия.
      */
     get distance() {
-        return this.#distance;
+        return this._distance;
     }
 
     /**
@@ -54,7 +54,7 @@ class WeaponCard extends aCard {
         if (!Number.isInteger(value) || value < 0) {
             throw new CardError("distance должен быть положительным целым числом.");
         }
-        this.#distance = value;
+        this._distance = value;
     }
 
     static initFromJSON(data) {
