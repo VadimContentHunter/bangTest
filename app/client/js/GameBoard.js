@@ -433,13 +433,20 @@ class GameBoard {
 
     setupDragCardListener(playerHand, battleZone) {
         requestAnimationFrame(() => {
-            if (playerHand instanceof PlayerHand && battleZone instanceof BattleZone) {
+            if (
+                this.mainElement instanceof HTMLElement &&
+                playerHand instanceof PlayerHand &&
+                battleZone instanceof BattleZone
+            ) {
                 // Создаем переменную для хранения rect
                 let rect = this.mainElement.getBoundingClientRect();
 
                 // Функция для обновления rect
                 this._listeners.updateRect = () => {
-                    rect = this.mainElement.getBoundingClientRect();
+                    if (this.mainElement instanceof HTMLElement) {
+                        // Проверяем наличие mainElement
+                        rect = this.mainElement.getBoundingClientRect();
+                    }
                 };
                 this._listeners.cardMouseMove = (e) => {
                     const { cardModel, event } = e.detail;
