@@ -547,7 +547,7 @@ class Player {
         const playedCard = this.hand.pullCardById(cardId);
         playedCard.ownerName = this.name;
         playedCard.targetName = cardTargetName;
-        gameTable.playedCards.addCard(playedCard);
+        gameTable.addedToPlayedCards(playedCard);
         console.log(`Игрок ${this.name} походил карту ${playedCard.name}`);
 
         // Вызываем событие о том, что карта сыграна

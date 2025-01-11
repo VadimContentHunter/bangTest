@@ -510,7 +510,8 @@ class GameHandler extends EventEmitter {
                 if (ws.sessionId === player.sessionId) {
                     // Игрок завершил ход, раз разрешение на событие только для этого игрока
                     // clearTimeout(timeout); // Очищаем таймер, если используем его
-                    lastMove.gameTable.discardAllCardsFromTable();
+                    // lastMove.gameTable.discardAllCardsFromTable();
+                    lastMove.gameTable.clearAllCardsFromTable();
 
                     this.emit("endFinishedHandler", {
                         player: player,
@@ -659,9 +660,9 @@ class GameHandler extends EventEmitter {
         if (card instanceof WeaponCard) {
             const oldWeapon = player.weapon;
             player.weapon = card;
-            if (gameTable.playedCards.hasCardById(card.id)) {
-                gameTable.playedCards.pullCardById(card.id);
-            }
+            // if (gameTable.playedCards.hasCardById(card.id)) {
+            //     gameTable.playedCards.pullCardById(card.id);
+            // }
 
             if (oldWeapon instanceof WeaponCard) {
                 gameTable.discardCards([oldWeapon]);
@@ -673,6 +674,8 @@ class GameHandler extends EventEmitter {
         card.action({
             players: this.storage.move.players,
         });
+
+        gameTable.discardCards([card]);
     }
 
     initRoleForPlayers({ card, player }) {

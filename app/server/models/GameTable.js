@@ -147,6 +147,15 @@ class GameTable {
         return this.#playedCards;
     }
 
+    addedToPlayedCards(card) {
+        if (!(card instanceof aCard)) {
+            throw new GameTableError("Переданное значение не является экземпляром aCard.");
+        }
+
+        this.playedCards.addCard(card);
+        // this.discardCards([card]);
+    }
+
     getDataSummary() {
         return {
             countDeckMain: this.deckMain.countCards(),
@@ -199,6 +208,13 @@ class GameTable {
      */
     discardAllCardsFromTable() {
         this.discardDeck.addArrayCards(this.playedCards.pullAllCards());
+    }
+
+    /**
+     * Очищает все карты находящиеся на столе
+     */
+    clearAllCardsFromTable() {
+        this.playedCards.pullAllCards();
     }
 
     transferDiscardToMainDeck() {
