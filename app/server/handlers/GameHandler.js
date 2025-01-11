@@ -38,6 +38,7 @@ const DefaultCard = require("../models/cards/DefaultCard");
 const ConstantCard = require("../models/cards/ConstantCard");
 const RemingtonCard = require("../models/cards/weapons/RemingtonCard");
 const CardInteractionError = require("../Errors/CardInteractionError");
+const GameTableInteractionError = require("../Errors/GameTableInteractionError");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -441,7 +442,7 @@ class GameHandler extends EventEmitter {
                                 gameTable.playedCards.hasCardById(error.card?.id)
                             ) {
                                 player.hand.addCard(
-                                    gameTable.playedCards.pullCardById(error.card?.id),
+                                    gameTable.playedCards.pullCardById(error.card?.id)
                                 );
                             } else {
                                 throw error;
@@ -453,6 +454,7 @@ class GameHandler extends EventEmitter {
                                 player: player,
                             });
                             return;
+                        } else if (error instanceof GameTableInteractionError) {
                         } else {
                             throw error;
                         }
@@ -542,7 +544,15 @@ class GameHandler extends EventEmitter {
 
     async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
-            let selectedCards = player.drawFromDeck(lastMove.gameTable, 2);
+            let selectedCards = [];
+            try {
+                selectedCards = player.drawFromDeck(lastMove.gameTable, 2);
+            } catch (error) {
+                if (error instanceof GameTableInteractionError) {
+                } else {
+                    throw error;
+                }
+            }
 
             this.emit("endDrawCards", {
                 player: player,
@@ -647,10 +657,16 @@ class GameHandler extends EventEmitter {
         }
 
         if (card instanceof WeaponCard) {
+            const oldWeapon = player.weapon;
             player.weapon = card;
             if (gameTable.playedCards.hasCardById(card.id)) {
                 gameTable.playedCards.pullCardById(card.id);
             }
+
+            if (oldWeapon instanceof WeaponCard) {
+                gameTable.discardCards([oldWeapon]);
+            }
+
             return;
         }
 

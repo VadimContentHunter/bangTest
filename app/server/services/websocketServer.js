@@ -266,8 +266,8 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         try {
             const player = playroomHandler.connect(ws.sessionId);
             if (player instanceof Player) {
-                player.lives.max = 5;
-                player.lives.current = 3;
+                player.lives.max = 15;
+                player.lives.current = 15;
                 player.weapon = new StubCard({ type: CardType.WEAPON });
                 player.temporaryCards.setCards([
                     new StubCard({ type: CardType.DEFAULT }),

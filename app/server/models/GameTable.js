@@ -1,4 +1,5 @@
 const GameTableError = require("../Errors/GameTableError"); // Подключение ошибки для дистанции
+const GameTableInteractionError = require("../Errors/GameTableInteractionError");
 const CardsCollection = require("../handlers/CardsCollection");
 const { aCard } = require("../interfaces/aCard");
 const EventEmitter = require("events");
@@ -173,8 +174,10 @@ class GameTable {
             return this.deckMain.pullRandomCards(count);
         } else {
             // Если карт недостаточно даже после переноса, выбрасываем исключение
-            throw new Error("В основной колоде недостаточно карт для выполнения операции.");
+            // throw new GameTableInteractionError("В основной колоде Закончились карты.");
         }
+
+        return [];
     }
 
     /**
