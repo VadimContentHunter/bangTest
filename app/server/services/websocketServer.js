@@ -269,12 +269,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
                 player.lives.max = 5;
                 player.lives.current = 3;
                 player.weapon = new StubCard({ type: CardType.WEAPON });
-                player.temporaryCards.setCards([
-                    new StubCard({ type: CardType.DEFAULT }),
-                    new StubCard({ type: CardType.DEFAULT }),
-                    new StubCard({ type: CardType.WEAPON }),
-                    new StubCard(CardType.CHARACTER),
-                ]);
+                // player.temporaryCards.setCards([]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
 
                 if (!gameHandler.isStartGame()) {

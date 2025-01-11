@@ -39,6 +39,7 @@ const ConstantCard = require("../models/cards/ConstantCard");
 const RemingtonCard = require("../models/cards/weapons/RemingtonCard");
 const CardInteractionError = require("../Errors/CardInteractionError");
 const GameTableInteractionError = require("../Errors/GameTableInteractionError");
+const BarrelCard = require("../models/cards/constCards/BarrelCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -131,6 +132,7 @@ class GameHandler extends EventEmitter {
             DefaultCard,
             ConstantCard,
             RemingtonCard,
+            BarrelCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -176,17 +178,21 @@ class GameHandler extends EventEmitter {
         ]);
         this.storage.gameCards = new CardsCollection([
             new BangCard({ rank: CardRank.ACE, suit: CardSuit.SPADES }),
-            new BangCard({ rank: CardRank.TWO, suit: CardSuit.DIAMONDS }),
-            new BangCard({ rank: CardRank.THREE, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.TWO, suit: CardSuit.HEARTS }),
+            new BangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
             new RemingtonCard(),
-            new BangCard({ rank: CardRank.FIVE, suit: CardSuit.DIAMONDS }),
-            new BangCard({ rank: CardRank.SIX, suit: CardSuit.DIAMONDS }),
+            new BangCard({ rank: CardRank.FIVE, suit: CardSuit.HEARTS }),
+            new BangCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new BangCard({ rank: CardRank.SEVEN, suit: CardSuit.DIAMONDS }),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
+            new BarrelCard({ rank: CardRank.QUEEN, suit: CardSuit.SPADES }),
             new RemingtonCard(),
             new RemingtonCard(),
+            new BangCard({ rank: CardRank.TWO, suit: CardSuit.HEARTS }),
+            new BangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
             new RemingtonCard(),
-            new StubCard({ type: CardType.DEFAULT, suit: CardSuit.DIAMONDS }),
+            new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
+            new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
+            new BarrelCard({ rank: CardRank.KING, suit: CardSuit.SPADES }),
         ]);
 
         const gameTable = new GameTable({
@@ -664,18 +670,28 @@ class GameHandler extends EventEmitter {
             //     gameTable.playedCards.pullCardById(card.id);
             // }
 
+            card.action();
+
             if (oldWeapon instanceof WeaponCard) {
                 gameTable.discardCards([oldWeapon]);
             }
+        } else if (card instanceof ConstantCard) {
+            if (player.temporaryCards.hasCardByName(card.name)) {
+                throw new CardInteractionError(
+                    `Игрок ${player.name}, походил карту ${card.name}, но она уже у него есть. (можно иметь только одну копию)`,
+                    card
+                );
+            }
 
-            return;
+            player.temporaryCards.addCard(card);
+            card.action({ player, gameTable });
+        } else {
+            card.action({
+                players: this.storage.move.players,
+            });
+
+            gameTable.discardCards([card]);
         }
-
-        card.action({
-            players: this.storage.move.players,
-        });
-
-        gameTable.discardCards([card]);
     }
 
     initRoleForPlayers({ card, player }) {

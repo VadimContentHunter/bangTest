@@ -190,6 +190,28 @@ class GameTable {
     }
 
     /**
+     * Показывает случайные карты, возвращает карты.
+     * @param {number} count - Количество карт для взятия.
+     * @throws {Error} Если в основной колоде недостаточно карт для выполнения операции.
+     * @returns {aCard[]} Массив карт, которые были взяты из основной колоды.
+     */
+    showRandomsCards(count) {
+        // Если карт недостаточно в основной колоде, переносим карты из колоды сброса
+        if (this.deckMain.countCards() < count) {
+            this.transferDiscardToMainDeck();
+        }
+
+        if (this.deckMain.countCards() >= count) {
+            return this.deckMain.getRandomCards(count);
+        } else {
+            // Если карт недостаточно даже после переноса, выбрасываем исключение
+            // throw new GameTableInteractionError("В основной колоде Закончились карты.");
+        }
+
+        return [];
+    }
+
+    /**
      * Добавляет карты в колоду сброса.
      * @param {Array<aCard>} cards - Массив карт, которые нужно добавить в колоду сброса.
      * @throws {TypeError} Если cards не является массивом карт aCard.

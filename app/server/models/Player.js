@@ -416,6 +416,34 @@ class Player {
             );
         }
 
+        /**
+         * Вызов события перед нанесением урона.
+         * Если событие возвращает false, урон не наносится.
+         *
+         * @event beforeDamage
+         * @type {Object}
+         * @property {Player} attacker - Игрок, который наносит урон.
+         * @property {number} damage - Количество урона, который должен получить игрок.
+         * @property {Player} target - Игрок, который получает урон.
+         * @property {number} distance - Расстояние между атакующим игроком и целью.
+         *
+         * @returns {boolean|void} Возвращает false для отмены нанесения урона, иначе ничего не возвращает.
+         */
+        const eventResults = this.events.listeners("beforeDamage").map((listener) => {
+            return listener({
+                attacker: attackingPlayer,
+                damage: damage,
+                target: this,
+                distance: distanceValue,
+            });
+        });
+
+
+        // Если событие вернуло false, отменяем отнимание жизней
+        if (eventResults.includes(false)) {
+            return;
+        }
+
         if (
             attackingPlayer.weapon instanceof WeaponCard &&
             distanceValue <= attackingPlayer.weapon.distance

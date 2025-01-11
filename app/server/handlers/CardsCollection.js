@@ -363,6 +363,19 @@ class CardsCollection {
     }
 
     /**
+     * Проверяет наличие карты в коллекции по её имени.
+     * @param {string} name - Имя карты.
+     * @returns {boolean} true, если карта с указанным именем есть в коллекции, иначе false.
+     * @throws {CardError} Если имя не является строкой.
+     */
+    hasCardByName(name) {
+        if (typeof name !== "string") {
+            throw new CardError("Имя должно быть строкой.");
+        }
+        return this.cards.some((card) => card.name === name);
+    }
+
+    /**
      * Очищает всю коллекцию, удаляя все карты.
      */
     clearCollection() {
