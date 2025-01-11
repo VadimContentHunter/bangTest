@@ -215,7 +215,7 @@ function requestServer(request, data = {}, ws) {
             if (data.battleZone instanceof BattleZone) {
                 const battleZone = data.battleZone;
                 battleZone.countMainDeck = request?.params?.countDeckMain ?? 0;
-                battleZone.countDiscardPile = request?.params?.countDiscardPile ?? 0;
+                battleZone.countDiscardPile = request?.params?.countDiscardDeck ?? 0;
                 battleZone.timer = request?.params?.timer;
                 battleZone.setCardToContainer(request?.params?.collectionCards?.cards ?? []);
                 battleZone.renderUpdatedData();

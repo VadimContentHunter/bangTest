@@ -10,17 +10,12 @@ const Player = require("../../../models/Player");
  * Он наследует от базового класса aCard и имеет дополнительные свойства для жизней, игровой таблицы и руки игрока.
  */
 class BartCassidy extends aCard {
-    #player = null;
-    #gameTable = null;
-
     /**
      * Создаёт новый объект BartCassidy.
-     * @param {Player|null} player - Объект, персонаж.
-     * @param {GameTable|null} gameTable - Игровая таблица.
      * @param {string} ownerName - Имя владельца карты.
      * @throws {CardError} Если переданы некорректные параметры.
      */
-    constructor(player = null, gameTable = null, ownerName = "") {
+    constructor(ownerName = "") {
         super({
             name: "Bart Cassidy",
             image: "../resources/imgs/cards/characters/01_bartcassidy.png",
@@ -28,54 +23,6 @@ class BartCassidy extends aCard {
             ownerName: ownerName,
             targetName: "",
         });
-
-        this.player = player;
-        this.gameTable = gameTable;
-    }
-
-    /**
-     * Сеттер для #player.
-     * @param {CardsCollection|null} value - Новое значение для руки карт.
-     * @throws {CardError} Если значение не является экземпляром CardsCollection.
-     */
-    set player(value) {
-        if (value === null || value instanceof Player) {
-            this.#player = value;
-        } else {
-            throw new CardError(
-                "BlackJack: Invalid player provided. Must be an instance of Player or null."
-            );
-        }
-    }
-
-    /**
-     * @returns {Player|null}
-     */
-    get player() {
-        return this.#player;
-    }
-
-    /**
-     * Устанавливает игровую таблицу.
-     * @param {GameTable|null} value - Объект GameTable или null.
-     * @throws {CardError} Если передано некорректное значение.
-     */
-    set gameTable(value) {
-        if (value === null || value instanceof GameTable) {
-            this.#gameTable = value;
-        } else {
-            throw new CardError(
-                "BartCassidy: Invalid gameTable provided. Must be an instance of GameTable or null."
-            );
-        }
-    }
-
-    /**
-     * Возвращает текущую игровую таблицу.
-     * @returns {GameTable|null} Текущая игровая таблица.
-     */
-    get gameTable() {
-        return this.#gameTable;
     }
 
     /**
@@ -88,8 +35,6 @@ class BartCassidy extends aCard {
      */
     static initFromJSON(data) {
         return new BartCassidy(
-            data?.player ?? null,
-            data?.gameTable ?? null,
             data?.ownerName ?? ""
         );
     }
@@ -103,11 +48,8 @@ class BartCassidy extends aCard {
      * @listens Lives#lifeRemoved Обрабатывает событие "lifeRemoved", которое вызывается при удалении жизней.
      * @throws {CardError} Если передан некорректный объект Lives.
      */
-    action() {
-        if (
-            this.player instanceof Player &&
-            this.gameTable instanceof GameTable
-        ) {
+    action({ player, gameTable }) {
+        if (player instanceof Player && gameTable instanceof GameTable) {
             /**
              * Обрабатывает событие "lifeRemoved", которое вызывается при удалении жизней.
              *
@@ -118,13 +60,13 @@ class BartCassidy extends aCard {
              * @param {number} param0.removed - Количество удалённых жизней.
              * @throws {CardError} Если значение removed не является числом.
              */
-            this.player.events.on("lifeRemoved", ({ oldLives, newLives, removed }) => {
+            player.events.on("lifeRemoved", ({ oldLives, newLives, removed }) => {
                 if (typeof removed !== "number" || (isNaN(removed) && removed < 0)) {
                     throw new CardError(
                         "BartCassidy: Invalid 'removed' value. It must be a number. And removed < 0"
                     );
                 }
-                this.player.drawFromDeck(this.gameTable, removed, true);
+                player.drawFromDeck(gameTable, removed, true);
             });
         } else {
             throw new CardError("BartCassidy: Invalid lives provided");

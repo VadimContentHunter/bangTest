@@ -670,16 +670,14 @@ class GameHandler extends EventEmitter {
             return;
         }
 
-        if (card.collectionPlayers !== undefined) {
-            card.collectionPlayers = this.storage.move.players;
-        }
-        card.action();
+        card.action({
+            players: this.storage.move.players,
+        });
     }
 
     initRoleForPlayers({ card, player }) {
         if (player instanceof Player && card instanceof aCard && card.type === CardType.ROLE) {
-            card.lives = player.lives;
-            card.action();
+            card.action({ player });
         } else {
             throw new Error(
                 "GameHandler: Role card must be instance of a Card and type must be ROLE"
@@ -698,19 +696,10 @@ class GameHandler extends EventEmitter {
             );
         }
 
-        const propertyMappings = {
+        card.action({
             player: player,
             gameTable: this.storage.move.gameTable,
-        };
-
-        // Динамическое присваивание свойств
-        Object.keys(propertyMappings).forEach((key) => {
-            if (key in card) {
-                card[key] = propertyMappings[key];
-            }
         });
-
-        card.action();
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}) {

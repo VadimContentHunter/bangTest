@@ -10,16 +10,11 @@ const SelectionCards = require("../../../models/SelectionCards");
  * @extends aCard
  */
 class BlackJack extends aCard {
-    #gameTable = null;
-    #player = null;
-
     /**
      * Создаёт новый объект BlackJack.
-     * @param {Player|null} player - Объект, персонаж.
-     * @param {GameTable|null} gameTable - Игровая таблица.
      * @param {string} ownerName - Имя владельца карты.
      */
-    constructor(player = null, gameTable = null, ownerName = "") {
+    constructor(ownerName = "") {
         super({
             name: "Black Jack",
             image: "../resources/imgs/cards/characters/01_blackjack.png",
@@ -27,55 +22,6 @@ class BlackJack extends aCard {
             ownerName: ownerName,
             targetName: "",
         });
-
-        this.player = player;
-        this.gameTable = gameTable;
-    }
-
-    /**
-     * Геттер для #gameTable.
-     * @returns {GameTable|null} Текущая игровая таблица, на которой находится карта.
-     */
-    get gameTable() {
-        return this.#gameTable;
-    }
-
-    /**
-     * Сеттер для #gameTable.
-     * @param {GameTable|null} value - Новое значение для игровой таблицы.
-     * @throws {CardError} Если значение не является экземпляром GameTable.
-     */
-    set gameTable(value) {
-        if (value === null || value instanceof GameTable) {
-            this.#gameTable = value;
-        } else {
-            throw new CardError(
-                "BlackJack: Invalid gameTable provided. Must be an instance of GameTable or null."
-            );
-        }
-    }
-
-    /**
-     * Геттер для #player.
-     * @returns {Player|null}
-     */
-    get player() {
-        return this.#player;
-    }
-
-    /**
-     * Сеттер для #player.
-     * @param {CardsCollection|null} value - Новое значение для руки карт.
-     * @throws {CardError} Если значение не является экземпляром CardsCollection.
-     */
-    set player(value) {
-        if (value === null || value instanceof Player) {
-            this.#player = value;
-        } else {
-            throw new CardError(
-                "BlackJack: Invalid player provided. Must be an instance of Player or null."
-            );
-        }
     }
 
     /**
@@ -87,7 +33,7 @@ class BlackJack extends aCard {
      * @returns {BlackJack} Новый объект BlackJack.
      */
     static initFromJSON(data) {
-        return new BlackJack(data?.player ?? null, data?.gameTable ?? null, data?.ownerName ?? "");
+        return new BlackJack(data?.ownerName ?? "");
     }
 
     getActionCallCount() {
@@ -99,8 +45,8 @@ class BlackJack extends aCard {
      * @listens GameTable#cardDrawn Обрабатывает событие "cardDrawn", которое вызывается, когда карты были взяты из основной колоды.
      * @throws {CardError} Если переданы некорректные значения для параметров.
      */
-    action() {
-        if (this.gameTable instanceof GameTable && this.player instanceof Player) {
+    action({ player, gameTable }) {
+        if (gameTable instanceof GameTable && player instanceof Player) {
             /**
              * Обрабатывает событие "cardDrawn", которое вызывается, когда карты были взяты из основной колоды.
              *
@@ -110,13 +56,13 @@ class BlackJack extends aCard {
              * @param {Player|null} param0.drawingPlayer  - Игрок, который взял карты, или null, если игрок не указан.
              * @throws {CardError} Если переданы некорректные данные для параметров.
              */
-            this.player.events.on("cardDrawn", ({ drawnCards, drawingPlayer = null }) => {
+            player.events.on("cardDrawn", ({ drawnCards, drawingPlayer = null }) => {
                 // Проверка, что drawnCards — это массив объектов типа aCard
                 if (!Array.isArray(drawnCards)) {
                     throw new CardError("BlackJack: drawnCards должно быть массивом.");
                 }
 
-                if (drawingPlayer instanceof Player && drawingPlayer.name !== this.player.name) {
+                if (drawingPlayer instanceof Player && drawingPlayer.name !== player.name) {
                     return;
                 }
 
@@ -136,7 +82,7 @@ class BlackJack extends aCard {
 
                         console.log(
                             `BlackJack: игрок ${
-                                this.player?.name || "неизвестный"
+                                player?.name || "неизвестный"
                             } берет еще одну карту`
                         );
 
@@ -144,7 +90,7 @@ class BlackJack extends aCard {
                             title: `Событие персонажа ${this.name}`,
                             description: "Если карта масти 'Черва' или 'Бубна', игрок берет карту",
                             textExtension: `Игрок <i>${
-                                this.player?.name || "неизвестный"
+                                player?.name || "неизвестный"
                             }</i> вытянул эту карту . . .`,
                             collectionCards: [card],
                             selectionCount: 0,
@@ -158,12 +104,12 @@ class BlackJack extends aCard {
                          * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
                          * @property {SelectionCards} selectionCards - Объект выбора карт.
                          */
-                        this.player.events.emit("showCards", { selectionCards });
+                        player.events.emit("showCards", { selectionCards });
                     }
                 });
-            
-                this.player.drawFromDeck(this.gameTable, drawCount, true);
-                // this.gameTable.drawCardsForPlayer(this.player, drawCount, true);
+
+                player.drawFromDeck(gameTable, drawCount, true);
+                // this.gameTable.drawCardsForPlayer(player, drawCount, true);
             });
         } else {
             throw new CardError("BlackJack: Некорректный объект GameTable.");

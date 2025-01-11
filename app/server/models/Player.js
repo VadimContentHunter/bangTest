@@ -501,7 +501,7 @@ class Player {
         // const copiedCards = cardsToDiscard.map((card) => ({ ...card }));
 
         // Добавляем сброшенные карты в колоду сброса
-        gameTable.discardDeck.addArrayCards(cardsToDiscard);
+        gameTable.discardCards(cardsToDiscard);
 
         // Вызываем событие о сбросе карт
         if (this.events instanceof EventEmitter) {

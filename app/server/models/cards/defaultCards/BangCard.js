@@ -10,7 +10,6 @@ const CardInteractionError = require("../../../Errors/CardInteractionError");
 const PlayerInteractionError = require("../../../Errors/PlayerInteractionError");
 
 class BangCard extends DefaultCard {
-    _collectionPlayers = null;
     _damage = 1;
 
     constructor({ rank, suit, ownerName = "", targetName = "" }) {
@@ -22,24 +21,6 @@ class BangCard extends DefaultCard {
             suit: suit,
             rank: rank,
         });
-    }
-
-    /**
-     * @returns {PlayerCollection|null}
-     */
-    get collectionPlayers() {
-        return this._collectionPlayers;
-    }
-
-    /**
-     * @param {PlayerCollection|null} value - Экземпляр PlayerCollection.
-     * @throws {CardError} Если значение не является экземпляром PlayerCollection.
-     */
-    set collectionPlayers(value) {
-        if (!(value instanceof PlayerCollection) && value !== null) {
-            throw new CardError("collectionPlayers должен быть экземпляром PlayerCollection.");
-        }
-        this._collectionPlayers = value;
     }
 
     /**
@@ -68,9 +49,9 @@ class BangCard extends DefaultCard {
         return 0;
     }
 
-    action() {
-        const ownerPlayer = this.collectionPlayers.getPlayerByName(this.ownerName);
-        const targetPlayer = this.collectionPlayers.getPlayerByName(this.targetName);
+    action({ players }) {
+        const ownerPlayer = players.getPlayerByName(this.ownerName);
+        const targetPlayer = players.getPlayerByName(this.targetName);
 
         if (!(ownerPlayer instanceof Player)) {
             throw new CardError("Не известно кто походил карту");
@@ -87,7 +68,7 @@ class BangCard extends DefaultCard {
             targetPlayer.takeDamageFromPlayer(
                 ownerPlayer,
                 this.damage,
-                new DistanceHandler(this.collectionPlayers)
+                new DistanceHandler(players)
             );
         } catch (error) {
             throw new CardInteractionError(error.message, this);
