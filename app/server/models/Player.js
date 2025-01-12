@@ -390,7 +390,8 @@ class Player {
         const cardToTransfer = this.temporaryCards.pullCardById(cardId);
 
         // Передаем карту другому игроку
-        targetPlayer.hand.addCard(cardToTransfer); // Добавляем карту в руку целевого игрока
+        cardToTransfer.ownerName = targetPlayer.name;
+        targetPlayer.temporaryCards.addCard(cardToTransfer); // Добавляем карту в руку целевого игрока
 
         console.log(
             `Игрок ${this.name} передал карту ${cardToTransfer.name} игроку ${targetPlayer.name}`
@@ -405,7 +406,7 @@ class Player {
              * @property {Player} toPlayer - Игрок, которому передается карта.
              * @property {aCard} card - Карта, которая передана.
              */
-            this.events.emit("cardTransferred", {
+            this.events.emit("cardTransferredTemporaryCards", {
                 fromPlayer: this,
                 toPlayer: targetPlayer,
                 card: cardToTransfer,

@@ -81,9 +81,7 @@ class BlackJack extends aCard {
                         drawCount++;
 
                         console.log(
-                            `BlackJack: игрок ${
-                                player?.name || "неизвестный"
-                            } берет еще одну карту`
+                            `BlackJack: игрок ${player?.name || "неизвестный"} берет еще одну карту`
                         );
 
                         const selectionCards = new SelectionCards({
@@ -91,7 +89,8 @@ class BlackJack extends aCard {
                             description: "Если карта масти 'Черва' или 'Бубна', игрок берет карту",
                             textExtension: `Игрок <i>${
                                 player?.name || "неизвестный"
-                            }</i> вытянул эту карту . . .`,
+                            }</i> вытянул карту: 
+                            (<b><i>${card.name}</i></b>, <b><i>${card.suit}</i></b>, <b><i>${card.rank}</i></b>)`,
                             collectionCards: [card],
                             selectionCount: 0,
                             isWaitingForResponse: false,

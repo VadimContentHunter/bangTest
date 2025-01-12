@@ -38,8 +38,8 @@ class BarrelCard extends ConstantCard {
         return 0;
     }
 
-    action({ player, gameTable }) {
-        if (player instanceof Player && gameTable instanceof GameTable) {
+    action({ cardPlayer, cardGameTable }) {
+        if (cardPlayer instanceof Player && cardGameTable instanceof GameTable) {
             /**
              * Если вернуть false урон не будет нанесен игроку
              *
@@ -52,20 +52,23 @@ class BarrelCard extends ConstantCard {
              *
              * @returns {boolean} Возвращает `true`, если урон может быть нанесен, или `false`, если необходимо предотвратить урон.
              */
-            player.events.on("beforeDamage", ({ attacker, damage, target, distance }) => {
+            cardPlayer.events.on("beforeDamage", ({ attacker, damage, target, distance }) => {
                 if (!Number.isInteger(damage)) {
                     throw new TypeError("Damage должен быть целым числом (урон по игроку).");
                 }
 
                 if (damage > 0) {
-                    let card = gameTable.showRandomsCards(1)[0] ?? null;
+                    let card = cardGameTable.showRandomsCards(1)[0] ?? null;
 
                     const selectionCards = new SelectionCards({
                         title: `Событие карты ${this.name}`,
                         description: "Если карта масти 'Черва', игрок не получает урон",
                         textExtension: `У игрока <i>${
-                            player?.name || "неизвестный"
-                        }</i> сработала карта`,
+                            cardPlayer?.name || "неизвестный"
+                        }</i> вытянул карту: 
+                        (<b><i>${card.name}</i></b>, <b><i>${card.suit}</i></b>, <b><i>${
+                            card.rank
+                        }</i></b>)`,
                         collectionCards: [card],
                         selectionCount: 0,
                         isWaitingForResponse: false,
@@ -78,10 +81,10 @@ class BarrelCard extends ConstantCard {
                      * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
                      * @property {SelectionCards} selectionCards - Объект выбора карт.
                      */
-                    player.events.emit("showCards", { selectionCards });
+                    cardPlayer.events.emit("showCards", { selectionCards });
 
                     console.log(
-                        `У игрока ${player?.name} сработала бочка. Игрок вытянул карту: ${card.name}, ${card.suit}.`
+                        `У игрока ${cardPlayer?.name} сработала бочка. Игрок вытянул карту: ${card.name}, ${card.suit}.`
                     );
                     return card instanceof aCard && card.suit === CardSuit.HEARTS ? false : true;
                 }

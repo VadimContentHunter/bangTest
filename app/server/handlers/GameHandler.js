@@ -183,11 +183,11 @@ class GameHandler extends EventEmitter {
         this.storage.gameCards = new CardsCollection([
             new BangCard({ rank: CardRank.ACE, suit: CardSuit.SPADES }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
-            new BangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
+            new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
             new RemingtonCard(),
             new BangCard({ rank: CardRank.FIVE, suit: CardSuit.HEARTS }),
-            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
-            new BangCard({ rank: CardRank.SEVEN, suit: CardSuit.DIAMONDS }),
+            new DynamiteCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
+            new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.QUEEN, suit: CardSuit.SPADES }),
             new RemingtonCard(),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
@@ -196,7 +196,7 @@ class GameHandler extends EventEmitter {
             new RemingtonCard(),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
-            new BarrelCard({ rank: CardRank.KING, suit: CardSuit.SPADES }),
+            new BarrelCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
         ]);
 
         const gameTable = new GameTable({
@@ -229,6 +229,13 @@ class GameHandler extends EventEmitter {
                 movePlayer.events.on("cardPlayed", this.activateCard.bind(this));
             }
 
+            if (movePlayer.events.listenerCount("cardTransferredTemporaryCards") === 0) {
+                movePlayer.events.on(
+                    "cardTransferredTemporaryCards",
+                    this.cardTransferredTemporaryCards.bind(this)
+                );
+            }
+
             if (movePlayer.events.listenerCount("playerMessage") === 0) {
                 movePlayer.events.on("playerMessage", ({ message, initPlayer }) => {
                     this.emit("gameHandlerMessage", {
@@ -248,6 +255,7 @@ class GameHandler extends EventEmitter {
 
             if (movePlayer.events.listenerCount("playerStartedMove") === 0) {
                 movePlayer.events.on("playerStartedMove", this.updateMove.bind(this));
+                // this.emit("selectionHide", { player: null });
             }
 
             if (movePlayer.events.listenerCount("endCardTurnPlayer") === 0) {
@@ -705,10 +713,34 @@ class GameHandler extends EventEmitter {
         this.emit("selectionStarted", { player: null, selectionCards });
 
         // Отложенное событие для скрытия карт через 3 секунды
-        setTimeout(() => {
-            // this.saveAndTriggerHook(player, "selectionHide", { player: null });
-            this.emit("selectionHide", { player: null });
-        }, 3000); // 3000 миллисекунд = 3 секунды
+        // setTimeout(() => {
+        //     // this.saveAndTriggerHook(player, "selectionHide", { player: null });
+        //     this.emit("selectionHide", { player: null });
+        // }, 3000); // 3000 миллисекунд = 3 секунды
+    }
+
+    /**
+     * Передача постоянной карты от игрока к другому игроку
+     * @param {Player} fromPlayer - Игрок, который передает карту.
+     * @param {Player} toPlayer - Игрок, которому передается карта.
+     * @param {aCard} card - Карта, которая передана.
+     */
+    cardTransferredTemporaryCards({ fromPlayer, toPlayer, card }) {
+        if (!(fromPlayer instanceof Player) || !(toPlayer instanceof Player)) {
+            throw new Error("GameHandler: Players must be an instance of Player.");
+        }
+
+        if (!(card instanceof aCard)) {
+            throw new Error("GameHandler: Card must be an instance of a Card.");
+        }
+        if (card instanceof ConstantCard) {
+            card.action({ cardPlayer: toPlayer, cardGameTable: this.storage.move.gameTable });
+        }
+        // this.updateMove({
+        //     player: fromPlayer,
+        //     playerCollection: this.storage.players,
+        //     gameTable: this.storage.gameTable,
+        // });
     }
 
     activateCard({ player, card }) {
@@ -743,7 +775,7 @@ class GameHandler extends EventEmitter {
             }
 
             player.temporaryCards.addCard(card);
-            card.action({ player, gameTable });
+            card.action({ cardPlayer: player, cardGameTable: gameTable });
         } else {
             card.action({
                 players: this.storage.move.players,
@@ -781,7 +813,12 @@ class GameHandler extends EventEmitter {
     }
 
     updateMove({ player, playerCollection, gameTable, oneUse = true }) {
-        this.saveAndTriggerHook(player, "updateMove", { player, playerCollection, gameTable }, oneUse);
+        this.saveAndTriggerHook(
+            player,
+            "updateMove",
+            { player, playerCollection, gameTable },
+            oneUse
+        );
     }
 
     saveAndTriggerHook(player, nameHook, dataHook = {}, oneUse = false) {
