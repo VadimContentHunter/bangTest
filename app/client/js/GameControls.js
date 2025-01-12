@@ -34,14 +34,15 @@ class CardSelection extends GameControls {
     _selectionCount = 0;
     _selectedIndices = [];
     _isWaitingForResponse = true;
+    _queueData = [];
 
     constructor(selectorMainElement, selectorCardsSelection) {
         super(selectorMainElement);
 
         this.cardsSelection = this.mainElement?.querySelector(selectorCardsSelection);
+        this.buttonCloseWindow = this.cardsSelection?.querySelector(".button-close-window");
         this.buttonSelectCards = this.cardsSelection?.querySelector(".button-end-move");
         this.collapseElement = this.cardsSelection?.querySelector(".icon-control-collapse");
-        // this.closeElement = this.cardsSelection?.querySelector(".icon-control-close");
         this.timerValueElement = this.cardsSelection?.querySelector(
             ".icon-round-timer .item-value"
         );
@@ -277,8 +278,10 @@ class CardSelection extends GameControls {
 
         if (!this.isWaitingForResponse) {
             this.buttonSelectCards.style.display = "none";
+            this.buttonCloseWindow.style.display = "block";
         } else {
             this.buttonSelectCards.style.display = "block";
+            this.buttonCloseWindow.style.display = "none";
         }
 
         this.renderContainerCards();
@@ -318,9 +321,9 @@ class CardSelection extends GameControls {
         if (!(this.collapseElement instanceof HTMLElement)) {
             throw new Error("Invalid collapse card selection selector");
         }
-        // if (!(this.closeElement instanceof HTMLElement)) {
-        //     throw new Error("Invalid close card selection selector");
-        // }
+        if (!(this.buttonCloseWindow instanceof HTMLElement)) {
+            throw new Error("Invalid close card selection selector");
+        }
         if (!(this.containerElement instanceof HTMLElement)) {
             throw new Error("Invalid container card selection selector");
         }
@@ -344,6 +347,89 @@ class CardSelection extends GameControls {
     init() {
         this.setupCollapseListener();
         this.setupButtonSelectCardListener();
+        this.setupButtonCloseListener();
+    }
+
+    initData(data) {
+        this.title = data?.title;
+        this.description = data?.description;
+        this.textExtension = data?.textExtension;
+        this.selectionCount = data?.selectionCount;
+        this.selectedIndices = data?.selectedIndices;
+        this.isWaitingForResponse = data?.isWaitingForResponse;
+        this.timer = data?.timer;
+        this.setCardToContainer(data?.collectionCards ?? []);
+
+        this.renderUpdatedData();
+        this.setupCardListener();
+        this.showMainController();
+    }
+
+    /**
+     * Добавляет элемент в очередь.
+     * @param {*} data - Данные, которые нужно добавить в очередь.
+     */
+    addInQueueData(data) {
+        this._queueData.push(data);
+    }
+
+    /**
+     * Удаляет первого элемента из очереди.
+     * @returns {*} Удаленный элемент из очереди, или `null`, если очередь пуста.
+     */
+    removeFromQueueData() {
+        if (this._queueData.length === 0) {
+            return null; // Очередь пуста
+        }
+        return this._queueData.shift(); // Удаляет и возвращает первый элемент очереди
+    }
+
+    /**
+     * Получает первый элемент из очереди без его удаления.
+     * @returns {*} Первый элемент очереди, или `null`, если очередь пуста.
+     */
+    peekFromQueueData() {
+        return this._queueData.length > 0 ? this._queueData[0] : null;
+    }
+
+    /**
+     * Инициализирует первые данные в очереди
+     */
+    initFirstQueueData() {
+        if (this._queueData.length === 0) {
+            return null; // Очередь пуста
+        }
+
+        this.initData(this.peekFromQueueData());
+    }
+
+    /**
+     * Проверяет, пуста ли очередь.
+     * @returns {boolean} `true`, если очередь пуста, иначе `false`.
+     */
+    isEmptyQueueData() {
+        return this._queueData.length === 0;
+    }
+
+    setupButtonCloseListener() {
+        this.buttonCloseWindow.addEventListener("click", () => {
+            this.title = "";
+            this.description = "";
+            this.textExtension = "";
+            this.selectionCount = 0;
+            this.selectedIndices = [];
+            this.isWaitingForResponse = true;
+            this.timer = null;
+            this.setCardToContainer([]);
+
+            this.renderUpdatedData();
+            this.hideMainController();
+
+            this.removeFromQueueData();
+            if (!this.isEmptyQueueData()) {
+                this.initFirstQueueData();
+            }
+        });
     }
 
     setupButtonSelectCardListener() {
@@ -352,6 +438,12 @@ class CardSelection extends GameControls {
 
             if (this.selectionCount === 0) {
                 this.hideMainController();
+
+                this.removeFromQueueData();
+                if (!this.isEmptyQueueData()) {
+                    this.initFirstQueueData();
+                }
+
                 document.dispatchEvent(
                     new CustomEvent("sendServer", {
                         detail: {

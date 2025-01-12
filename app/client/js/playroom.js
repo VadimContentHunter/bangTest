@@ -147,7 +147,7 @@ function responseServer(requestManager, notificationsHtml, response) {
 
 function requestServer(request, data = {}, ws) {
     switch (request.method) {
-        case "clientMessage": 
+        case "clientMessage":
             if (!(data.notificationsHtml instanceof NotificationsHtml)) {
                 console.error("Объект notificationsHtml не является экземпляром NotificationsHtml");
             } else if (request?.params?.message === null) {
@@ -171,20 +171,14 @@ function requestServer(request, data = {}, ws) {
             }
             break;
         case "selectionCardsMenu":
-            if (data.cardSelection instanceof CardSelection) {
-                const cardSelection = data.cardSelection;
-                cardSelection.title = request?.params?.title;
-                cardSelection.description = request?.params?.description;
-                cardSelection.textExtension = request?.params?.textExtension;
-                cardSelection.selectionCount = request?.params?.selectionCount;
-                cardSelection.selectedIndices = request?.params?.selectedIndices;
-                cardSelection.isWaitingForResponse = request?.params?.isWaitingForResponse;
-                cardSelection.timer = request?.params?.timer;
-                cardSelection.setCardToContainer(request?.params?.collectionCards ?? []);
-
-                cardSelection.renderUpdatedData();
-                cardSelection.setupCardListener();
-                cardSelection.showMainController();
+            const cardSelection = data.cardSelection;
+            if (cardSelection instanceof CardSelection) {
+                if (cardSelection.isEmptyQueueData()) {
+                    cardSelection.addInQueueData(request?.params ?? {});
+                    cardSelection.initFirstQueueData();
+                } else {
+                    cardSelection.addInQueueData(request?.params ?? {});
+                }
             } else {
                 console.error(
                     "requestServer ('selectionCardsMenu'): data.cardSelection must be CardSelection"
