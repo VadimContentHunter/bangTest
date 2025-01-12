@@ -28,6 +28,7 @@ const DistanceHandler = require("../handlers/DistanceHandler");
 const AdminMenuError = require("../Errors/AdminMenuError");
 const AdminMenuHandler = require("../handlers/AdminMenuHandler");
 const PlayerCollection = require("../handlers/PlayerCollection");
+const ColtCard = require("../models/cards/weapons/ColtCard");
 
 module.exports = function setupWebSocketServer(server, playroomHandler) {
     if (!(playroomHandler instanceof PlayroomHandler)) {
@@ -268,7 +269,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             if (player instanceof Player) {
                 player.lives.max = 5;
                 player.lives.current = 3;
-                player.weapon = new StubCard({ type: CardType.WEAPON });
+                player.weapon = new ColtCard();
                 // player.temporaryCards.setCards([]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
 
