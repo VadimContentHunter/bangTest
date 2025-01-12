@@ -95,6 +95,18 @@ class PlayerActionManager {
     }
 
     /**
+     * Находит хук по имени для конкретного игрока.
+     * @param {string|object} player - Имя игрока или объект Player.
+     * @param {string} hookName - Имя хука для поиска.
+     * @returns {object|null} - Найденный хук или null, если хук не найден.
+     */
+    findHookByName(player, hookName) {
+        const name = this.resolveName(player);
+        const hooks = this.hooks.get(name) || [];
+        return hooks.find((hook) => hook.name === hookName) || null;
+    }
+
+    /**
      * Clears all hooks for all players.
      */
     clearAll() {

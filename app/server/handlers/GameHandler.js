@@ -233,6 +233,26 @@ class GameHandler extends EventEmitter {
                     });
                 });
             }
+
+            if (movePlayer.events.listenerCount("beforeDrawCards") === 0) {
+                movePlayer.events.on("beforeDrawCards", this.updateMove.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("endDrawCards") === 0) {
+                movePlayer.events.on("endDrawCards", this.updateMove.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("playerStartedMove") === 0) {
+                movePlayer.events.on("playerStartedMove", this.updateMove.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("endCardTurnPlayer") === 0) {
+                movePlayer.events.on("endCardTurnPlayer", this.updateMove.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("endFinishedHandler") === 0) {
+                movePlayer.events.on("endFinishedHandler", this.updateMove.bind(this));
+            }
         });
 
         this.emit("afterGameStart");
@@ -413,7 +433,8 @@ class GameHandler extends EventEmitter {
             );
             this.playerActionManager.clearHooksByPlayer(player);
             this.storage.move.playersDistances = new DistanceHandler(this.storage.move.players);
-            this.saveAndTriggerHook(player, "playerStartedMove", {
+
+            player.events.emit("playerStartedMove", {
                 player: player,
                 playerCollection: this.storage.move.players,
                 gameTable: this.storage.move.gameTable,
@@ -436,7 +457,7 @@ class GameHandler extends EventEmitter {
                             cardId: params.id,
                             cardTargetName: params?.targetName ?? "",
                         });
-                        this.emit("endCardTurnPlayer", {
+                        player.events.emit("endCardTurnPlayer", {
                             player: player,
                             playerCollection: this.storage.move.players,
                             gameTable: gameTable,
@@ -519,7 +540,7 @@ class GameHandler extends EventEmitter {
                     // lastMove.gameTable.discardAllCardsFromTable();
                     lastMove.gameTable.clearAllCardsFromTable();
 
-                    this.emit("endFinishedHandler", {
+                    player.events.emit("endFinishedHandler", {
                         player: player,
                         playerCollection: lastMove.players,
                         gameTable: lastMove.gameTable,
@@ -549,19 +570,54 @@ class GameHandler extends EventEmitter {
         });
     }
 
+    /**
+     * Асинхронное действие для хода, в котором игрок берет две карты.
+     *
+     * @param {Player} player - Игрок, который берет карты.
+     * @param {Move} lastMove - Последний ход, содержащий данные о текущем состоянии игры.
+     *
+     * @fires GameHandler#beforeDrawCards   Вызывается перед тем, как игрок берет карты.
+     * @fires GameHandler#endDrawCards      Вызывается после того, как игрок взял карты.
+     *
+     * @throws {Error} Бросает ошибку, если объекты `player` или `lastMove` не являются экземплярами соответствующих классов.
+     */
     async moveDrawTwoCards(player, lastMove) {
         if (player instanceof Player && lastMove instanceof Move) {
             let selectedCards = [];
+
+            /**
+             * Событие, которое срабатывает перед взятием карт игроком.
+             * @event GameHandler#beforeDrawCards
+             * @type {object}
+             * @property {Player} player - Игрок, который берет карты.
+             * @property {PlayerCollection} playerCollection - Коллекция игроков.
+             * @property {GameTable} gameTable - Игровая таблица.
+             */
+            player.events.emit("beforeDrawCards", {
+                player: player,
+                playerCollection: lastMove.players,
+                gameTable: lastMove.gameTable,
+            });
+
             try {
                 selectedCards = player.drawFromDeck(lastMove.gameTable, 2);
             } catch (error) {
                 if (error instanceof GameTableInteractionError) {
+                    // Обрабатываем ошибку взаимодействия с игровой таблицей
                 } else {
                     throw error;
                 }
             }
 
-            this.emit("endDrawCards", {
+            /**
+             * Событие, которое срабатывает после того, как игрок взял карты.
+             * @event GameHandler#endDrawCards
+             * @type {object}
+             * @property {Player} player - Игрок, который взял карты.
+             * @property {PlayerCollection} playerCollection - Коллекция игроков.
+             * @property {GameTable} gameTable - Игровая таблица.
+             */
+            player.events.emit("endDrawCards", {
                 player: player,
                 playerCollection: lastMove.players,
                 gameTable: lastMove.gameTable,
@@ -572,13 +628,12 @@ class GameHandler extends EventEmitter {
                 .map((card) => card.name)
                 .join(", ");
 
-            // this.playerActionManager.clearHooksByPlayer(player);
             console.log(
                 `GameHandler: Этап "взятия": Игрок ${player.name} берет 2 карты: ${cardNames}, вначале своего хода`
             );
         } else {
             throw new Error(
-                "Объект player должны быть экземпляром Player или объект lastMove должен быть экземпляром класса Move"
+                "Объект player должен быть экземпляром Player или объект lastMove должен быть экземпляром класса Move"
             );
         }
     }
@@ -721,12 +776,20 @@ class GameHandler extends EventEmitter {
         });
     }
 
-    saveAndTriggerHook(player, nameHook, dataHook = {}) {
+    updateMove({ player, playerCollection, gameTable, oneUse = true }) {
+        this.saveAndTriggerHook(player, "updateMove", { player, playerCollection, gameTable }, oneUse);
+    }
+
+    saveAndTriggerHook(player, nameHook, dataHook = {}, oneUse = false) {
         if (!(player instanceof Player)) {
             throw new Error("GameHandler: Передан неверный игрок для метода saveAndTriggerHook");
         }
 
         this.emit(nameHook, dataHook);
+        if (oneUse && this.playerActionManager.findHookByName(player, nameHook) === null) {
+            return;
+        }
+
         this.playerActionManager.addHook(player, {
             name: nameHook,
             data: dataHook,

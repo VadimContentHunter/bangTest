@@ -165,7 +165,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         gameHandler.startGame();
     });
 
-    gameHandler.on("playerStartedMove", ({ player, playerCollection, gameTable }) => {
+    gameHandler.on("updateMove", ({ player, playerCollection, gameTable }) => {
         serverHook.emit("updateFullDataClients", playerCollection, gameTable);
         serverHook.emit("lockPlayerMove", player);
     });
@@ -191,21 +191,6 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     gameHandler.on("afterMovesRound", () => {
         gameHandler.playerActionManager.clearAll();
         gameHandler.executeMovesRound();
-    });
-
-    gameHandler.on("endDrawCards", ({ player, playerCollection, gameTable }) => {
-        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
-        serverHook.emit("lockPlayerMove", player);
-    });
-
-    gameHandler.on("endCardTurnPlayer", ({ player, playerCollection, gameTable }) => {
-        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
-        serverHook.emit("lockPlayerMove", player);
-    });
-
-    gameHandler.on("endFinishedHandler", ({ player, playerCollection, gameTable }) => {
-        serverHook.emit("updateFullDataClients", playerCollection, gameTable);
-        serverHook.emit("lockPlayerMove", player);
     });
 
     gameHandler.on("selectionStarted", ({ player, selectionCards }) => {
