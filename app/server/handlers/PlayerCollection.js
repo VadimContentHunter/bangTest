@@ -382,6 +382,35 @@ class PlayerCollection {
     }
 
     /**
+     * Возвращает следующего игрока по ID.
+     * Если параметр цикличности включен, возвращает первого игрока, если текущий игрок — последний.
+     *
+     * @param {number|Player} currentId - Текущий ID игрока.
+     * @param {boolean} isCyclic - Флаг цикличности. Если true, цикл возвращается к первому игроку.
+     * @returns {Player|null} Игрок с ближайшим по величине ID или null, если такого игрока нет.
+     */
+    getNextPlayer(currentId, isCyclic = false) {
+        currentId = currentId instanceof Player ? currentId.id : currentId;
+        
+        const sortedPlayers = this.players.sort((a, b) => a.id - b.id); // Сортируем игроков по возрастанию ID
+
+        // Находим всех игроков с ID больше текущего
+        const nextPlayers = sortedPlayers.filter((player) => player.id > currentId);
+
+        if (nextPlayers.length > 0) {
+            // Если есть игроки с большим ID, возвращаем первого из них
+            return nextPlayers[0];
+        }
+
+        // Если флаг цикличности включен и текущий игрок последний
+        if (isCyclic && sortedPlayers.length > 0) {
+            return sortedPlayers[0]; // Возвращаем первого игрока
+        }
+
+        return null; // Если нет следующего игрока и цикличность отключена
+    }
+
+    /**
      * Собирает данные всех игроков с помощью их метода getSummaryInfo.
      * @returns {Array<Object>} Массив данных всех игроков, полученных из getSummaryInfo.
      * @throws {Error} Если у игрока отсутствует метод getSummaryInfo.

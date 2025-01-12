@@ -368,6 +368,52 @@ class Player {
     }
 
     /**
+     * Передает карту из временной коллекции карт другого игрока.
+     * @param {Player} targetPlayer - Игрок, которому передается карта.
+     * @param {string|number|aCard} cardId - ID карты, которую нужно передать.
+     * @throws {ValidatePlayerError} Если карта с указанным ID не найдена в временной коллекции карт игрока.
+     * @throws {ValidatePlayerError} Если `targetPlayer` не является экземпляром класса Player.
+     * @fires Player#cardTransferred Событие, которое срабатывает, когда карта передана другому игроку.
+     */
+    transferTemporaryCardToPlayer(targetPlayer, cardId) {
+        cardId = cardId instanceof aCard ? cardId?.id : cardId;
+
+        if (!(targetPlayer instanceof Player)) {
+            throw new ValidatePlayerError("Целевой игрок должен быть экземпляром Player.");
+        }
+
+        if ((typeof cardId !== "string" || cardId.trim() === "") && typeof cardId !== "number") {
+            throw new ValidatePlayerError("ID карты должен быть непустой строкой или числом.");
+        }
+
+        // Извлекаем карту из временной коллекции карт
+        const cardToTransfer = this.temporaryCards.pullCardById(cardId);
+
+        // Передаем карту другому игроку
+        targetPlayer.hand.addCard(cardToTransfer); // Добавляем карту в руку целевого игрока
+
+        console.log(
+            `Игрок ${this.name} передал карту ${cardToTransfer.name} игроку ${targetPlayer.name}`
+        );
+
+        // Вызываем событие о передаче карты
+        if (this.events instanceof EventEmitter) {
+            /**
+             * @event Player#cardTransferred
+             * @type {Object}
+             * @property {Player} fromPlayer - Игрок, который передает карту.
+             * @property {Player} toPlayer - Игрок, которому передается карта.
+             * @property {aCard} card - Карта, которая передана.
+             */
+            this.events.emit("cardTransferred", {
+                fromPlayer: this,
+                toPlayer: targetPlayer,
+                card: cardToTransfer,
+            });
+        }
+    }
+
+    /**
      * Обновляет данные игрока.
      * @param {Object} updates - Объект с новыми данными для обновления.
      */
@@ -437,7 +483,6 @@ class Player {
                 distance: distanceValue,
             });
         });
-
 
         // Если событие вернуло false, отменяем отнимание жизней
         if (eventResults.includes(false)) {
