@@ -83,7 +83,6 @@ class BarrelCard extends ConstantCard {
                     console.log(
                         `У игрока ${player?.name} сработала бочка. Игрок вытянул карту: ${card.name}, ${card.suit}.`
                     );
-                    let l = card instanceof aCard && card.suit === CardSuit.HEARTS ? false : true;
                     return card instanceof aCard && card.suit === CardSuit.HEARTS ? false : true;
                 }
             });

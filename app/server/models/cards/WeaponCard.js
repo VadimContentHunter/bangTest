@@ -38,26 +38,6 @@ class WeaponCard extends aCard {
         this.distance = distance;
     }
 
-    /**
-     * Геттер для дистанции оружия.
-     * @returns {number} Дистанция оружия.
-     */
-    get distance() {
-        return this._distance;
-    }
-
-    /**
-     * Сеттер для дистанции.
-     * @param {number} value - Установить дистанцию.
-     * @throws {CardError} Если distance не является положительным целым числом.
-     */
-    set distance(value) {
-        if (!Number.isInteger(value) || value < 0) {
-            throw new CardError("distance должен быть положительным целым числом.");
-        }
-        this._distance = value;
-    }
-
     static initFromJSON(data) {
         return new WeaponCard({
             name: data.name,

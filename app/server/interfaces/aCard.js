@@ -32,11 +32,47 @@ class CardRank {
     static EIGHT = "8";
     static NINE = "9";
     static TEN = "10";
-    static JACK = "Jack";
-    static QUEEN = "Queen";
-    static KING = "King";
-    static ACE = "Ace";
+    static JACK = "J";
+    static QUEEN = "Q";
+    static KING = "K";
+    static ACE = "A";
     static NONE = "none";
+
+    static ranks = [
+        CardRank.TWO,
+        CardRank.THREE,
+        CardRank.FOUR,
+        CardRank.FIVE,
+        CardRank.SIX,
+        CardRank.SEVEN,
+        CardRank.EIGHT,
+        CardRank.NINE,
+        CardRank.TEN,
+        CardRank.JACK,
+        CardRank.QUEEN,
+        CardRank.KING,
+        CardRank.ACE,
+        CardRank.NONE,
+    ];
+
+    /**
+     * Проверяет, находится ли указанный ранг карты в заданном диапазоне.
+     * @param {string} rank - Ранг карты для проверки (например, "2", "J", "A").
+     * @param {string} minRank - Минимальный ранг диапазона.
+     * @param {string} maxRank - Максимальный ранг диапазона.
+     * @returns {boolean} - Возвращает true, если ранг находится в диапазоне, иначе false.
+     */
+    static isRankInRange(rank, minRank, maxRank) {
+        const rankIndex = CardRank.ranks.indexOf(rank);
+        const minIndex = CardRank.ranks.indexOf(minRank);
+        const maxIndex = CardRank.ranks.indexOf(maxRank);
+
+        if (rankIndex === -1 || minIndex === -1 || maxIndex === -1) {
+            throw new Error("Invalid rank provided.");
+        }
+
+        return rankIndex >= minIndex && rankIndex <= maxIndex;
+    }
 }
 
 /**
@@ -206,6 +242,29 @@ class aCard {
     }
 
     /**
+     * @param {number} value
+     * @throws {CardError} Если параметр 'damage' не является положительным целым числом.
+     */
+    set damage(value) {
+        if (!Number.isInteger(value) || value <= 0) {
+            throw new CardError("Параметр 'damage' должен быть положительным целым числом.");
+        }
+        this._damage = value;
+    }
+
+    /**
+     * Сеттер для дистанции.
+     * @param {number} value - Установить дистанцию.
+     * @throws {CardError} Если distance не является положительным целым числом.
+     */
+    set distance(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new CardError("distance должен быть положительным целым числом.");
+        }
+        this._distance = value;
+    }
+
+    /**
      * Получает ID карты.
      * @returns {number} ID карты.
      */
@@ -278,6 +337,21 @@ class aCard {
     }
 
     /**
+     * @returns {number}
+     */
+    get damage() {
+        return this._damage;
+    }
+
+    /**
+     * Геттер для дистанции оружия.
+     * @returns {number} Дистанция оружия.
+     */
+    get distance() {
+        return this._distance;
+    }
+
+    /**
      * Абстрактный метод для действия карты.
      * Этот метод должен быть реализован в дочерних классах.
      * @throws {CardError} Если метод не переопределен в дочернем классе.
@@ -312,7 +386,7 @@ class aCard {
             rank: this.rank,
             className: this.constructor.name,
             distance: this._distance,
-            damage: this._damage,
+            damage: this.damage,
         };
     }
 

@@ -23,24 +23,6 @@ class BangCard extends DefaultCard {
         });
     }
 
-    /**
-     * @returns {number}
-     */
-    get damage() {
-        return this._damage;
-    }
-
-    /**
-     * @param {number} value
-     * @throws {CardError} Если параметр 'damage' не является положительным целым числом.
-     */
-    set damage(value) {
-        if (!Number.isInteger(value) || value <= 0) {
-            throw new CardError("Параметр 'damage' должен быть положительным целым числом.");
-        }
-        this._damage = value;
-    }
-
     static initFromJSON(data) {
         return new BangCard(data?.rang ?? "", data?.ownerName ?? "", data?.targetName ?? "");
     }
