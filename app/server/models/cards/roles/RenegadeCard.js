@@ -19,6 +19,8 @@ class RenegadeCard extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = RenegadeCard;

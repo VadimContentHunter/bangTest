@@ -19,6 +19,8 @@ class DeputySheriffCard extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = DeputySheriffCard;

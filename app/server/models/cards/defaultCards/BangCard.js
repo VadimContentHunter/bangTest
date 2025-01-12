@@ -56,6 +56,8 @@ class BangCard extends DefaultCard {
             throw new CardInteractionError(error.message, this);
         }
     }
+
+    destroy() {}
 }
 
 module.exports = BangCard;

@@ -23,7 +23,7 @@ class SheriffCard extends aCard {
 
     action({ player }) {
         const Player = require("../../Player");
-        if(!(player instanceof Player)){
+        if (!(player instanceof Player)) {
             throw new CardError("Invalid player type");
         }
 
@@ -33,6 +33,8 @@ class SheriffCard extends aCard {
 
         player.lives.addOneLife();
     }
+
+    destroy() {}
 }
 
 module.exports = SheriffCard;

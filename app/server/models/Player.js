@@ -388,8 +388,7 @@ class Player {
 
         // Извлекаем карту из временной коллекции карт
         const cardToTransfer = this.temporaryCards.pullCardById(cardId);
-
-        // Передаем карту другому игроку
+        cardToTransfer.destroy();
         cardToTransfer.ownerName = targetPlayer.name;
         targetPlayer.temporaryCards.addCard(cardToTransfer); // Добавляем карту в руку целевого игрока
 

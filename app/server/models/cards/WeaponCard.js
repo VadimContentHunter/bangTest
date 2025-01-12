@@ -54,6 +54,8 @@ class WeaponCard extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = WeaponCard;

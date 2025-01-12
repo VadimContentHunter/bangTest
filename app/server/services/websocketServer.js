@@ -254,7 +254,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
             if (player instanceof Player) {
                 player.lives.max = 5;
                 player.lives.current = 3;
-                player.weapon = new ColtCard();
+                // player.weapon = new ColtCard();
                 // player.temporaryCards.setCards([]);
                 ws.send(JsonRpcFormatter.serializeRequest("getMyPlayer", player?.getInfo()));
 

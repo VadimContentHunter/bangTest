@@ -134,6 +134,12 @@ class aCard {
             );
         }
 
+        if (this.destroy === aCard.prototype.destroy) {
+            throw new CardError(
+                `Класс-наследник ${this.constructor.name} должен реализовывать метод 'destroy()'`
+            );
+        }
+
         // Проверка на переопределение метода getActionCallCount()
         // if (this.getActionCallCount === aCard.prototype.getActionCallCount) {
         //     throw new CardError(
@@ -358,6 +364,15 @@ class aCard {
      */
     action() {
         throw new CardError("Метод 'action()' должен быть реализован");
+    }
+
+    /**
+     * Освобождает ресурсы объекта или выполняет завершающие действия перед его удалением.
+     * Этот метод должен быть реализован в подклассе.
+     * @throws {CardError} Если метод не реализован.
+     */
+    destroy() {
+        throw new CardError("Метод 'destroy()' должен быть реализован");
     }
 
     /**

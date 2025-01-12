@@ -1,4 +1,4 @@
-const {aCard, CardType} = require("../../../interfaces/aCard");
+const { aCard, CardType } = require("../../../interfaces/aCard");
 
 class BanditCard extends aCard {
     constructor(ownerName = "") {
@@ -19,6 +19,8 @@ class BanditCard extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = BanditCard;

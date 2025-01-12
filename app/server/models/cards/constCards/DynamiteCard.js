@@ -111,18 +111,18 @@ class DynamiteCard extends ConstantCard {
             CardRank.isRankInRange(showCard.rank, CardRank.TWO, CardRank.NINE) &&
             showCard.suit === CardSuit.SPADES
         ) {
-            this.removeEventListener();
             this.#cardPlayer.lives.removeLives(3);
             this.#cardGameTable.discardCards([
                 this.#cardPlayer.temporaryCards.pullCardById(this.id),
             ]);
             console.log(
-                `У игрока ${this.#cardPlayer?.name} Взорвался Динамит и получает урон -${this.damage}.`
+                `У игрока ${this.#cardPlayer?.name} Взорвался Динамит и получает урон -${
+                    this.damage
+                }.`
             );
         } else {
             const nextPlayer = playerCollection.getNextPlayer(this.#cardPlayer.id, true);
             if (!nextPlayer.temporaryCards.hasCardByName(this.name)) {
-                this.removeEventListener();
                 this.#cardPlayer.transferTemporaryCardToPlayer(
                     playerCollection.getNextPlayer(this.#cardPlayer.id, true),
                     this.id
@@ -156,6 +156,12 @@ class DynamiteCard extends ConstantCard {
         } else {
             throw new TypeError("Переданный объект не является игроком (Player).");
         }
+    }
+
+    destroy() {
+        this.removeEventListener();
+        this.#cardPlayer = null;
+        this.#cardGameTable = null;
     }
 }
 

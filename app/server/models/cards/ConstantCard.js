@@ -49,7 +49,7 @@ class ConstantCard extends aCard {
         return 0;
     }
 
-    action() {}
+    // action() {}
 }
 
 module.exports = ConstantCard;

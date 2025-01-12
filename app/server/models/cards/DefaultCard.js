@@ -49,7 +49,7 @@ class DefaultCard extends aCard {
         return 0;
     }
 
-    action() {}
+    // action() {}
 }
 
 module.exports = DefaultCard;

@@ -23,6 +23,8 @@ class ElGringo extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = ElGringo;

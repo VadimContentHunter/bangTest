@@ -23,6 +23,8 @@ class CalamityJanet extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = CalamityJanet;
