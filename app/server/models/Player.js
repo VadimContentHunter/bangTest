@@ -9,6 +9,7 @@ const EventEmitter = require("events");
 const WeaponCard = require("./cards/WeaponCard");
 const GameTable = require("./GameTable");
 const PlayerInteractionError = require("../Errors/PlayerInteractionError");
+const StubCard = require("./cards/StubCard");
 
 class Player {
     /**
@@ -341,7 +342,7 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this.lives,
-            role: this.role,
+            role: this.role ?? new StubCard({type: CardType.ROLE}),
             character: this.character,
             weapon: this.weapon,
             temporaryCards: this.temporaryCards,
@@ -359,7 +360,7 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this.lives,
-            role: this.role instanceof SheriffCard ? this.role : null,
+            role: this.role instanceof SheriffCard ? this.role : new StubCard({type: CardType.ROLE}),
             character: this.character,
             weapon: this.weapon,
             temporaryCards: this.temporaryCards,

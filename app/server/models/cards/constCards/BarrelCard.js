@@ -80,12 +80,14 @@ class BarrelCard extends ConstantCard {
         }
 
         if (damage > 0) {
-            let card = cardGameTable.showRandomsCards(1)[0] ?? null;
+            let card = this.#cardGameTable.showRandomsCards(1)[0] ?? null;
 
             const selectionCards = new SelectionCards({
                 title: `Событие карты ${this.name}`,
                 description: "Если карта масти 'Черва', игрок не получает урон",
-                textExtension: `У игрока <i>${cardPlayer?.name || "неизвестный"}</i> вытянул карту: 
+                textExtension: `У игрока <i>${
+                    this.#cardPlayer?.name || "неизвестный"
+                }</i> вытянул карту: 
                         (<b><i>${card.name}</i></b>, <b><i>${card.suit}</i></b>, <b><i>${
                     card.rank
                 }</i></b>)`,
@@ -101,10 +103,12 @@ class BarrelCard extends ConstantCard {
              * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
              * @property {SelectionCards} selectionCards - Объект выбора карт.
              */
-            cardPlayer.events.emit("showCards", { selectionCards });
+            this.#cardPlayer.events.emit("showCards", { selectionCards });
 
             console.log(
-                `У игрока ${cardPlayer?.name} сработала бочка. Игрок вытянул карту: ${card.name}, ${card.suit}.`
+                `У игрока ${this.#cardPlayer?.name} сработала бочка. Игрок вытянул карту: ${
+                    card.name
+                }, ${card.suit}.`
             );
             return card instanceof aCard && card.suit === CardSuit.HEARTS ? false : true;
         }
@@ -137,7 +141,7 @@ class BarrelCard extends ConstantCard {
              *
              * @returns {boolean} Возвращает `true`, если урон может быть нанесен, или `false`, если необходимо предотвратить урон.
              */
-            cardPlayer.events.on("beforeDamage", this.boundHandler);
+            this.#cardPlayer.events.on("beforeDamage", this.boundHandler);
         } else {
             throw new TypeError("Переданный объект не является игроком (Player).");
         }

@@ -74,31 +74,20 @@ class DynamiteCard extends ConstantCard {
         }
 
         let showCard = this.#cardGameTable.showRandomsCards(1)[0] ?? null;
-
-        /**
-         * Событие, которое вызывает отображение карт.
-         * @event GameTable#showCards
-         * @type {Object}
-         * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
-         * @property {SelectionCards} selectionCards - Объект выбора карт.
-         */
-        this.#cardPlayer.events.emit("showCards", {
-            selectionCards: new SelectionCards({
-                title: `Событие карты ${this.name}`,
-                description: `1) Если вытянули пику от двойки до девятки включительно,
-                            «Динамит» взрывается: сбросьте его карту и потеряйте три единицы здоровья;
-                            2) если вытянули другую карту, передайте «Динамит» соседу слева: 
-                            в начале своего хода он будет делать такую же проверку`,
-                textExtension: `У игрока <i>${
-                    this.#cardPlayer?.name || "неизвестный"
-                }</i> вытянул карту: 
-                (<b><i>${showCard.name}</i></b>, <b><i>${showCard.suit}</i></b>, <b><i>${
-                    showCard.rank
-                }</i></b>)`,
-                collectionCards: [showCard],
-                selectionCount: 0,
-                isWaitingForResponse: false,
-            }),
+        const nextPlayer = playerCollection.getNextPlayer(this.#cardPlayer.id, true);
+        const selectionCards = new SelectionCards({
+            title: `Событие карты ${this.name}`,
+            description: `1) Если вытянули пику от двойки до девятки включительно,
+                    «Динамит» взрывается: сбросьте его карту и потеряйте три единицы здоровья;
+                    <br>2) если вытянули другую карту, передайте «Динамит» соседу слева: 
+                    в начале своего хода он будет делать такую же проверку`,
+            textExtension: `Игрок <i>${
+                this.#cardPlayer?.name || "неизвестный"
+            }</i> вытянул карту: 
+            (<i>${showCard.name}</i>,<i>${showCard.suit}</i>,<i>${showCard.rank}</i>)`,
+            collectionCards: [showCard],
+            selectionCount: 0,
+            isWaitingForResponse: false,
         });
 
         console.log(
@@ -111,18 +100,46 @@ class DynamiteCard extends ConstantCard {
             CardRank.isRankInRange(showCard.rank, CardRank.TWO, CardRank.NINE) &&
             showCard.suit === CardSuit.SPADES
         ) {
-            this.#cardPlayer.lives.removeLives(3);
-            this.#cardGameTable.discardCards([
-                this.#cardPlayer.temporaryCards.pullCardById(this.id),
-            ]);
+            selectionCards.textExtension += `<br>У игрока <i>${
+                this.#cardPlayer?.name
+            }</i> Взорвался Динамит и получает <i>урон -${this.damage}</i>.`;
             console.log(
                 `У игрока ${this.#cardPlayer?.name} Взорвался Динамит и получает урон -${
                     this.damage
                 }.`
             );
+            /**
+             * Событие, которое вызывает отображение карт.
+             * @event GameTable#showCards
+             * @type {Object}
+             * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
+             * @property {SelectionCards} selectionCards - Объект выбора карт.
+             */
+            this.#cardPlayer.events.emit("showCards", {
+                selectionCards: selectionCards,
+            });
+
+            this.#cardPlayer.lives.removeLives(3);
+            this.#cardGameTable.discardCards([
+                this.#cardPlayer.temporaryCards.pullCardById(this.id),
+            ]);
         } else {
-            const nextPlayer = playerCollection.getNextPlayer(this.#cardPlayer.id, true);
             if (!nextPlayer.temporaryCards.hasCardByName(this.name)) {
+                selectionCards.textExtension += `<br>Карта будет передана игроку <i>${
+                    nextPlayer?.name || "неизвестный"
+                }</i>`;
+
+                /**
+                 * Событие, которое вызывает отображение карт.
+                 * @event GameTable#showCards
+                 * @type {Object}
+                 * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
+                 * @property {SelectionCards} selectionCards - Объект выбора карт.
+                 */
+                this.#cardPlayer.events.emit("showCards", {
+                    selectionCards: selectionCards,
+                });
+
                 this.#cardPlayer.transferTemporaryCardToPlayer(
                     playerCollection.getNextPlayer(this.#cardPlayer.id, true),
                     this.id

@@ -29,6 +29,8 @@ class StubCard extends aCard {
     }
 
     action() {}
+
+    destroy() {}
 }
 
 module.exports = StubCard;

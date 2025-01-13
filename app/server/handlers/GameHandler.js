@@ -181,14 +181,14 @@ class GameHandler extends EventEmitter {
             new ElGringo(),
         ]);
         this.storage.gameCards = new CardsCollection([
-            new BangCard({ rank: CardRank.ACE, suit: CardSuit.SPADES }),
+            new BangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
             new RemingtonCard(),
             new BangCard({ rank: CardRank.FIVE, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
             new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
-            new BarrelCard({ rank: CardRank.QUEEN, suit: CardSuit.SPADES }),
+            new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new RemingtonCard(),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
