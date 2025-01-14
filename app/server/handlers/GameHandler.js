@@ -475,14 +475,24 @@ class GameHandler extends EventEmitter {
                             gameTable: gameTable,
                         });
                     } catch (error) {
+                        // если игрок походил карту, а она вызвала интерактивную ошибку в зависимости от
+                        // условий разыгрывания карты (не выбрал цель, уже существует и тд.)
+                        // в этом случае игрок вытаскивает карту из разыгранных,
+                        // деактивирует и возвращает в руку
                         if (error instanceof CardInteractionError) {
                             if (
                                 !player.hand.hasCardById(error.card?.id) &&
                                 gameTable.playedCards.hasCardById(error.card?.id)
                             ) {
-                                player.hand.addCard(
-                                    gameTable.playedCards.pullCardById(error.card?.id)
-                                );
+                                if (player.temporaryCards.hasCardById(error.card?.id)) {
+                                    const errorTemporaryCard = player.temporaryCards.pullCardById(
+                                        error.card?.id
+                                    );
+                                    errorTemporaryCard.destroy();
+                                }
+                                const errorCard = gameTable.playedCards.pullCardById(error.card?.id);
+                                errorCard.destroy();
+                                player.hand.addCard(errorCard);
                             } else {
                                 throw error;
                             }

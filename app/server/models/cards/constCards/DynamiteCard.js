@@ -1,4 +1,5 @@
 const CardError = require("../../../Errors/CardError");
+const CardInteractionError = require("../../../Errors/CardInteractionError");
 const PlayerCollection = require("../../../handlers/PlayerCollection");
 const { aCard, CardType, CardSuit, CardRank } = require("../../../interfaces/aCard");
 const GameTable = require("../../GameTable");
@@ -18,6 +19,8 @@ class DynamiteCard extends ConstantCard {
      * @private
      */
     #cardGameTable = null;
+
+    static actionCallCount = 0;
 
     boundHandler = null; // Сохраняем привязанный обработчик
 
@@ -51,10 +54,6 @@ class DynamiteCard extends ConstantCard {
         });
     }
 
-    getActionCallCount() {
-        return 0;
-    }
-
     /**
      * @param {Player} player - Игрок, который берет карты.
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
@@ -81,9 +80,7 @@ class DynamiteCard extends ConstantCard {
                     «Динамит» взрывается: сбросьте его карту и потеряйте три единицы здоровья;
                     <br>2) если вытянули другую карту, передайте «Динамит» соседу слева: 
                     в начале своего хода он будет делать такую же проверку`,
-            textExtension: `Игрок <i>${
-                this.#cardPlayer?.name || "неизвестный"
-            }</i> вытянул карту: 
+            textExtension: `Игрок <i>${this.#cardPlayer?.name || "неизвестный"}</i> вытянул карту: 
             (<i>${showCard.name}</i>,<i>${showCard.suit}</i>,<i>${showCard.rank}</i>)`,
             collectionCards: [showCard],
             selectionCount: 0,
@@ -161,6 +158,11 @@ class DynamiteCard extends ConstantCard {
     }
 
     action({ cardPlayer, cardGameTable }) {
+        if (DynamiteCard.actionCallCount > 0) {
+            throw new CardInteractionError("Динамит в игре может быть только один.", this);
+        }
+        DynamiteCard.actionCallCount++;
+
         if (cardPlayer instanceof Player && cardGameTable instanceof GameTable) {
             this.#cardPlayer = cardPlayer;
             this.#cardGameTable = cardGameTable;
@@ -176,6 +178,14 @@ class DynamiteCard extends ConstantCard {
     }
 
     destroy() {
+        if (
+            this.#cardGameTable instanceof GameTable &&
+            this.#cardGameTable.discardDeck.hasCardById(this.id)
+        ) {
+            DynamiteCard.actionCallCount =
+                DynamiteCard.actionCallCount > 0 ? DynamiteCard.actionCallCount-- : 0;
+        }
+
         this.removeEventListener();
         this.#cardPlayer = null;
         this.#cardGameTable = null;
