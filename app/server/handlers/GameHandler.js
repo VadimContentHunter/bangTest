@@ -200,8 +200,6 @@ class GameHandler extends EventEmitter {
 
             new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
-            new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
-            new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
 
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),

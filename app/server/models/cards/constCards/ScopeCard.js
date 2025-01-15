@@ -10,7 +10,7 @@ class ScopeCard extends ConstantCard {
      * @type {Player|null}
      * @private
      */
-    #cardPlayer = null;
+    #ownerPlayer = null;
 
     /**
      * @type {GameTable|null}
@@ -67,8 +67,8 @@ class ScopeCard extends ConstantCard {
      * @returns {boolean} Возвращает `true`, если урон может быть нанесен, или `false`, если необходимо предотвратить урон.
      */
     handler({ attacker, damage, target, distance }) {
-        if (!(this.#cardPlayer instanceof Player)) {
-            throw new TypeError("this.#cardPlayer должен быть экземпляром Player");
+        if (!(this.#ownerPlayer instanceof Player)) {
+            throw new TypeError("this.#ownerPlayer должен быть экземпляром Player");
         }
 
         if (!(this.#cardGameTable instanceof GameTable)) {
@@ -83,48 +83,57 @@ class ScopeCard extends ConstantCard {
             throw new TypeError("distance должен быть целым числом (Дистанция между игроками).");
         }
 
-
-        if (
-            this.#cardPlayer === attacker
-        ) {
+        if (this.#ownerPlayer === attacker) {
             return { modifiedDistance: 1 };
         }
     }
 
     removeEventListener() {
-        if (this.#cardPlayer?.events && this.boundHandler !== null) {
-            this.#cardPlayer.events.off("beforeAttackerAction", this.boundHandler);
+        if (this.#ownerPlayer?.events && this.boundHandler !== null) {
+            this.#ownerPlayer.events.off("beforeAttackerAction", this.boundHandler);
             this.boundHandler = null; // Убираем ссылку для предотвращения повторного использования
         }
     }
 
-    action({ cardPlayer, cardGameTable }) {
-        if (cardPlayer instanceof Player && cardGameTable instanceof GameTable) {
-            this.#cardPlayer = cardPlayer;
-            this.#cardGameTable = cardGameTable;
+    /**
+     *
+     * @param {object} param0
+     * @param {PlayerCollection} param0.players
+     * @param {GameTable} param0.cardGameTable
+     */
+    action({ players, cardGameTable }) {
+        const ownerPlayer = players.getPlayerByName(this.ownerName);
 
-            // Сохраняем обработчик
-            this.boundHandler = this.handler.bind(this);
-
-            /**
-             * @listens Player#beforeAttackerAction
-             * @param {Object} params - Параметры события.
-             * @param {Player} params.attacker - Игрок, который наносит урон.
-             * @param {number} params.damage - Количество урона, который будет нанесен.
-             * @param {Player} params.target - Игрок, который получает урон.
-             * @param {number} params.distance - Дистанция между атакующим и целью, которая может ограничивать возможность атаки.
-             *
-             * @returns {boolean} Возвращает `true`, если урон может быть нанесен, или `false`, если необходимо предотвратить урон.
-             */
-            this.#cardPlayer.events.on("beforeAttackerAction", this.boundHandler);
-        } else {
-            throw new TypeError("Переданный объект не является игроком (Player).");
+        if (!(ownerPlayer instanceof Player)) {
+            throw new CardError("Не известно кто походил карту");
         }
+
+        if (!(cardGameTable instanceof GameTable)) {
+            throw new CardError("gameTable должен быть GameTable класса");
+        }
+
+        this.#ownerPlayer = ownerPlayer;
+        this.#cardGameTable = cardGameTable;
+
+        // Сохраняем обработчик
+        this.boundHandler = this.handler.bind(this);
+
+        /**
+         * @listens Player#beforeAttackerAction
+         * @param {Object} params - Параметры события.
+         * @param {Player} params.attacker - Игрок, который наносит урон.
+         * @param {number} params.damage - Количество урона, который будет нанесен.
+         * @param {Player} params.target - Игрок, который получает урон.
+         * @param {number} params.distance - Дистанция между атакующим и целью, которая может ограничивать возможность атаки.
+         *
+         * @returns {boolean} Возвращает `true`, если урон может быть нанесен, или `false`, если необходимо предотвратить урон.
+         */
+        this.#ownerPlayer.events.on("beforeAttackerAction", this.boundHandler);
     }
 
     destroy() {
         this.removeEventListener();
-        this.#cardPlayer = null;
+        this.#ownerPlayer = null;
         this.#cardGameTable = null;
     }
 }
