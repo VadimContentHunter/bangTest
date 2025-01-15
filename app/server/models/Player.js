@@ -342,7 +342,7 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this.lives,
-            role: this.role ?? new StubCard({type: CardType.ROLE}),
+            role: this.role ?? new StubCard({ type: CardType.ROLE }),
             character: this.character,
             weapon: this.weapon,
             temporaryCards: this.temporaryCards,
@@ -360,7 +360,10 @@ class Player {
             name: this.name,
             sessionId: this.sessionId,
             lives: this.lives,
-            role: this.role instanceof SheriffCard ? this.role : new StubCard({type: CardType.ROLE}),
+            role:
+                this.role instanceof SheriffCard
+                    ? this.role
+                    : new StubCard({ type: CardType.ROLE }),
             character: this.character,
             weapon: this.weapon,
             temporaryCards: this.temporaryCards,
@@ -464,6 +467,28 @@ class Player {
         }
 
         /**
+         * Вызов события перед атакой атакующего игрока.
+         * Если событие возвращает false, атака не выполняется.
+         *
+         * @event beforeAttackerAction
+         * @type {Object}
+         * @property {Player} attacker - Игрок, который выполняет атаку.
+         * @property {number} damage - Количество урона, который должен быть нанесено.
+         * @property {Player} target - Игрок, на которого направлена атака.
+         * @property {number} distance - Расстояние между атакующим игроком и целью.
+         */
+        const beforeAttackerActionEvent = attackingPlayer.events
+            .listeners("beforeAttackerAction")
+            .map((listener) => {
+                return listener({
+                    attacker: attackingPlayer,
+                    damage: damage,
+                    target: this,
+                    distance: distanceValue,
+                });
+            });
+
+        /**
          * Вызов события перед нанесением урона.
          * Если событие возвращает false, урон не наносится.
          *
@@ -476,7 +501,7 @@ class Player {
          *
          * @returns {boolean|void} Возвращает false для отмены нанесения урона, иначе ничего не возвращает.
          */
-        const eventResults = this.events.listeners("beforeDamage").map((listener) => {
+        const beforeDamageEvent = this.events.listeners("beforeDamage").map((listener) => {
             return listener({
                 attacker: attackingPlayer,
                 damage: damage,
@@ -486,13 +511,21 @@ class Player {
         });
 
         // Если событие вернуло false, отменяем отнимание жизней
-        if (eventResults.includes(false)) {
+        if (beforeDamageEvent.includes(false)) {
             return;
         }
 
+        let attackerModifiedDistance = 0;
+        beforeAttackerActionEvent.forEach((result) => {
+            if (result && typeof result === "object" && "modifiedDistance" in result) {
+                attackerModifiedDistance = result.modifiedDistance;
+            }
+        });
+
         if (
             attackingPlayer.weapon instanceof WeaponCard &&
-            distanceValue <= attackingPlayer.weapon.distance
+            Number.isInteger(attackingPlayer?.weapon?.distance) &&
+            distanceValue <= attackingPlayer.weapon.distance + attackerModifiedDistance
         ) {
             this.lives.removeLives(damage);
         } else {

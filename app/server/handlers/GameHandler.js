@@ -42,6 +42,7 @@ const GameTableInteractionError = require("../Errors/GameTableInteractionError")
 const BarrelCard = require("../models/cards/constCards/BarrelCard");
 const ColtCard = require("../models/cards/weapons/ColtCard");
 const DynamiteCard = require("../models/cards/constCards/DynamiteCard");
+const ScopeCard = require("../models/cards/constCards/ScopeCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -137,6 +138,7 @@ class GameHandler extends EventEmitter {
             BarrelCard,
             ColtCard,
             DynamiteCard,
+            ScopeCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -182,21 +184,29 @@ class GameHandler extends EventEmitter {
         ]);
         this.storage.gameCards = new CardsCollection([
             new BangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
-            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
-            new RemingtonCard(),
+            new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
             new BangCard({ rank: CardRank.FIVE, suit: CardSuit.HEARTS }),
-            new DynamiteCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
-            new BangCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
-            new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
-            new RemingtonCard(),
-            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
-            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new BangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
+
             new RemingtonCard(),
+            new RemingtonCard(),
+            new RemingtonCard(),
+            new RemingtonCard(),
+
+            new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
-            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new BarrelCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
+
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
+
+            new ScopeCard(),
+            new ScopeCard(),
+            new ScopeCard(),
+            new ScopeCard(),
+            new ScopeCard(),
         ]);
 
         const gameTable = new GameTable({
@@ -744,6 +754,7 @@ class GameHandler extends EventEmitter {
             throw new Error("GameHandler: Card must be an instance of a Card.");
         }
         if (card instanceof ConstantCard) {
+            card.destroy();
             card.action({ cardPlayer: toPlayer, cardGameTable: this.storage.move.gameTable });
         }
         // this.updateMove({
