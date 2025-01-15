@@ -3,7 +3,7 @@ const CardError = require("../../../Errors/CardError");
 const CardsCollection = require("../../../handlers/CardsCollection");
 const WeaponCard = require("../WeaponCard");
 
-class ColtCard extends WeaponCard {
+class CarabinCard extends WeaponCard {
     /**
      * Конструктор для создания карты.
      * @param {Object} params - Параметры карты.
@@ -15,9 +15,9 @@ class ColtCard extends WeaponCard {
      */
     constructor({ ownerName = "", suit = CardSuit.NONE, rank = CardRank.NONE } = {}) {
         super({
-            name: "Кольт",
-            image: "../resources/imgs/cards/weapons/01_colt.png",
-            distance: 1,
+            name: "Карабин",
+            image: "../resources/imgs/cards/weapons/01_carabine.png",
+            distance: 4,
             ownerName: ownerName,
             suit: suit,
             rank: rank,
@@ -25,10 +25,10 @@ class ColtCard extends WeaponCard {
     }
 
     static initFromJSON(data) {
-        return new ColtCard({
+        return new CarabinCard({
             ownerName: data?.ownerName ?? "",
         });
     }
 }
 
-module.exports = ColtCard;
+module.exports = CarabinCard;
