@@ -43,6 +43,7 @@ const BarrelCard = require("../models/cards/constCards/BarrelCard");
 const ColtCard = require("../models/cards/weapons/ColtCard");
 const DynamiteCard = require("../models/cards/constCards/DynamiteCard");
 const ScopeCard = require("../models/cards/constCards/ScopeCard");
+const MustangCard = require("../models/cards/constCards/MustangCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -139,6 +140,7 @@ class GameHandler extends EventEmitter {
             ColtCard,
             DynamiteCard,
             ScopeCard,
+            MustangCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -196,17 +198,18 @@ class GameHandler extends EventEmitter {
 
             new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
-            new BarrelCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
 
-            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
 
             new ScopeCard(),
             new ScopeCard(),
             new ScopeCard(),
-            new ScopeCard(),
-            new ScopeCard(),
+
+            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
+            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
+            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
+            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.DIAMONDS }),
         ]);
 
         const gameTable = new GameTable({

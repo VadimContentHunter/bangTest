@@ -522,10 +522,18 @@ class Player {
             }
         });
 
+        let targetModifiedDistance = 0;
+        beforeDamageEvent.forEach((result) => {
+            if (result && typeof result === "object" && "modifiedDistance" in result) {
+                targetModifiedDistance = result.modifiedDistance;
+            }
+        });
+
         if (
             attackingPlayer.weapon instanceof WeaponCard &&
             Number.isInteger(attackingPlayer?.weapon?.distance) &&
-            distanceValue <= attackingPlayer.weapon.distance + attackerModifiedDistance
+            targetModifiedDistance + distanceValue <=
+                attackingPlayer.weapon.distance + attackerModifiedDistance
         ) {
             this.lives.removeLives(damage);
         } else {
