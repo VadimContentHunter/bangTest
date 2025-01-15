@@ -93,6 +93,9 @@ class DynamiteCard extends ConstantCard {
             }, ${showCard.suit}, ${showCard.rank}.`
         );
 
+        DynamiteCard.actionCallCount =
+            DynamiteCard.actionCallCount > 0 ? DynamiteCard.actionCallCount - 1 : 0;
+
         if (
             CardRank.isRankInRange(showCard.rank, CardRank.TWO, CardRank.NINE) &&
             showCard.suit === CardSuit.SPADES
@@ -178,14 +181,6 @@ class DynamiteCard extends ConstantCard {
     }
 
     destroy() {
-        if (
-            this.#cardGameTable instanceof GameTable &&
-            this.#cardGameTable.discardDeck.hasCardById(this.id)
-        ) {
-            DynamiteCard.actionCallCount =
-                DynamiteCard.actionCallCount > 0 ? DynamiteCard.actionCallCount-- : 0;
-        }
-
         this.removeEventListener();
         this.#cardPlayer = null;
         this.#cardGameTable = null;

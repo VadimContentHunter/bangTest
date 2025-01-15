@@ -84,8 +84,6 @@ class CardsCollection {
             throw new CardError("Объект карты должен быть экземпляром aCard.");
         }
 
-        card.destroy();
-
         if (overwriteId || typeof card.id !== "number" || card.id <= 0) {
             card.id = this.generateId();
         } else if (this.cards.some((existingCard) => existingCard.id === card.id)) {
@@ -93,6 +91,7 @@ class CardsCollection {
         }
 
         this.cards.push(card);
+        card.destroy();
     }
 
     /**
