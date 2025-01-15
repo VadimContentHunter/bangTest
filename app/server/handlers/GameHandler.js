@@ -203,6 +203,8 @@ class GameHandler extends EventEmitter {
 
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.SPADES }),
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.SPADES }),
 
             new ScopeCard(),
             new ScopeCard(),
@@ -210,8 +212,6 @@ class GameHandler extends EventEmitter {
             new MustangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new MustangCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
 
-            new JailCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
-            new JailCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
             new JailCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new JailCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
         ]);
@@ -244,13 +244,6 @@ class GameHandler extends EventEmitter {
 
             if (movePlayer.events.listenerCount("cardPlayed") === 0) {
                 movePlayer.events.on("cardPlayed", this.activateCard.bind(this));
-            }
-
-            if (movePlayer.events.listenerCount("cardTransferredTemporaryCards") === 0) {
-                movePlayer.events.on(
-                    "cardTransferredTemporaryCards",
-                    this.cardTransferredTemporaryCards.bind(this)
-                );
             }
 
             if (movePlayer.events.listenerCount("playerMessage") === 0) {
@@ -764,31 +757,6 @@ class GameHandler extends EventEmitter {
         //     // this.saveAndTriggerHook(player, "selectionHide", { player: null });
         //     this.emit("selectionHide", { player: null });
         // }, 3000); // 3000 миллисекунд = 3 секунды
-    }
-
-    /**
-     * Передача постоянной карты от игрока к другому игроку
-     * @param {Player} fromPlayer - Игрок, который передает карту.
-     * @param {Player} toPlayer - Игрок, которому передается карта.
-     * @param {aCard} card - Карта, которая передана.
-     */
-    cardTransferredTemporaryCards({ fromPlayer, toPlayer, card }) {
-        if (!(fromPlayer instanceof Player) || !(toPlayer instanceof Player)) {
-            throw new Error("GameHandler: Players must be an instance of Player.");
-        }
-
-        if (!(card instanceof aCard)) {
-            throw new Error("GameHandler: Card must be an instance of a Card.");
-        }
-        if (card instanceof ConstantCard) {
-            card.destroy();
-            card.action({ cardPlayer: toPlayer, cardGameTable: this.storage.move.gameTable });
-        }
-        // this.updateMove({
-        //     player: fromPlayer,
-        //     playerCollection: this.storage.players,
-        //     gameTable: this.storage.gameTable,
-        // });
     }
 
     activateCard({ player, card }) {

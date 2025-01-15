@@ -1,5 +1,6 @@
 const CardError = require("../../../Errors/CardError");
 const CardInteractionError = require("../../../Errors/CardInteractionError");
+const PlayerCollection = require("../../../handlers/PlayerCollection");
 const { aCard, CardType, CardSuit, CardRank } = require("../../../interfaces/aCard");
 const GameTable = require("../../GameTable");
 const Player = require("../../Player");
@@ -73,7 +74,7 @@ class JailCard extends ConstantCard {
             throw new TypeError("player должен быть экземпляром Player");
         }
 
-        if(player !== this.#targetPlayer){
+        if (player !== this.#targetPlayer) {
             return;
         }
 
@@ -152,6 +153,11 @@ class JailCard extends ConstantCard {
         }
     }
 
+    /**
+     *
+     * @param {object} param0
+     * @param {PlayerCollection} param0.players
+     */
     action({ players }) {
         const ownerPlayer = players.getPlayerByName(this.ownerName);
         const targetPlayer = players.getPlayerByName(this.targetName);

@@ -372,14 +372,17 @@ class Player {
     }
 
     /**
-     * Передает карту из временной коллекции карт другого игрока.
+     * Передает карту из временной коллекции карт, другому игрока в ево временную коллекцию.
      * @param {Player} targetPlayer - Игрок, которому передается карта.
      * @param {string|number|aCard} cardId - ID карты, которую нужно передать.
+     *
+     * @return {aCard} Переданная карта
+     *
      * @throws {ValidatePlayerError} Если карта с указанным ID не найдена в временной коллекции карт игрока.
      * @throws {ValidatePlayerError} Если `targetPlayer` не является экземпляром класса Player.
      * @fires Player#cardTransferred Событие, которое срабатывает, когда карта передана другому игроку.
      */
-    transferTemporaryCardToPlayer(targetPlayer, cardId) {
+    transferTempCardToPlayerTemp({ targetPlayer, cardId }) {
         cardId = cardId instanceof aCard ? cardId?.id : cardId;
 
         if (!(targetPlayer instanceof Player)) {
@@ -392,29 +395,16 @@ class Player {
 
         // Извлекаем карту из временной коллекции карт
         const cardToTransfer = this.temporaryCards.pullCardById(cardId);
-        cardToTransfer.destroy();
         cardToTransfer.ownerName = targetPlayer.name;
-        targetPlayer.temporaryCards.addCard(cardToTransfer); // Добавляем карту в руку целевого игрока
+        cardToTransfer.destroy();
+        targetPlayer.temporaryCards.addCard(cardToTransfer);
+
+        // cardToTransfer.action({ players, cardGameTable: gameTable });
 
         console.log(
             `Игрок ${this.name} передал карту ${cardToTransfer.name} игроку ${targetPlayer.name}`
         );
-
-        // Вызываем событие о передаче карты
-        if (this.events instanceof EventEmitter) {
-            /**
-             * @event Player#cardTransferred
-             * @type {Object}
-             * @property {Player} fromPlayer - Игрок, который передает карту.
-             * @property {Player} toPlayer - Игрок, которому передается карта.
-             * @property {aCard} card - Карта, которая передана.
-             */
-            this.events.emit("cardTransferredTemporaryCards", {
-                fromPlayer: this,
-                toPlayer: targetPlayer,
-                card: cardToTransfer,
-            });
-        }
+        return cardToTransfer;
     }
 
     /**
@@ -463,6 +453,12 @@ class Player {
         if (distanceValue === null) {
             throw new ValidatePlayerError(
                 `Дистанция между атакующим игроком "${attackingPlayer.name}" не найдена.`
+            );
+        }
+
+        if (!Number.isInteger(attackingPlayer?.weapon?.distance)) {
+            throw new PlayerInteractionError(
+                `У атакующего игрока "${attackingPlayer.name}" не найдено оружие.`
             );
         }
 
@@ -531,7 +527,6 @@ class Player {
 
         if (
             attackingPlayer.weapon instanceof WeaponCard &&
-            Number.isInteger(attackingPlayer?.weapon?.distance) &&
             targetModifiedDistance + distanceValue <=
                 attackingPlayer.weapon.distance + attackerModifiedDistance
         ) {

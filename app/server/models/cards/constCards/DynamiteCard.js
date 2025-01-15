@@ -12,13 +12,7 @@ class DynamiteCard extends ConstantCard {
      * @type {Player|null}
      * @private
      */
-    #cardPlayer = null;
-
-    /**
-     * @type {GameTable|null}
-     * @private
-     */
-    #cardGameTable = null;
+    #ownerPlayer = null;
 
     static actionCallCount = 0;
 
@@ -59,28 +53,32 @@ class DynamiteCard extends ConstantCard {
      * @param {PlayerCollection} playerCollection - Коллекция игроков.
      * @param {GameTable} gameTable - Игровая таблица.
      */
-    handler({ player, playerCollection }) {
+    handler({ player, playerCollection, gameTable }) {
         if (!(playerCollection instanceof PlayerCollection)) {
             throw new TypeError("playerCollection должен быть экземпляром PlayerCollection");
         }
 
-        if (!(this.#cardPlayer instanceof Player) || !(player instanceof Player)) {
-            throw new TypeError("this.#cardPlayer и player должны быть экземпляром Player");
+        if (!(this.#ownerPlayer instanceof Player) || !(player instanceof Player)) {
+            throw new TypeError("this.#ownerPlayer и player должны быть экземпляром Player");
         }
 
-        if (this.#cardPlayer !== player) {
+        if (!(gameTable instanceof GameTable)) {
+            throw new TypeError("gameTable должен быть экземпляром GameTable");
+        }
+
+        if (this.#ownerPlayer !== player) {
             return;
         }
 
-        let showCard = this.#cardGameTable.showRandomsCards(1)[0] ?? null;
-        const nextPlayer = playerCollection.getNextPlayer(this.#cardPlayer.id, true);
+        let showCard = gameTable.showRandomsCards(1)[0] ?? null;
+        const nextPlayer = playerCollection.getNextPlayer(this.#ownerPlayer.id, true);
         const selectionCards = new SelectionCards({
             title: `Событие карты ${this.name}`,
             description: `1) Если вытянули пику от двойки до девятки включительно,
                     «Динамит» взрывается: сбросьте его карту и потеряйте три единицы здоровья;
                     <br>2) если вытянули другую карту, передайте «Динамит» соседу слева: 
                     в начале своего хода он будет делать такую же проверку`,
-            textExtension: `Игрок <i>${this.#cardPlayer?.name || "неизвестный"}</i> вытянул карту: 
+            textExtension: `Игрок <i>${this.#ownerPlayer?.name || "неизвестный"}</i> вытянул карту: 
             (<i>${showCard.name}</i>,<i>${showCard.suit}</i>,<i>${showCard.rank}</i>)`,
             collectionCards: [showCard],
             selectionCount: 0,
@@ -88,7 +86,7 @@ class DynamiteCard extends ConstantCard {
         });
 
         console.log(
-            `У игрока ${this.#cardPlayer?.name} сработал Динамит. Игрок вытянул карту: ${
+            `У игрока ${this.#ownerPlayer?.name} сработал Динамит. Игрок вытянул карту: ${
                 showCard.name
             }, ${showCard.suit}, ${showCard.rank}.`
         );
@@ -101,10 +99,10 @@ class DynamiteCard extends ConstantCard {
             showCard.suit === CardSuit.SPADES
         ) {
             selectionCards.textExtension += `<br>У игрока <i>${
-                this.#cardPlayer?.name
+                this.#ownerPlayer?.name
             }</i> Взорвался Динамит и получает <i>урон -${this.damage}</i>.`;
             console.log(
-                `У игрока ${this.#cardPlayer?.name} Взорвался Динамит и получает урон -${
+                `У игрока ${this.#ownerPlayer?.name} Взорвался Динамит и получает урон -${
                     this.damage
                 }.`
             );
@@ -115,14 +113,12 @@ class DynamiteCard extends ConstantCard {
              * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
              * @property {SelectionCards} selectionCards - Объект выбора карт.
              */
-            this.#cardPlayer.events.emit("showCards", {
+            this.#ownerPlayer.events.emit("showCards", {
                 selectionCards: selectionCards,
             });
 
-            this.#cardPlayer.lives.removeLives(3);
-            this.#cardGameTable.discardCards([
-                this.#cardPlayer.temporaryCards.pullCardById(this.id),
-            ]);
+            this.#ownerPlayer.lives.removeLives(3);
+            gameTable.discardCards([this.#ownerPlayer.temporaryCards.pullCardById(this.id)]);
         } else {
             if (!nextPlayer.temporaryCards.hasCardByName(this.name)) {
                 selectionCards.textExtension += `<br>Карта будет передана игроку <i>${
@@ -136,17 +132,18 @@ class DynamiteCard extends ConstantCard {
                  * @property {Array<aCard>} cards - Массив карт, которые необходимо показать.
                  * @property {SelectionCards} selectionCards - Объект выбора карт.
                  */
-                this.#cardPlayer.events.emit("showCards", {
+                this.#ownerPlayer.events.emit("showCards", {
                     selectionCards: selectionCards,
                 });
 
-                this.#cardPlayer.transferTemporaryCardToPlayer(
-                    playerCollection.getNextPlayer(this.#cardPlayer.id, true),
-                    this.id
-                );
+                const cardToTransfer = this.#ownerPlayer.transferTempCardToPlayerTemp({
+                    targetPlayer: playerCollection.getNextPlayer(this.#ownerPlayer.id, true),
+                    cardId: this.id,
+                });
+                cardToTransfer.action({ players: playerCollection });
             } else {
                 throw new CardError(
-                    `Игроку ${this.#cardPlayer?.name} не удалось передать карту Динамит,
+                    `Игроку ${this.#ownerPlayer?.name} не удалось передать карту Динамит,
                      соседу слева ${nextPlayer?.name}: у него уже есть карта с таким же Названием.`
                 );
             }
@@ -154,36 +151,36 @@ class DynamiteCard extends ConstantCard {
     }
 
     removeEventListener() {
-        if (this.#cardPlayer?.events && this.boundHandler !== null) {
-            this.#cardPlayer.events.off("beforeDrawCards", this.boundHandler);
+        if (this.#ownerPlayer?.events && this.boundHandler !== null) {
+            this.#ownerPlayer.events.off("beforeDrawCards", this.boundHandler);
             this.boundHandler = null; // Убираем ссылку для предотвращения повторного использования
         }
     }
 
-    action({ cardPlayer, cardGameTable }) {
+    /**
+     *
+     * @param {object} param0
+     * @param {PlayerCollection} param0.players
+     */
+    action({ players }) {
+        const ownerPlayer = players.getPlayerByName(this.ownerName);
+        if (!(ownerPlayer instanceof Player)) {
+            throw new CardError("Не известно кто походил карту");
+        }
+
         if (DynamiteCard.actionCallCount > 0) {
             throw new CardInteractionError("Динамит в игре может быть только один.", this);
         }
         DynamiteCard.actionCallCount++;
 
-        if (cardPlayer instanceof Player && cardGameTable instanceof GameTable) {
-            this.#cardPlayer = cardPlayer;
-            this.#cardGameTable = cardGameTable;
-
-            // Сохраняем обработчик
-            this.boundHandler = this.handler.bind(this);
-
-            // Подключаем обработчик
-            this.#cardPlayer.events.on("beforeDrawCards", this.boundHandler);
-        } else {
-            throw new TypeError("Переданный объект не является игроком (Player).");
-        }
+        this.#ownerPlayer = ownerPlayer;
+        this.boundHandler = this.handler.bind(this);
+        this.#ownerPlayer.events.on("beforeDrawCards", this.boundHandler);
     }
 
     destroy() {
         this.removeEventListener();
-        this.#cardPlayer = null;
-        this.#cardGameTable = null;
+        this.#ownerPlayer = null;
     }
 }
 
