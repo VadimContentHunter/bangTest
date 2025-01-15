@@ -46,6 +46,7 @@ const ScopeCard = require("../models/cards/constCards/ScopeCard");
 const MustangCard = require("../models/cards/constCards/MustangCard");
 const JailCard = require("../models/cards/constCards/JailCard");
 const CarabinCard = require("../models/cards/weapons/CarabinCard");
+const SchofieldCard = require("../models/cards/weapons/SchofieldCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -145,6 +146,7 @@ class GameHandler extends EventEmitter {
             MustangCard,
             JailCard,
             CarabinCard,
+            SchofieldCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -196,9 +198,10 @@ class GameHandler extends EventEmitter {
             new BangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
 
             new RemingtonCard(),
-            new RemingtonCard(),
+            new SchofieldCard(),
             new CarabinCard(),
-            new CarabinCard(),
+            new SchofieldCard(),
+            new SchofieldCard(),
 
             new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
