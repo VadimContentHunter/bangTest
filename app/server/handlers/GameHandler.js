@@ -44,6 +44,7 @@ const ColtCard = require("../models/cards/weapons/ColtCard");
 const DynamiteCard = require("../models/cards/constCards/DynamiteCard");
 const ScopeCard = require("../models/cards/constCards/ScopeCard");
 const MustangCard = require("../models/cards/constCards/MustangCard");
+const JailCard = require("../models/cards/constCards/JailCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -83,7 +84,7 @@ const MustangCard = require("../models/cards/constCards/MustangCard");
  */
 
 /**
- * @event GameHandler#playerStartedMove
+ * @event GameHandler#beforePlayerMove
  * @description Событие испускается, когда игрок начинает выполнять ход.
  * @param {Object} player - Игрок, который начинает ход.
  */
@@ -108,7 +109,7 @@ const MustangCard = require("../models/cards/constCards/MustangCard");
  * @fires GameHandler#afterSelectCharacterForPlayer - Событие, испускаемое после завершения выбора персонажа для всех игроков.
  * @fires GameHandler#selectionStarted - Событие, испускаемое при начале выбора карты.
  * @listens GameHandler#playerCardSelected - Слушает событие выбора карты игроком и обрабатывает его.
- * @fires GameHandler#playerStartedMove - Событие, испускаемое при начале выбора карты.
+ * @fires GameHandler#beforePlayerMove - Событие, вызывается перед началом хода игрока.
  * @listens GameHandler#playerMoveFinished - Слушает событие когда игрок завершает свой ход.
  * @fires GameHandler#afterSelectCharactersForPlayers - Событие испускается, когда игроки закончили выбирать карты.
  * @fires GameHandler#selectionEnd - Испускается, когда процесс выбора игрока завершён (когда игрок выбрал карту).
@@ -141,6 +142,7 @@ class GameHandler extends EventEmitter {
             DynamiteCard,
             ScopeCard,
             MustangCard,
+            JailCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -204,12 +206,14 @@ class GameHandler extends EventEmitter {
 
             new ScopeCard(),
             new ScopeCard(),
-            new ScopeCard(),
 
             new MustangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
-            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
-            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
-            new MustangCard({ rank: CardRank.THREE, suit: CardSuit.DIAMONDS }),
+            new MustangCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
+
+            new JailCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
+            new JailCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
+            new JailCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
+            new JailCard({ rank: CardRank.FOUR, suit: CardSuit.DIAMONDS }),
         ]);
 
         const gameTable = new GameTable({
@@ -266,8 +270,8 @@ class GameHandler extends EventEmitter {
                 movePlayer.events.on("endDrawCards", this.updateMove.bind(this));
             }
 
-            if (movePlayer.events.listenerCount("playerStartedMove") === 0) {
-                movePlayer.events.on("playerStartedMove", this.updateMove.bind(this));
+            if (movePlayer.events.listenerCount("beforePlayerMove") === 0) {
+                movePlayer.events.on("beforePlayerMove", this.updateMove.bind(this));
                 // this.emit("selectionHide", { player: null });
             }
 
@@ -445,7 +449,7 @@ class GameHandler extends EventEmitter {
 
     /**
      * Выполняет раунд ходов игроков.
-     * @fires GameHandler#playerStartedMove - Событие, испускаемое, когда игрок начинает ход.
+     * @fires GameHandler#beforePlayerMove - Событие, испускаемое, когда игрок начинает ход.
      * @listens GameHandler#playerMoveFinished - Слушает событие, когда игрок завершает свой ход.
      */
     async executeMovesRound() {
@@ -458,13 +462,31 @@ class GameHandler extends EventEmitter {
             );
             this.playerActionManager.clearHooksByPlayer(player);
             this.storage.move.playersDistances = new DistanceHandler(this.storage.move.players);
-
-            player.events.emit("playerStartedMove", {
-                player: player,
-                playerCollection: this.storage.move.players,
-                gameTable: this.storage.move.gameTable,
-            });
             console.log(`GameHandler: Игрок ${player.name} начинает ход.`);
+
+            /**
+             * Событие, которое вызывается перед началом хода игрока.
+             * Позволяет выполнить действия до того, как игрок начнёт свой ход.
+             *
+             * @event beforePlayerMove
+             * @type {Object}
+             * @property {Player} player - Игрок, который начинает ход.
+             * @property {Array<Player>} playerCollection - Коллекция игроков в текущей игре.
+             * @property {Object} gameTable - Стол игры с текущим состоянием.
+             * @returns {*} Если Возвращает false - пропуск хода для текущего игрока.
+             */
+            const beforePlayerMove = player.events.listeners("beforePlayerMove").map((listener) => {
+                return listener({
+                    player: player,
+                    playerCollection: this.storage.move.players,
+                    gameTable: this.storage.move.gameTable,
+                });
+            });
+
+            if (beforePlayerMove.includes(false)) {
+                console.log(`GameHandler: Ход для игрока ${player.name}, был отмен.`);
+                continue;
+            }
 
             // try {
             await this.moveDrawTwoCards(player, this.storage.move);
@@ -503,7 +525,9 @@ class GameHandler extends EventEmitter {
                                     );
                                     errorTemporaryCard.destroy();
                                 }
-                                const errorCard = gameTable.playedCards.pullCardById(error.card?.id);
+                                const errorCard = gameTable.playedCards.pullCardById(
+                                    error.card?.id
+                                );
                                 errorCard.destroy();
                                 player.hand.addCard(errorCard);
                             } else {
@@ -799,7 +823,11 @@ class GameHandler extends EventEmitter {
             }
 
             player.temporaryCards.addCard(card);
-            card.action({ cardPlayer: player, cardGameTable: gameTable });
+            card.action({
+                players: this.storage.move.players,
+                cardPlayer: player,
+                cardGameTable: gameTable,
+            });
         } else {
             card.action({
                 players: this.storage.move.players,

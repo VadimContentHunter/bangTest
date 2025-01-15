@@ -221,6 +221,10 @@ class GameTable {
             throw new TypeError("Параметр 'cards' должен быть массивом карт.");
         }
 
+        cards.forEach((card) => {
+            card.destroy();
+        });
+
         // Добавляем карты в колоду сброса
         this.discardDeck.addArrayCards(cards);
     }

@@ -91,7 +91,7 @@ class CardsCollection {
         }
 
         this.cards.push(card);
-        card.destroy();
+        // card.destroy();
     }
 
     /**

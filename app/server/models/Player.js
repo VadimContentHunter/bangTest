@@ -499,7 +499,7 @@ class Player {
          * @property {Player} target - Игрок, который получает урон.
          * @property {number} distance - Расстояние между атакующим игроком и целью.
          *
-         * @returns {boolean|void} Возвращает false для отмены нанесения урона, иначе ничего не возвращает.
+         * @returns {*} Если Возвращает false - отмена нанесения урона.
          */
         const beforeDamageEvent = this.events.listeners("beforeDamage").map((listener) => {
             return listener({
