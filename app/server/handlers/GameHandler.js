@@ -777,7 +777,7 @@ class GameHandler extends EventEmitter {
 
             card.action();
 
-            if (oldWeapon instanceof WeaponCard) {
+            if (oldWeapon instanceof WeaponCard && !(oldWeapon instanceof ColtCard)) {
                 gameTable.discardCards([oldWeapon]);
             }
         } else if (card instanceof ConstantCard) {

@@ -10,6 +10,7 @@ const WeaponCard = require("./cards/WeaponCard");
 const GameTable = require("./GameTable");
 const PlayerInteractionError = require("../Errors/PlayerInteractionError");
 const StubCard = require("./cards/StubCard");
+const ColtCard = require("./cards/weapons/ColtCard");
 
 class Player {
     /**
@@ -236,6 +237,10 @@ class Player {
 
         if (card !== null && card.type !== CardType.WEAPON) {
             throw new ValidatePlayerError("Карта для оружия должна быть type = WEAPON.");
+        }
+
+        if(card === null){
+            card = new ColtCard();
         }
 
         this.#weapon = card;
