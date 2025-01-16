@@ -134,17 +134,17 @@ class Lives {
     /**
      * Отнимает указанное количество жизней.
      * Генерирует событие "lifeRemoved" и "livesDepleted", если жизни достигли нуля.
-     * @param {number} amount - Количество жизней для отнимания.
-     * @throws {LivesError} Если amount не является положительным целым числом.
+     * @param {number} amountToRemove - Количество жизней для отнимания.
+     * @throws {LivesError} Если amountToRemove не является положительным целым числом.
      * @fires Lives#lifeRemoved
      * @fires Lives#livesDepleted
      */
-    removeLives(amount) {
-        if (!Number.isInteger(amount) || amount < 0) {
+    removeLives(amountToRemove) {
+        if (!Number.isInteger(amountToRemove) || amountToRemove < 0) {
             throw new LivesError("Amount to remove must be a non-negative integer.");
         }
         const oldLives = this._current;
-        this.current = Math.max(this._current - amount, 0);
+        this.current = Math.max(this._current - amountToRemove, 0);
 
         if (this.current < oldLives) {
             /**
@@ -154,25 +154,27 @@ class Lives {
              * @property {number} oldLives - Количество жизней до изменения.
              * @property {number} newLives - Количество жизней после изменения.
              * @property {number} removed - Количество удалённых жизней.
+             * @property {number} amountToRemove - Количество жизней для отнимания.
              */
             this.events?.emit("lifeRemoved", {
                 oldLives,
                 newLives: this.current,
                 removed: oldLives - this.current,
+                amountToRemove: amountToRemove,
             });
 
             // Генерация события "livesDepleted" при достижении нуля жизней.
-            if (this.current === 0) {
+            if (this.current <= 0) {
                 /**
                  * Событие, вызываемое при исчерпании жизней.
                  * @event Lives#livesDepleted
                  * @type {Object}
                  * @property {number} oldLives - Количество жизней до изменения.
-                 * @property {number} removed - Количество удалённых жизней.
+                 * @property {number} amountToRemove - Количество жизней для отнимания.
                  */
                 this.events?.emit("livesDepleted", {
                     oldLives,
-                    removed: oldLives, // Все оставшиеся жизни были удалены.
+                    amountToRemove: amountToRemove,
                 });
             }
         }

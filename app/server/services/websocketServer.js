@@ -126,11 +126,14 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
     });
 
     serverHook.on("serverMessage", ({ player, message }) => {
+        if (!(player instanceof Player) && player !== null) {
+            return;
+        }
+
         wss.clients.forEach((client) => {
             if (
                 client.readyState === WebSocket.OPEN &&
-                player instanceof Player &&
-                player.sessionId === client.sessionId
+                (player === null || player.sessionId === client.sessionId)
             ) {
                 client.send(
                     JsonRpcFormatter.serializeRequest("clientMessage", { message: message })

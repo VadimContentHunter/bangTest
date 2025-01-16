@@ -151,6 +151,23 @@ class CardsCollection {
     }
 
     /**
+     * Возвращает количество карт, соответствующих указанному имени.
+     *
+     * @param {string} name - Имя карты (обязательно).
+     * @returns {number} Количество карт, соответствующих имени.
+     * @throws {CardError} Если параметр name не является строкой.
+     */
+    countCardsByName(name) {
+        if (typeof name !== "string") {
+            throw new CardError("Параметр name должен быть строкой.");
+        }
+
+        const count = this.cards.filter((card) => card.name === name).length;
+
+        return count;
+    }
+
+    /**
      * Возвращает карту по её ID.
      * @param {number} id - Уникальный идентификатор карты.
      * @returns {aCard} Карта с указанным ID.
@@ -290,6 +307,26 @@ class CardsCollection {
         }
 
         return cards;
+    }
+
+    /**
+     * Вытаскивает первую попавшуюся карту по её имени.
+     * Если карта не найдена, выбрасывает ошибку.
+     * @param {string} cardName - Название карты для вытаскивания.
+     * @returns {aCard} Вытаскиваемая карта.
+     * @throws {CardError} Если карта с указанным именем не найдена.
+     */
+    pullCardByName(cardName) {
+        if (typeof cardName !== "string" || cardName.trim() === "") {
+            throw new TypeError("Имя карты должно быть строкой.");
+        }
+
+        const cardIndex = this.cards.findIndex((card) => card.name === cardName);
+        if (cardIndex === -1) {
+            throw new CardError(`Карта с именем "${cardName}" не найдена.`);
+        }
+
+        return this.cards.splice(cardIndex, 1)[0]; // Удаляем и возвращаем карту.
     }
 
     /**

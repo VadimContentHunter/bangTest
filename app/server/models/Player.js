@@ -81,6 +81,12 @@ class Player {
     #cardsRules = null;
 
     /**
+     * @type {boolean}
+     * @private
+     */
+    #openRole = false;
+
+    /**
      * Конструктор для создания игрока.
      * @param {number} id - Идентификатор игрока.
      * @param {string} name - Имя игрока.
@@ -190,7 +196,7 @@ class Player {
             throw new ValidatePlayerError("Жизнь игрока должна быть класс Lives или null.");
         }
 
-        if (value instanceof Lives) {
+        if (value instanceof Lives && this.events instanceof EventEmitter) {
             value.events = this.events;
         }
 
@@ -285,6 +291,28 @@ class Player {
     }
 
     /**
+     * @param {CardsRules} value
+     * @throws {ValidatePlayerError} Если идентификатор невалидный.
+     */
+    set cardsRules(value) {
+        if (value !== null && !(value instanceof CardsRules)) {
+            throw new ValidatePlayerError("Invalid value for CardsRules or null.");
+        }
+        this.#cardsRules = value;
+    }
+
+    /**
+     * @param {boolean} value - Новое значение для #openRole.
+     * @throws {Error} Если value не является булевым значением.
+     */
+    set openRole(value) {
+        if (typeof value !== "boolean") {
+            throw new Error("Значение должно быть булевым типом.");
+        }
+        this.#openRole = value;
+    }
+
+    /**
      * Геттер для жизни игрока.
      * @returns {Lives|null} - Жизнь игрока.
      */
@@ -340,14 +368,10 @@ class Player {
     }
 
     /**
-     * @param {CardsRules} value
-     * @throws {ValidatePlayerError} Если идентификатор невалидный.
+     * @returns {boolean} Текущее значение #openRole.
      */
-    set cardsRules(value) {
-        if (value !== null && !(value instanceof CardsRules)) {
-            throw new ValidatePlayerError("Invalid value for CardsRules or null.");
-        }
-        this.#cardsRules = value;
+    get openRole() {
+        return this.#openRole;
     }
 
     /**
@@ -386,15 +410,19 @@ class Player {
      * @returns {Object} - Объект с краткой информацией о игроке.
      */
     getSummaryInfo() {
+        let infRole = this.role instanceof SheriffCard
+                    ? this.role
+                    : new StubCard({ type: CardType.ROLE });
+
+        if (this.#openRole) {
+            infRole = this.role ?? infRole;
+        }
         return {
             id: this.id,
             name: this.name,
             sessionId: this.sessionId,
             lives: this.lives,
-            role:
-                this.role instanceof SheriffCard
-                    ? this.role
-                    : new StubCard({ type: CardType.ROLE }),
+            role: infRole,
             character: this.character,
             weapon: this.weapon,
             temporaryCards: this.temporaryCards,

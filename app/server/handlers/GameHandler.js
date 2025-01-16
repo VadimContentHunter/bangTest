@@ -206,19 +206,23 @@ class GameHandler extends EventEmitter {
             new BeerCard({ rank: CardRank.FIVE, suit: CardSuit.DIAMONDS }),
             new BeerCard({ rank: CardRank.THREE, suit: CardSuit.CLUBS }),
             new BeerCard({ rank: CardRank.ACE, suit: CardSuit.CLUBS }),
-            new BeerCard({ rank: CardRank.THREE, suit: CardSuit.CLUBS }),
+            new BeerCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
+            new BeerCard({ rank: CardRank.ACE, suit: CardSuit.CLUBS }),
+            new BeerCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
 
-            new RemingtonCard(),
-            new SchofieldCard(),
-            new CarabinCard(),
-            new WinchesterCard(),
-            new VolcanicCard(),
+            new RemingtonCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
+            new SchofieldCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
+            new CarabinCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
+            new WinchesterCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
+            new VolcanicCard({ rank: CardRank.FOUR, suit: CardSuit.SPADES }),
 
             new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
 
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
             new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.HEARTS }),
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.SPADES }),
+            new DynamiteCard({ rank: CardRank.SIX, suit: CardSuit.SPADES }),
 
             new ScopeCard(),
             new ScopeCard(),
@@ -258,6 +262,12 @@ class GameHandler extends EventEmitter {
 
             if (movePlayer.events.listenerCount("cardPlayed") === 0) {
                 movePlayer.events.on("cardPlayed", this.activateCard.bind(this));
+            }
+
+            if (movePlayer.events.listenerCount("livesDepleted") === 0) {
+                movePlayer.events.on("livesDepleted", ({ oldLives, amountToRemove }) => {
+                    this.executeBeforeDeath({ player: movePlayer, oldLives, amountToRemove });
+                });
             }
 
             if (movePlayer.events.listenerCount("playerMessage") === 0) {
@@ -819,6 +829,63 @@ class GameHandler extends EventEmitter {
             });
 
             gameTable.discardCards([card]);
+        }
+    }
+
+    /**
+     * @param {Object} params - Параметры события.
+     * @param {number} params.oldLives - Количество жизней до изменения.
+     * @param {number} params.amountToRemove - Количество жизней для отнимания.
+     */
+    executeBeforeDeath({ player, oldLives, amountToRemove }) {
+        const gameTable = this.storage.move.gameTable;
+
+        if (!(player instanceof Player)) {
+            throw new Error("GameHandler: Player must be an instance of Player.");
+        }
+
+        if (!(gameTable instanceof GameTable)) {
+            throw new Error("GameHandler: GameTable must be an instance of GameTable");
+        }
+
+        let minHealAmount = amountToRemove - oldLives;
+        while (player.hand.countCardsByName("Пиво") > minHealAmount) {
+            player.playCardToTable({
+                gameTable: gameTable,
+                cardId: player.hand.getCardByName("Пиво").id,
+            });
+
+            const message = `Игрок ${player.name} - Использовал "Пиво", что бы не умереть.`;
+            console.log(message);
+            player.events.emit("playerMessage", {
+                initPlayer: null,
+                message: message,
+            });
+
+            minHealAmount--;
+            if (minHealAmount < 0) {
+                break;
+            }
+        }
+
+        if (player.lives.current <= 0) {
+            const message = `Игрок ${player.name} - Умер! Он оказался "${
+                player.role?.name ?? "Неизвестно"
+            }"`;
+            console.log(message);
+
+            player.openRole = true;
+            player.events.emit("playerMessage", {
+                initPlayer: null,
+                message: message,
+            });
+            this.updateMove({
+                player: player,
+                playerCollection: this.storage.move.players,
+                gameTable: gameTable,
+            });
+
+            player.events.removeAllListeners();
         }
     }
 
