@@ -48,6 +48,7 @@ const JailCard = require("../models/cards/constCards/JailCard");
 const CarabinCard = require("../models/cards/weapons/CarabinCard");
 const SchofieldCard = require("../models/cards/weapons/SchofieldCard");
 const WinchesterCard = require("../models/cards/weapons/WinchesterCard");
+const VolcanicCard = require("../models/cards/weapons/VolcanicCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -149,6 +150,7 @@ class GameHandler extends EventEmitter {
             CarabinCard,
             SchofieldCard,
             WinchesterCard,
+            VolcanicCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -203,7 +205,9 @@ class GameHandler extends EventEmitter {
             new SchofieldCard(),
             new CarabinCard(),
             new WinchesterCard(),
-            new WinchesterCard(),
+            new VolcanicCard(),
+            new VolcanicCard(),
+            new VolcanicCard(),
 
             new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
             new BarrelCard({ rank: CardRank.KING, suit: CardSuit.HEARTS }),
@@ -782,7 +786,10 @@ class GameHandler extends EventEmitter {
             //     gameTable.playedCards.pullCardById(card.id);
             // }
 
-            card.action();
+            card.action({
+                players: this.storage.move.players,
+                cardGameTable: gameTable,
+            });
 
             if (oldWeapon instanceof WeaponCard && !(oldWeapon instanceof ColtCard)) {
                 gameTable.discardCards([oldWeapon]);
