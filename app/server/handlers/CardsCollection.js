@@ -131,6 +131,26 @@ class CardsCollection {
     }
 
     /**
+     * Возвращает количество карт, соответствующих указанным имени и имени владельца.
+     *
+     * @param {string} name - Имя карты (обязательно).
+     * @param {string} ownerName - Имя владельца карты (обязательно).
+     * @returns {number} Количество карт, соответствующих критериям.
+     * @throws {CardError} Если параметры отсутствуют или не являются строками.
+     */
+    countCardsByNameAndOwner(name, ownerName) {
+        if (typeof name !== "string" || typeof ownerName !== "string") {
+            throw new CardError("Оба параметра (name и ownerName) должны быть строками.");
+        }
+
+        const count = this.cards.filter((card) => {
+            return card.name === name && card.ownerName === ownerName;
+        }).length;
+
+        return count;
+    }
+
+    /**
      * Возвращает карту по её ID.
      * @param {number} id - Уникальный идентификатор карты.
      * @returns {aCard} Карта с указанным ID.
@@ -241,6 +261,35 @@ class CardsCollection {
         }
 
         return randomCards;
+    }
+
+    /**
+     * Возвращает карты, соответствующие указанным имени и имени владельца.
+     *
+     * @param {string} name - Имя карты.
+     * @param {string} ownerName - Имя владельца карты.
+     * @returns {aCard[]} Массив карт, соответствующих критериям поиска.
+     * @throws {CardError} Если параметры не являются строками или не заданы.
+     * @throws {CardError} Если Карты не найдены.
+     */
+    getCardsByNameAndOwner(name, ownerName) {
+        if (typeof name !== "string") {
+            throw new CardError("Имя карты должно быть строкой.");
+        }
+
+        if (typeof ownerName !== "string") {
+            throw new CardError("Имя владельца карты должно быть строкой.");
+        }
+
+        const cards = this.cards.filter(
+            (card) => card.name === name && card.ownerName === ownerName
+        );
+
+        if (cards.length === 0) {
+            throw new CardError(`Карты с именем "${name}" и владельцем "${ownerName}" не найдены.`);
+        }
+
+        return cards;
     }
 
     /**
@@ -374,6 +423,28 @@ class CardsCollection {
             throw new CardError("Имя должно быть строкой.");
         }
         return this.cards.some((card) => card.name === name);
+    }
+
+    /**
+     * Проверяет, существуют ли карты, соответствующие указанным имени и имени владельца.
+     *
+     * @param {string} [name] - Имя карты.
+     * @param {string} [ownerName] - Имя владельца карты.
+     * @returns {boolean} Возвращает true, если хотя бы одна карта соответствует критериям, иначе false.
+     * @throws {CardError} Если оба параметра отсутствуют или не являются строками.
+     */
+    hasCardsByNameAndOwner(name, ownerName) {
+        if (typeof name !== "string") {
+            throw new CardError("Имя карты должно быть строкой.");
+        }
+
+        if (typeof ownerName !== "string") {
+            throw new CardError("Имя владельца карты должно быть строкой.");
+        }
+
+        return this.cards.some((card) => {
+            return card.name === name && card.ownerName === ownerName;
+        });
     }
 
     /**

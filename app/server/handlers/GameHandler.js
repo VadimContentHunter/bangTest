@@ -798,12 +798,12 @@ class GameHandler extends EventEmitter {
             player.temporaryCards.addCard(card);
             card.action({
                 players: this.storage.move.players,
-                cardPlayer: player,
                 cardGameTable: gameTable,
             });
         } else {
             card.action({
                 players: this.storage.move.players,
+                cardGameTable: gameTable,
             });
 
             gameTable.discardCards([card]);
