@@ -87,8 +87,9 @@ class aCard {
     _targetName = "";
     _suit = null;
     _rank = null;
-    _distance = null;
-    _damage = null;
+    _distance = 0;
+    _damage = 0;
+    _healAmount = 0;
 
     /**
      * Конструктор для создания карты.
@@ -113,6 +114,9 @@ class aCard {
         targetName = "",
         suit = CardSuit.NONE,
         rank = CardRank.NONE,
+        distance = 0,
+        damage = 0,
+        healAmount = 0,
     }) {
         this.id = id;
         this.name = name;
@@ -122,6 +126,9 @@ class aCard {
         this.targetName = targetName;
         this.suit = suit;
         this.rank = rank;
+        this.distance = distance;
+        this.damage = damage;
+        this.healAmount = healAmount;
 
         if (new.target === aCard) {
             throw new TypeError("Нельзя создать экземпляр абстрактного класса");
@@ -252,10 +259,21 @@ class aCard {
      * @throws {CardError} Если параметр 'damage' не является положительным целым числом.
      */
     set damage(value) {
-        if (!Number.isInteger(value) || value <= 0) {
-            throw new CardError("Параметр 'damage' должен быть положительным целым числом.");
+        if (!Number.isInteger(value) || value < 0) {
+            throw new CardError("Параметр 'damage' должен быть положительным целым числом или 0.");
         }
         this._damage = value;
+    }
+
+    /**
+     * @param {number} value
+     * @throws {CardError} Если значение не является целым числом или меньше 0.
+     */
+    set healAmount(value) {
+        if (!Number.isInteger(value) || value < 0) {
+            throw new CardError("healAmount должно быть целым числом и не меньше 0.");
+        }
+        this._healAmount = value;
     }
 
     /**
@@ -265,7 +283,7 @@ class aCard {
      */
     set distance(value) {
         if (!Number.isInteger(value) || value < 0) {
-            throw new CardError("distance должен быть положительным целым числом.");
+            throw new CardError("distance должен быть положительным целым числом или 0.");
         }
         this._distance = value;
     }
@@ -350,6 +368,13 @@ class aCard {
     }
 
     /**
+     * @returns {number} Значение healAmount.
+     */
+    get healAmount() {
+        return this._healAmount;
+    }
+
+    /**
      * Геттер для дистанции оружия.
      * @returns {number} Дистанция оружия.
      */
@@ -400,8 +425,9 @@ class aCard {
             suit: this.suit,
             rank: this.rank,
             className: this.constructor.name,
-            distance: this._distance,
+            distance: this.distance,
             damage: this.damage,
+            healAmount: this.healAmount,
         };
     }
 

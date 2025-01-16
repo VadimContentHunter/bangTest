@@ -49,6 +49,7 @@ const CarabinCard = require("../models/cards/weapons/CarabinCard");
 const SchofieldCard = require("../models/cards/weapons/SchofieldCard");
 const WinchesterCard = require("../models/cards/weapons/WinchesterCard");
 const VolcanicCard = require("../models/cards/weapons/VolcanicCard");
+const BeerCard = require("../models/cards/defaultCards/BeerCard");
 
 /**
  * @event GameHandler#beforeGameStart
@@ -151,6 +152,7 @@ class GameHandler extends EventEmitter {
             SchofieldCard,
             WinchesterCard,
             VolcanicCard,
+            BeerCard,
         ];
 
         this.playroomHandler = playroomHandler;
@@ -201,12 +203,15 @@ class GameHandler extends EventEmitter {
             new BangCard({ rank: CardRank.FIVE, suit: CardSuit.HEARTS }),
             new BangCard({ rank: CardRank.THREE, suit: CardSuit.HEARTS }),
 
+            new BeerCard({ rank: CardRank.FIVE, suit: CardSuit.DIAMONDS }),
+            new BeerCard({ rank: CardRank.THREE, suit: CardSuit.CLUBS }),
+            new BeerCard({ rank: CardRank.ACE, suit: CardSuit.CLUBS }),
+            new BeerCard({ rank: CardRank.THREE, suit: CardSuit.CLUBS }),
+
             new RemingtonCard(),
             new SchofieldCard(),
             new CarabinCard(),
             new WinchesterCard(),
-            new VolcanicCard(),
-            new VolcanicCard(),
             new VolcanicCard(),
 
             new BarrelCard({ rank: CardRank.THREE, suit: CardSuit.SPADES }),
