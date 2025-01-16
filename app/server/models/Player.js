@@ -11,6 +11,7 @@ const GameTable = require("./GameTable");
 const PlayerInteractionError = require("../Errors/PlayerInteractionError");
 const StubCard = require("./cards/StubCard");
 const ColtCard = require("./cards/weapons/ColtCard");
+const CardsRules = require("./CardsRules");
 
 class Player {
     /**
@@ -74,13 +75,19 @@ class Player {
     #hand = null;
 
     /**
+     * @type {CardsRules|null}
+     * @private
+     */
+    #cardsRules = null;
+
+    /**
      * Конструктор для создания игрока.
      * @param {number} id - Идентификатор игрока.
      * @param {string} name - Имя игрока.
      * @param {string|null} [sessionId=null] - Идентификатор сессии игрока.
      * @param {EventEmitter|null} [events=null] - Объект EventEmitter для игрока, хранящий события, привязанные к игроку.
      */
-    constructor(id, name, sessionId = null, events = null) {
+    constructor({ id, name, sessionId = null, events = null, cardsRules = null } = {}) {
         this.events = events ?? new EventEmitter();
 
         this.id = id;
@@ -92,6 +99,7 @@ class Player {
         this.weapon = null;
         this.temporaryCards = new CardsCollection();
         this.hand = new CardsCollection();
+        this.cardsRules = cardsRules ?? new CardsRules();
     }
 
     /**
@@ -239,7 +247,7 @@ class Player {
             throw new ValidatePlayerError("Карта для оружия должна быть type = WEAPON.");
         }
 
-        if(card === null){
+        if (card === null) {
             card = new ColtCard();
         }
 
@@ -322,6 +330,24 @@ class Player {
      */
     get hand() {
         return this.#hand;
+    }
+
+    /**
+     * @returns {CardsRules|null}
+     */
+    get cardsRules() {
+        return this.#cardsRules;
+    }
+
+    /**
+     * @param {CardsRules} value
+     * @throws {ValidatePlayerError} Если идентификатор невалидный.
+     */
+    set cardsRules(value) {
+        if (value !== null && !(value instanceof CardsRules)) {
+            throw new ValidatePlayerError("Invalid value for CardsRules or null.");
+        }
+        this.#cardsRules = value;
     }
 
     /**
@@ -719,7 +745,7 @@ class Player {
             throw new ValidatePlayerError("sessionId должен быть строкой или null.");
         }
 
-        const player = new Player(data.id, data.name, data?.sessionId);
+        const player = new Player({ id: data.id, name: data.name, sessionId: data?.sessionId });
 
         if (data?.lives !== null) {
             player.lives = Lives.initFromJSON(data?.lives);
@@ -761,7 +787,11 @@ class Player {
             throw new ValidatePlayerError("Оба объекта должны быть экземплярами Player.");
         }
 
-        const newPlayer = new Player(player1.id, player1.name, player1.sessionId);
+        const newPlayer = new Player({
+            id: player1.id,
+            name: player1.name,
+            sessionId: player1.sessionId,
+        });
         newPlayer.lives = player1.lives;
 
         if (player1.role !== null) newPlayer.role = player1.role;

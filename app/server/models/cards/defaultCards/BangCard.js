@@ -11,11 +11,6 @@ const PlayerInteractionError = require("../../../Errors/PlayerInteractionError")
 const GameTable = require("../../GameTable");
 
 class BangCard extends DefaultCard {
-    /**
-     * @property {number}
-     * @private
-     */
-    #maxCardsPerTurn = 1;
     _damage = 1;
 
     constructor({ rank, suit, ownerName = "", targetName = "" }) {
@@ -54,10 +49,11 @@ class BangCard extends DefaultCard {
 
         if (
             cardGameTable instanceof GameTable &&
-            cardGameTable.playedCards.countCardsByNameAndOwner(this.name, this.ownerName) > this.#maxCardsPerTurn
+            cardGameTable.playedCards.countCardsByNameAndOwner(this.name, this.ownerName) >
+                ownerPlayer.cardsRules.maxBangCardsTurn
         ) {
             throw new CardInteractionError(
-                `Игрок ${this.ownerName}, не может разыграть больше чем ${this.#maxCardsPerTurn} этой карты.`,
+                `Игрок ${this.ownerName}, не может разыграть больше чем ${ownerPlayer.cardsRules.maxBangCardsTurn} этой карты.`,
                 this
             );
         }

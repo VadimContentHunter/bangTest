@@ -87,7 +87,7 @@ class PlayerCollection {
             throw new ValidatePlayerError(`Игрок с именем "${name}" уже существует.`);
         }
 
-        const player = new Player(this.generateId(), name, sessionId); // Создание нового игрока
+        const player = new Player({ id: this.generateId(), name, sessionId }); // Создание нового игрока
         this.players.push(player);
         // console.log(`Добавлен игрок с именем: ${player.name} и ID: ${player.id}`);
     }
@@ -391,7 +391,6 @@ class PlayerCollection {
      */
     getNextPlayer(currentId, isCyclic = false) {
         currentId = currentId instanceof Player ? currentId.id : currentId;
-        
         const sortedPlayers = this.players.sort((a, b) => a.id - b.id); // Сортируем игроков по возрастанию ID
 
         // Находим всех игроков с ID больше текущего
