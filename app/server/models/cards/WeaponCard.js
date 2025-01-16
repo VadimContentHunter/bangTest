@@ -53,7 +53,9 @@ class WeaponCard extends aCard {
         return 0;
     }
 
-    action() {}
+    action() {
+        this.targetName = "";
+    }
 
     destroy() {}
 }

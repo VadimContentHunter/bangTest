@@ -54,6 +54,7 @@ class DynamiteCard extends ConstantCard {
      * @param {GameTable} gameTable - Игровая таблица.
      */
     handler({ player, playerCollection, gameTable }) {
+        this.targetName = "";
         if (!(playerCollection instanceof PlayerCollection)) {
             throw new TypeError("playerCollection должен быть экземпляром PlayerCollection");
         }

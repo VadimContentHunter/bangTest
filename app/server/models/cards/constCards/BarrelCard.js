@@ -67,6 +67,7 @@ class BarrelCard extends ConstantCard {
      * @returns {boolean} Возвращает `true`, если урон может быть нанесен, или `false`, если необходимо предотвратить урон.
      */
     handler({ attacker, damage, target, distance }) {
+        this.targetName = "";
         if (!(this.#ownerPlayer instanceof Player)) {
             throw new TypeError("this.#ownerPlayer должен быть экземпляром Player");
         }

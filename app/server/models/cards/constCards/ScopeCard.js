@@ -102,6 +102,7 @@ class ScopeCard extends ConstantCard {
      * @param {GameTable} param0.cardGameTable
      */
     action({ players, cardGameTable }) {
+        this.targetName = "";
         const ownerPlayer = players.getPlayerByName(this.ownerName);
 
         if (!(ownerPlayer instanceof Player)) {

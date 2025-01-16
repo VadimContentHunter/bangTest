@@ -49,6 +49,7 @@ class VolcanicCard extends WeaponCard {
      * @param {PlayerCollection} param0.players
      */
     action({ players }) {
+        this.targetName = "";
         const ownerPlayer = players.getPlayerByName(this.ownerName);
         if (!(ownerPlayer instanceof Player)) {
             throw new CardError("Не известно кто походил карту");

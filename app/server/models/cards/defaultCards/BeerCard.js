@@ -38,6 +38,7 @@ class BeerCard extends DefaultCard {
     }
 
     action({ players, cardGameTable }) {
+        this.targetName = "";
         const ownerPlayer = players.getPlayerByName(this.ownerName);
         if (!(ownerPlayer instanceof Player)) {
             throw new CardError("Не известно кто походил карту");
