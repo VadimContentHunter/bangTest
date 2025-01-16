@@ -31,7 +31,8 @@ class SheriffCard extends aCard {
             throw new CardError("Не правильная карта стоит у игрока в роле.");
         }
 
-        player.lives.addOneLife();
+        player.lives.max++;
+        player.lives.fullLife();
     }
 
     destroy() {}

@@ -252,7 +252,7 @@ module.exports = function setupWebSocketServer(server, playroomHandler) {
         try {
             const player = playroomHandler.connect(ws.sessionId);
             if (player instanceof Player) {
-                player.lives.max = 5;
+                player.lives.max = 3;
                 player.lives.current = 3;
                 // player.weapon = new ColtCard();
                 // player.temporaryCards.setCards([]);

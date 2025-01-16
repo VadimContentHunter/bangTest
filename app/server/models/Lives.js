@@ -94,15 +94,25 @@ class Lives {
      * Добавляет указанное количество жизней.
      * Генерирует событие "lifeAdded".
      * @param {number} amount - Количество жизней для добавления.
-     * @throws {LivesError} Если amount не является положительным целым числом.
+     * @param {boolean} [ignoreMaxCheck=false] - Флаг, указывающий, нужно ли игнорировать проверку на превышение максимума.
+     * @throws {LivesError} Если amount не является положительным целым числом или превышает допустимый максимум (если ignoreMaxCheck=false).
      * @fires Lives#lifeAdded
      */
-    addLives(amount) {
+    addLives(amount, ignoreMaxCheck = false) {
         if (!Number.isInteger(amount) || amount < 0) {
             throw new LivesError("Amount to add must be a non-negative integer.");
         }
+
+        if (!ignoreMaxCheck && this._current + amount > this._max) {
+            throw new LivesError(
+                `Добавление ${amount} жизней превышает максимально допустимое значение ${this._max}.`
+            );
+        }
+
         const oldLives = this._current;
-        this.current = Math.min(this._current + amount, this._max);
+        this.current = ignoreMaxCheck
+            ? this._current + amount
+            : Math.min(this._current + amount, this._max);
 
         if (this.current > oldLives) {
             /**
@@ -123,10 +133,11 @@ class Lives {
 
     /**
      * Отнимает указанное количество жизней.
-     * Генерирует событие "lifeRemoved".
+     * Генерирует событие "lifeRemoved" и "livesDepleted", если жизни достигли нуля.
      * @param {number} amount - Количество жизней для отнимания.
      * @throws {LivesError} Если amount не является положительным целым числом.
      * @fires Lives#lifeRemoved
+     * @fires Lives#livesDepleted
      */
     removeLives(amount) {
         if (!Number.isInteger(amount) || amount < 0) {
@@ -149,6 +160,21 @@ class Lives {
                 newLives: this.current,
                 removed: oldLives - this.current,
             });
+
+            // Генерация события "livesDepleted" при достижении нуля жизней.
+            if (this.current === 0) {
+                /**
+                 * Событие, вызываемое при исчерпании жизней.
+                 * @event Lives#livesDepleted
+                 * @type {Object}
+                 * @property {number} oldLives - Количество жизней до изменения.
+                 * @property {number} removed - Количество удалённых жизней.
+                 */
+                this.events?.emit("livesDepleted", {
+                    oldLives,
+                    removed: oldLives, // Все оставшиеся жизни были удалены.
+                });
+            }
         }
     }
 
@@ -164,6 +190,10 @@ class Lives {
      */
     removeOneLife() {
         this.removeLives(1);
+    }
+
+    fullLife() {
+        this.current = this.max;
     }
 
     /**
